@@ -1,0 +1,445 @@
+import { useEffect, useState } from 'react';
+import { apiService } from '../services/api';
+import Modal from '../components/Modal';
+import type { User, UserRole } from '../types';
+import './Users.css';
+
+interface UserFormData {
+  name: string;
+  email: string;
+  password: string;
+  role: UserRole;
+  phone: string;
+}
+
+const initialFormData: UserFormData = {
+  name: '',
+  email: '',
+  password: '',
+  role: 'STUDENT',
+  phone: '',
+};
+
+const Users = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [roleFilter, setRoleFilter] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Modal states
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [formData, setFormData] = useState<UserFormData>(initialFormData);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetchUsers();
+  }, [roleFilter]);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const params: any = {};
+      if (roleFilter) params.role = roleFilter;
+      const data = await apiService.getUsers(params);
+      setUsers(data.users);
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    setError('');
+  };
+
+  const handleAddUser = () => {
+    setFormData(initialFormData);
+    setError('');
+    setShowAddModal(true);
+  };
+
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
+    setFormData({
+      name: user.name,
+      email: user.email,
+      password: '',
+      role: user.role,
+      phone: user.phone || '',
+    });
+    setError('');
+    setShowEditModal(true);
+  };
+
+  const handleDeleteClick = (user: User) => {
+    setSelectedUser(user);
+    setShowDeleteModal(true);
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.name || !formData.email || !formData.password) {
+      setError('Name, email, and password are required');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await apiService.createUser({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        phone: formData.phone || undefined,
+      });
+      setShowAddModal(false);
+      await fetchUsers();
+    } catch (err: any) {
+      setError(err.error || 'Failed to create user');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUser) return;
+
+    if (!formData.name) {
+      setError('Name is required');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      // Update basic info
+      await apiService.updateUser(selectedUser.id, {
+        name: formData.name,
+        phone: formData.phone || undefined,
+      });
+
+      // Update role if changed
+      if (formData.role !== selectedUser.role) {
+        await apiService.updateUserRole(selectedUser.id, formData.role);
+      }
+
+      setShowEditModal(false);
+      await fetchUsers();
+    } catch (err: any) {
+      setError(err.error || 'Failed to update user');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!selectedUser) return;
+
+    setSubmitting(true);
+    try {
+      await apiService.deleteUser(selectedUser.id);
+      setShowDeleteModal(false);
+      await fetchUsers();
+    } catch (err: any) {
+      setError(err.error || 'Failed to delete user');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case 'ADMIN': return '#dc2626';
+      case 'STAFF': return '#0891b2';
+      case 'STUDENT': return '#16a34a';
+      case 'PARENT': return '#ca8a04';
+      default: return '#6b7280';
+    }
+  };
+
+  const filteredUsers = users.filter(user => {
+    if (!searchTerm) return true;
+    const search = searchTerm.toLowerCase();
+    return (
+      user.name.toLowerCase().includes(search) ||
+      user.email.toLowerCase().includes(search)
+    );
+  });
+
+  if (loading) {
+    return <div className="loading">Loading users...</div>;
+  }
+
+  return (
+    <div className="users-page">
+      <div className="page-header">
+        <div className="header-left">
+          <h1>Users</h1>
+          <span className="user-count">{users.length} total</span>
+        </div>
+        <div className="header-actions">
+          <div className="search-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input
+              type="text"
+              placeholder="Search users..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            className="filter-select"
+          >
+            <option value="">All Roles</option>
+            <option value="ADMIN">Admin</option>
+            <option value="STAFF">Staff</option>
+            <option value="STUDENT">Student</option>
+            <option value="PARENT">Parent</option>
+          </select>
+          <button className="add-user-btn" onClick={handleAddUser}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <line x1="19" y1="8" x2="19" y2="14"></line>
+              <line x1="22" y1="11" x2="16" y2="11"></line>
+            </svg>
+            Add User
+          </button>
+        </div>
+      </div>
+
+      {filteredUsers.length === 0 ? (
+        <div className="empty-state">
+          <span className="empty-icon">👥</span>
+          <h3>No users found</h3>
+          <p>No users match your search criteria.</p>
+        </div>
+      ) : (
+        <div className="users-grid">
+          {filteredUsers.map((user) => (
+            <div key={user.id} className="user-card">
+              <div className="user-card-header">
+                <div className="user-avatar" style={{ background: getRoleColor(user.role) }}>
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="user-card-actions">
+                  <button 
+                    className="action-btn edit" 
+                    title="Edit user"
+                    onClick={() => handleEditUser(user)}
+                  >
+                    ✏️
+                  </button>
+                  <button 
+                    className="action-btn delete" 
+                    title="Delete user"
+                    onClick={() => handleDeleteClick(user)}
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+              <h3 className="user-name">{user.name}</h3>
+              <p className="user-email">{user.email}</p>
+              <div className="user-meta">
+                <span 
+                  className="role-badge" 
+                  style={{ backgroundColor: getRoleColor(user.role) }}
+                >
+                  {user.role}
+                </span>
+                {user.phone && (
+                  <span className="user-phone">📞 {user.phone}</span>
+                )}
+              </div>
+              <div className="user-footer">
+                <span className="join-date">
+                  Joined {new Date(user.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add User Modal */}
+      <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Add New User">
+        <form onSubmit={handleCreateUser} className="user-form">
+          {error && <div className="form-error">{error}</div>}
+          
+          <div className="form-group">
+            <label>Full Name *</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              placeholder="Enter full name"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Email Address *</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              placeholder="Enter email address"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Password *</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              placeholder="Enter password (min 6 characters)"
+              required
+              minLength={6}
+            />
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>Role *</label>
+              <select name="role" value={formData.role} onChange={handleInputChange}>
+                <option value="STUDENT">Student</option>
+                <option value="PARENT">Parent</option>
+                <option value="STAFF">Staff</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Phone (Optional)</label>
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                placeholder="Enter phone number"
+              />
+            </div>
+          </div>
+
+          <div className="form-actions">
+            <button type="button" className="btn-secondary" onClick={() => setShowAddModal(false)}>
+              Cancel
+            </button>
+            <button type="submit" className="btn-primary" disabled={submitting}>
+              {submitting ? 'Creating...' : 'Create User'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit User Modal */}
+      <Modal isOpen={showEditModal} onClose={() => setShowEditModal(false)} title="Edit User">
+        <form onSubmit={handleUpdateUser} className="user-form">
+          {error && <div className="form-error">{error}</div>}
+          
+          <div className="form-group">
+            <label>Full Name *</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              placeholder="Enter full name"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Email Address</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              disabled
+              className="disabled-input"
+            />
+            <span className="field-hint">Email cannot be changed</span>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>Role *</label>
+              <select name="role" value={formData.role} onChange={handleInputChange}>
+                <option value="STUDENT">Student</option>
+                <option value="PARENT">Parent</option>
+                <option value="STAFF">Staff</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Phone (Optional)</label>
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                placeholder="Enter phone number"
+              />
+            </div>
+          </div>
+
+          <div className="form-actions">
+            <button type="button" className="btn-secondary" onClick={() => setShowEditModal(false)}>
+              Cancel
+            </button>
+            <button type="submit" className="btn-primary" disabled={submitting}>
+              {submitting ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} title="Delete User">
+        <div className="delete-confirmation">
+          <div className="delete-icon">⚠️</div>
+          <h3>Are you sure?</h3>
+          <p>
+            You are about to delete <strong>{selectedUser?.name}</strong>. 
+            This action cannot be undone.
+          </p>
+          <div className="form-actions">
+            <button className="btn-secondary" onClick={() => setShowDeleteModal(false)}>
+              Cancel
+            </button>
+            <button className="btn-danger" onClick={handleDeleteUser} disabled={submitting}>
+              {submitting ? 'Deleting...' : 'Delete User'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+    </div>
+  );
+};
+
+export default Users;

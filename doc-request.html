@@ -1,0 +1,2106 @@
+<!DOCTYPE html><!--  Last Published: Mon Dec 29 2025 13:23:42 GMT+0000 (Coordinated Universal Time)  -->
+<html data-wf-page="6011b27041d5e63e6046f798" data-wf-site="5ff7c2ade6e719f4bf214be0">
+<head>
+  <meta charset="utf-8">
+  <title>General Request Form-YC</title>
+  <meta content="A form provided by the administration of the York Castle High School to request GENERAL information on a specific student. This includes: Transcripts, Academic Reports/Status, Embassy Letter etc.  (Conditions apply)" name="description">
+  <meta content="General Request Form-YC" property="og:title">
+  <meta content="A form provided by the administration of the York Castle High School to request GENERAL information on a specific student. This includes: Transcripts, Academic Reports/Status, Embassy Letter etc.  (Conditions apply)" property="og:description">
+  <meta content="General Request Form-YC" property="twitter:title">
+  <meta content="A form provided by the administration of the York Castle High School to request GENERAL information on a specific student. This includes: Transcripts, Academic Reports/Status, Embassy Letter etc.  (Conditions apply)" property="twitter:description">
+  <meta property="og:type" content="website">
+  <meta content="summary_large_image" name="twitter:card">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <link href="css/normalize.css" rel="stylesheet" type="text/css">
+  <link href="css/webflow.css" rel="stylesheet" type="text/css">
+  <link href="css/york-castle-high-school.webflow.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script>
+  <script type="text/javascript">WebFont.load({  google: {    families: ["PT Serif:400,400italic,700,700italic","Varela:400","Merriweather:300,300italic,400,400italic,700,700italic,900,900italic","Source Sans Pro:200,300,regular,italic,600,700,900","DM Sans:400,500,600,700"]  }});</script>
+  <script type="text/javascript">!function(o,c){var n=c.documentElement,t=" w-mod-";n.className+=t+"js",("ontouchstart"in o||o.DocumentTouch&&c instanceof DocumentTouch)&&(n.className+=t+"touch")}(window,document);</script>
+  <link href="images/favicon.ico" rel="shortcut icon" type="image/x-icon">
+  <link href="images/webclip.png" rel="apple-touch-icon">
+  <script src="https://www.google.com/recaptcha/api.js" type="text/javascript"></script>
+  <!--  Global site tag (gtag.js) - Google Analytics  -->
+  <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-X57S1L85ZP"></script>
+  <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-X57S1L85ZP');
+</script>
+  <!--  Sygnal Attributes 5 | Memberships | Config  -->
+  <script>
+window.sa5 = window.sa5 || [];
+window.sa5.push(['getMembershipRoutingConfig', 
+  (config) => {
+    config.routeAfterFirstLogin = '/sixth-form-application';
+    config.routeAfterLogin = '/update';
+    return config;
+  }]); 
+</script>
+  <style>
+    :root {
+      --primary-gold: #d4af37;
+      --primary-gold-light: #f4d03f;
+      --primary-dark: #1a1a2e;
+      --primary-dark-light: #16213e;
+      --maroon: #8b0000;
+      --maroon-light: #a52a2a;
+      --success: #059669;
+      --success-light: #d1fae5;
+      --error: #dc2626;
+      --error-light: #fee2e2;
+      --warning: #d97706;
+      --warning-light: #fef3c7;
+      --info: #2563eb;
+      --info-light: #dbeafe;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    /* Form Container */
+    .form-wizard-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      font-family: 'DM Sans', 'Source Sans Pro', sans-serif;
+    }
+
+    /* Step Indicator */
+    .step-indicator {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 40px;
+      margin-top: 20px;
+      position: relative;
+      padding: 20px 10px 10px 10px;
+      overflow: visible;
+    }
+
+    .step-indicator::before {
+      content: '';
+      position: absolute;
+      top: 40px;
+      left: 50px;
+      right: 50px;
+      height: 3px;
+      background: var(--gray-200);
+      z-index: 0;
+    }
+
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding-top: 10px;
+    }
+
+    .step-number {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--gray-400);
+      margin-bottom: 10px;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      z-index: 2;
+    }
+
+    .step.active .step-number {
+      background: linear-gradient(135deg, var(--primary-gold), var(--primary-gold-light));
+      border-color: var(--primary-gold);
+      color: white;
+      box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.2);
+      transform: scale(1.1);
+    }
+
+    .step.completed .step-number {
+      background: var(--success);
+      border-color: var(--success);
+      color: white;
+    }
+
+    .step.completed .step-number::after {
+      content: '✓';
+      font-size: 18px;
+    }
+
+    .step.completed .step-number span {
+      display: none;
+    }
+
+    .step-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-400);
+      text-align: center;
+      max-width: 100px;
+      transition: color 0.3s ease;
+    }
+
+    .step.active .step-label,
+    .step.completed .step-label {
+      color: var(--gray-700);
+    }
+
+    /* Form Steps */
+    .form-step {
+      display: none;
+      animation: fadeSlideIn 0.4s ease;
+    }
+
+    .form-step.active {
+      display: block;
+    }
+
+    @keyframes fadeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* Document Type Cards */
+    .document-type-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .document-type-card {
+      background: white;
+      border: 2px solid var(--gray-200);
+      border-radius: 16px;
+      padding: 24px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .document-type-card:hover {
+      border-color: var(--primary-gold);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .document-type-card.selected {
+      border-color: var(--primary-gold);
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.05), rgba(244, 208, 63, 0.05));
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+    }
+
+    .document-type-card.selected::before {
+      content: '✓';
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 28px;
+      height: 28px;
+      background: var(--primary-gold);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .document-icon {
+      width: 52px;
+      height: 52px;
+      margin-bottom: 14px;
+      background: linear-gradient(135deg, var(--primary-gold), var(--primary-gold-light));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .document-icon svg {
+      width: 26px;
+      height: 26px;
+      color: white;
+      stroke: white;
+    }
+
+    .document-time .time-icon {
+      opacity: 0.7;
+    }
+
+    .document-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--gray-800);
+      margin-bottom: 8px;
+    }
+
+    .document-description {
+      font-size: 14px;
+      color: var(--gray-500);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .document-time {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--gray-100);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-600);
+    }
+
+    /* Section Headers */
+    .section-header {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 28px;
+      padding: 22px 26px;
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-dark-light) 100%);
+      border-radius: 16px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .section-icon {
+      width: 54px;
+      height: 54px;
+      min-width: 54px;
+      background: linear-gradient(135deg, var(--primary-gold), var(--primary-gold-light));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    }
+
+    .section-icon svg {
+      width: 28px;
+      height: 28px;
+      color: white;
+      fill: none;
+      stroke: white;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .section-text {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .section-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: white;
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    .section-subtitle {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.75);
+      margin: 4px 0 0 0;
+      line-height: 1.4;
+    }
+
+    /* Form Fields */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 640px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      position: relative;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gray-700);
+      margin-bottom: 8px;
+    }
+    
+    .required-badge {
+      color: var(--error);
+      font-size: 12px;
+    }
+
+    .optional-badge {
+      font-size: 11px;
+      color: var(--gray-400);
+      font-weight: 400;
+      margin-left: auto;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--gray-200);
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: inherit;
+      transition: all 0.2s ease;
+      background: white;
+      color: var(--gray-800);
+    }
+    
+    .form-input:hover {
+      border-color: var(--gray-300);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary-gold);
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+    }
+    
+    .form-input.error {
+      border-color: var(--error);
+      background: var(--error-light);
+    }
+
+    .form-input.success {
+      border-color: var(--success);
+    }
+
+    .form-input::placeholder {
+      color: var(--gray-400);
+    }
+
+    select.form-input {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 20px;
+      padding-right: 44px;
+    }
+
+    .field-hint {
+      font-size: 12px;
+      color: var(--gray-500);
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .field-error {
+      font-size: 12px;
+      color: var(--error);
+      margin-top: 6px;
+      display: none;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .form-group.has-error .field-error {
+      display: flex;
+    }
+
+    .form-group.has-error .field-hint {
+      display: none;
+    }
+
+    /* Copy Counter */
+    .copy-counter {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .copy-btn {
+      width: 44px;
+      height: 44px;
+      border: 2px solid var(--gray-200);
+      background: white;
+      border-radius: 12px;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gray-600);
+    }
+
+    .copy-btn:hover {
+      border-color: var(--primary-gold);
+      color: var(--primary-gold);
+    }
+
+    .copy-btn:active {
+      transform: scale(0.95);
+    }
+
+    .copy-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--gray-800);
+      min-width: 40px;
+      text-align: center;
+    }
+
+    /* Delivery Method Cards */
+    .delivery-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 640px) {
+      .delivery-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .delivery-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      border: 2px solid var(--gray-200);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: white;
+    }
+
+    .delivery-card:hover {
+      border-color: var(--primary-gold);
+    }
+
+    .delivery-card.selected {
+      border-color: var(--primary-gold);
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.05), rgba(244, 208, 63, 0.05));
+    }
+
+    .delivery-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--primary-gold), var(--primary-gold-light));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .delivery-icon svg {
+      width: 24px;
+      height: 24px;
+      color: white;
+      stroke: white;
+    }
+
+    .delivery-info h4 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--gray-800);
+      margin: 0 0 4px 0;
+    }
+
+    .delivery-info p {
+      font-size: 12px;
+      color: var(--gray-500);
+      margin: 0;
+    }
+
+    /* Info Cards */
+    .info-card {
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .info-card.warning {
+      background: var(--warning-light);
+      border: 1px solid #fcd34d;
+    }
+
+    .info-card.info {
+      background: var(--info-light);
+      border: 1px solid #93c5fd;
+    }
+
+    .info-card.success {
+      background: var(--success-light);
+      border: 1px solid #6ee7b7;
+    }
+
+    .info-card-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .info-card-content h4 {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0 0 8px 0;
+      color: var(--gray-800);
+    }
+
+    .info-card-content p,
+    .info-card-content li {
+      font-size: 14px;
+      color: var(--gray-600);
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    .info-card-content ul {
+      margin: 8px 0 0 0;
+      padding-left: 20px;
+    }
+
+    .info-card-content li {
+      margin: 4px 0;
+    }
+
+    /* Review Summary */
+    .review-section {
+      background: var(--gray-50);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .review-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .review-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--gray-800);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .review-edit {
+      font-size: 13px;
+      color: var(--primary-gold);
+      cursor: pointer;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .review-edit:hover {
+      color: var(--maroon);
+    }
+
+    .review-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .review-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .review-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .review-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .review-value {
+      font-size: 15px;
+      color: var(--gray-800);
+      font-weight: 500;
+    }
+
+    .review-value.highlight {
+      color: var(--maroon);
+      font-weight: 700;
+    }
+
+    /* Navigation Buttons */
+    .form-navigation {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 2px solid var(--gray-100);
+      gap: 16px;
+    }
+
+    .btn {
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      font-family: inherit;
+    }
+
+    .btn-secondary {
+      background: var(--gray-100);
+      color: var(--gray-700);
+    }
+
+    .btn-secondary:hover {
+      background: var(--gray-200);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--maroon), var(--maroon-light));
+      color: white;
+      box-shadow: 0 4px 14px rgba(139, 0, 0, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(139, 0, 0, 0.4);
+    }
+    
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, var(--primary-gold), var(--primary-gold-light));
+      color: white;
+      box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3);
+    }
+
+    .btn-gold:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+    }
+
+    .btn-icon {
+      font-size: 18px;
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Toast Notifications */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .toast {
+      padding: 16px 20px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: var(--shadow-lg);
+      animation: toastSlideIn 0.3s ease;
+      max-width: 400px;
+    }
+
+    @keyframes toastSlideIn {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .toast.success {
+      background: var(--success);
+      color: white;
+    }
+
+    .toast.error {
+      background: var(--error);
+      color: white;
+    }
+
+    .toast.info {
+      background: var(--info);
+      color: white;
+    }
+
+    .toast-icon {
+      font-size: 20px;
+    }
+
+    .toast-message {
+      font-size: 14px;
+      font-weight: 500;
+      flex: 1;
+    }
+
+    .toast-close {
+      background: none;
+      border: none;
+      color: white;
+      opacity: 0.7;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 0;
+    }
+
+    .toast-close:hover {
+      opacity: 1;
+    }
+
+    /* Success Screen */
+    .success-screen {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+    }
+    
+    .success-screen.active {
+      display: block;
+      animation: fadeSlideIn 0.5s ease;
+    }
+
+    .success-icon {
+      width: 100px;
+      height: 100px;
+      background: var(--success-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 50px;
+      margin: 0 auto 24px;
+      animation: successPop 0.5s ease;
+    }
+
+    @keyframes successPop {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .success-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--gray-800);
+      margin: 0 0 12px 0;
+    }
+
+    .success-message {
+      font-size: 16px;
+      color: var(--gray-500);
+      margin: 0 0 32px 0;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+    }
+
+    .reference-number {
+      display: inline-block;
+      padding: 16px 32px;
+      background: var(--gray-100);
+      border-radius: 12px;
+      margin-bottom: 32px;
+    }
+
+    .reference-label {
+      font-size: 12px;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .reference-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--maroon);
+      font-family: monospace;
+    }
+
+    /* Auto-save indicator */
+    .autosave-indicator {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      padding: 10px 16px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: var(--shadow-md);
+      font-size: 13px;
+      color: var(--gray-600);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+        opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      z-index: 100;
+      }
+
+    .autosave-indicator.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+    .autosave-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .step-indicator {
+        overflow-x: auto;
+        overflow-y: visible;
+        padding: 20px 10px 10px 10px;
+        gap: 20px;
+        justify-content: flex-start;
+      }
+
+      .step-indicator::before {
+      display: none;
+    }
+    
+      .step {
+        flex-shrink: 0;
+        padding-top: 10px;
+      }
+
+      .step-label {
+        font-size: 11px;
+        max-width: 70px;
+      }
+
+      .document-type-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-navigation {
+        flex-direction: column-reverse;
+      }
+
+      .form-navigation .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .toast-container {
+        left: 20px;
+        right: 20px;
+      }
+
+      .toast {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header-wrapper">
+    <div data-collapse="none" data-animation="default" data-duration="400" data-easing="ease" data-easing2="ease" role="banner" class="top-navbar w-nav">
+      <div class="w-container">
+        <nav role="navigation" class="top-nav-menu w-nav-menu">
+          <a href="tel:+1876975-2217" class="top-nav-link w-inline-block">
+            <div class="top-nav-title icon">☎</div>
+            <div class="top-nav-title">+1 876 975-2217</div>
+          </a>
+          <a href="mailto:yorkcastle.high.san@moey.gov.jm" class="top-nav-link w-inline-block">
+            <div class="top-nav-title icon">✉</div>
+            <div class="top-nav-title">yorkcastle.high.san@moey.gov.jm</div>
+          </a><button class="user-log-in-log-out top-nav-link" data-wf-user-logout="Log out" data-wf-user-login="Log in" type="button">Log out</button>
+        </nav>
+        <a href="blog.html" class="top-bar-link w-hidden-small w-hidden-tiny">Medical Updates →</a>
+        <div class="w-nav-button">
+          <div class="w-icon-nav-menu"></div>
+        </div>
+      </div>
+    </div>
+    <div data-collapse="medium" data-animation="over-right" data-duration="400" data-easing="ease-in-quad" data-easing2="ease-in-sine" role="banner" class="navbar principal-navbar w-nav">
+      <div class="container-23 w-container">
+        <a href="index.html" class="logo-block w-nav-brand"></a><img src="images/logo-badge.webp" width="125" alt="York Castle Logo" data-w-id="20364156-959b-dc8c-d155-cddb56832837" class="image-logo">
+        <nav role="navigation" class="nav-menu w-nav-menu">
+          <a href="index.html" class="nav-link w-nav-link">Home</a>
+          <div data-delay="0" data-hover="true" class="dropdown w-dropdown">
+            <div class="nav-link dropdown-toggle w-dropdown-toggle">
+              <div class="dropdown-icon w-icon-dropdown-toggle"></div>
+              <div>ABout YC</div>
+            </div>
+            <nav class="dropdown-list w-dropdown-list">
+              <a href="principals-message.html" class="dropdown-link-2 w-dropdown-link">Meet The Principal</a>
+              <a href="history.html" class="dropdown-link-2 w-dropdown-link">History</a>
+              <a href="mission-and-vision.html" class="dropdown-link-2 w-dropdown-link">Vision and Mission</a>
+              <a href="school-song.html" class="dropdown-link-2 dropdrown-end w-dropdown-link">School Song</a>
+            </nav>
+          </div>
+          <div data-delay="0" data-hover="true" class="dropdown w-dropdown">
+            <div class="nav-link dropdown-toggle w-dropdown-toggle">
+              <div class="dropdown-icon w-icon-dropdown-toggle"></div>
+              <div>Resources</div>
+            </div>
+            <nav class="dropdown-list w-dropdown-list">
+              <div class="w-layout-grid grid-3">
+                <a href="doc-request.html" aria-current="page" class="dropdown-link-2 w-dropdown-link w--current">General Request Form</a>
+                <a href="application-form.html" class="dropdown-link-2 w-dropdown-link">General Admission Form</a>
+                <a href="request-student-information.html" class="dropdown-link-2 w-dropdown-link">Request Student Information</a>
+                <a href="sixth-form-application.html" class="dropdown-link-2 w-dropdown-link">Sixth Form Application</a>
+                <a href="info-on-colleges.html" class="dropdown-link-2 w-dropdown-link">Information on Colleges</a>
+                <a href="teachers.html" class="dropdown-link-2 w-dropdown-link">Staff Directory</a>
+                <a href="#" class="dropdown-link-2 dropdrown-end w-dropdown-link">Student Handbook</a>
+              </div>
+            </nav>
+          </div>
+          <div data-delay="0" data-hover="true" class="dropdown w-dropdown">
+            <div class="nav-link dropdown-toggle w-dropdown-toggle">
+              <div class="dropdown-icon w-icon-dropdown-toggle"></div>
+              <div>Campus LIfe</div>
+            </div>
+            <nav class="dropdown-list w-dropdown-list">
+              <a href="clubs.html" class="dropdown-link-2 w-dropdown-link">Clubs and Societies</a>
+              <a href="sports-and-extra-curricular-activities.html" class="dropdown-link-2 w-dropdown-link">Sports and Extra Curricular Activities</a>
+              <a href="student-highlights.html" class="dropdown-link-2 w-dropdown-link">Student Highlights</a>
+              <a href="https://mbasic.facebook.com/ycjournalismclub/?refid=17&amp;_ft_=mf_story_key.129935168982056%3Atop_level_post_id.129935168982056%3Atl_objid.129935168982056%3Acontent_owner_id_new.102282795080627%3Athrowback_story_fbid.129935168982056%3Apage_id.102282795080627%3Aphoto_attachments_list.%5B129935052315401%2C129935088982064%2C129935132315393%5D%3Aphoto_id.129935052315401%3Astory_location.4%3Astory_attachment_style.album%3Atds_flgs.3%3Aott.AX80yw9iEM_8XrKL%3Athid.102282795080627%3A306061129499414%3A2%3A0%3A1614585599%3A-3450172230927955999&amp;__tn__=C-R" target="_blank" class="dropdown-link-2 w-dropdown-link">School Magazine (YC HIVE)</a>
+              <a href="https://www.instagram.com/yorkcastle.sfa/" target="_blank" class="dropdown-link-2 w-dropdown-link">Sixth Form Association</a>
+              <a href="houses.html" class="dropdown-link-2 w-dropdown-link">Houses</a>
+              <a href="gallery.html" class="dropdown-link-2 dropdrown-end w-dropdown-link">Gallery</a>
+            </nav>
+          </div>
+          <a href="contact-us.html" class="nav-link w-nav-link">Contact us</a>
+        </nav>
+        <div class="menu-button w-nav-button">
+          <div data-w-id="41c1550b-b2fa-29ee-cfcd-2af09489045c" data-animation-type="lottie" data-src="documents/lottieflow-menu-nav-03-d3ba1c-easey.json" data-loop="1" data-direction="1" data-autoplay="1" data-is-ix2-target="0" data-renderer="svg" data-default-duration="2.0625" data-duration="0"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="head-section"></div>
+  <div class="about-parent-forum-section">
+    <div class="w-container">
+      <h1 class="heading-43">Request General Information</h1>
+      <p data-w-id="Paragraph" class="general-request-head-paragraph">Request transcripts, embassy letters, academic reports, and other official documents. Follow the simple steps below to submit your request.</p>
+    </div>
+  </div>
+  
+  <section id="contact-form" class="request-student-info-contact-form-3">
+    <div class="form-wizard-container">
+      
+      <!-- Toast Container -->
+      <div class="toast-container" id="toastContainer"></div>
+      
+      <!-- Auto-save Indicator -->
+      <div class="autosave-indicator" id="autosaveIndicator">
+        <span class="autosave-dot"></span>
+        <span>Progress saved</span>
+      </div>
+      
+      <!-- Step Indicator -->
+      <div class="step-indicator">
+        <div class="step active" data-step="1">
+          <div class="step-number"><span>1</span></div>
+          <div class="step-label">Select Document</div>
+        </div>
+        <div class="step" data-step="2">
+          <div class="step-number"><span>2</span></div>
+          <div class="step-label">Your Details</div>
+        </div>
+        <div class="step" data-step="3">
+          <div class="step-number"><span>3</span></div>
+          <div class="step-label">Delivery</div>
+        </div>
+        <div class="step" data-step="4">
+          <div class="step-number"><span>4</span></div>
+          <div class="step-label">Review & Submit</div>
+        </div>
+      </div>
+      
+      <form id="docRequestForm">
+        
+        <!-- Step 1: Select Document Type -->
+        <div class="form-step active" data-step="1">
+          <div class="section-header">
+            <div class="section-icon">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            </div>
+            <div class="section-text">
+              <h2 class="section-title">What do you need?</h2>
+              <p class="section-subtitle">Select the type of document you're requesting</p>
+            </div>
+      </div>
+      
+          <div class="document-type-grid">
+            <div class="document-type-card" data-type="Transcript">
+              <div class="document-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path><line x1="8" y1="7" x2="16" y2="7"></line><line x1="8" y1="11" x2="16" y2="11"></line><line x1="8" y1="15" x2="12" y2="15"></line></svg>
+              </div>
+              <div class="document-title">Transcript</div>
+              <div class="document-description">Official academic record with all grades and courses completed</div>
+              <div class="document-time"><span class="time-icon">⏱</span> 15-21 working days</div>
+            </div>
+            
+            <div class="document-type-card" data-type="Embassy Letter">
+              <div class="document-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"></path><path d="M5 21V7l7-4 7 4v14"></path><path d="M9 21v-4h6v4"></path><path d="M10 10h4"></path></svg>
+              </div>
+              <div class="document-title">Embassy Letter</div>
+              <div class="document-description">Official verification letter for visa and immigration purposes</div>
+              <div class="document-time"><span class="time-icon">⏱</span> 5-7 working days</div>
+            </div>
+            
+            <div class="document-type-card" data-type="Academic Status Letter">
+              <div class="document-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 15l2 2 4-4"></path></svg>
+              </div>
+              <div class="document-title">Academic Status</div>
+              <div class="document-description">Current enrollment status and academic standing letter</div>
+              <div class="document-time"><span class="time-icon">⏱</span> 3-5 working days</div>
+            </div>
+            
+            <div class="document-type-card" data-type="Progress Report">
+              <div class="document-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+              </div>
+              <div class="document-title">Progress Report</div>
+              <div class="document-description">Detailed report of academic progress and achievements</div>
+              <div class="document-time"><span class="time-icon">⏱</span> 3-5 working days</div>
+            </div>
+            
+            <div class="document-type-card" data-type="Recommendation">
+              <div class="document-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              </div>
+              <div class="document-title">Recommendation</div>
+              <div class="document-description">Letter of recommendation from teachers or administration</div>
+              <div class="document-time"><span class="time-icon">⏱</span> 3-4 working days</div>
+            </div>
+            
+            <div class="document-type-card" data-type="School Leaving Certificate">
+              <div class="document-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+              </div>
+              <div class="document-title">Leaving Certificate</div>
+              <div class="document-description">Official certificate confirming completion of studies</div>
+              <div class="document-time"><span class="time-icon">⏱</span> 7-10 working days</div>
+            </div>
+          </div>
+          
+          <!-- Number of Copies -->
+          <div class="form-group" style="margin-top: 30px;">
+            <label class="form-label">How many copies do you need?</label>
+            <div class="copy-counter">
+              <button type="button" class="copy-btn" id="copyMinus">−</button>
+              <span class="copy-value" id="copyCount">1</span>
+              <button type="button" class="copy-btn" id="copyPlus">+</button>
+            </div>
+            <div class="field-hint">Maximum 10 copies per request</div>
+          </div>
+          
+          <input type="hidden" id="requestType" name="requestType" value="">
+          <input type="hidden" id="numberOfCopies" name="numberOfCopies" value="1">
+          
+          <div class="form-navigation">
+            <div></div>
+            <button type="button" class="btn btn-primary" id="toStep2" disabled>
+              Continue <span class="btn-icon">→</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Step 2: Student Information -->
+        <div class="form-step" data-step="2">
+          <div class="section-header">
+            <div class="section-icon">
+              <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+            <div class="section-text">
+              <h2 class="section-title">Your Information</h2>
+              <p class="section-subtitle">Enter the student's details for the document</p>
+            </div>
+          </div>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">
+                First Name <span class="required-badge">*</span>
+              </label>
+              <input type="text" class="form-input" id="firstName" name="firstName" placeholder="Enter first name" required>
+              <div class="field-error">⚠️ First name is required</div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">
+                Middle Name <span class="optional-badge">Optional</span>
+              </label>
+              <input type="text" class="form-input" id="middleName" name="middleName" placeholder="Enter middle name">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">
+                Last Name <span class="required-badge">*</span>
+              </label>
+              <input type="text" class="form-input" id="lastName" name="lastName" placeholder="Enter last name" required>
+              <div class="field-error">⚠️ Last name is required</div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">
+                Date of Birth <span class="required-badge">*</span>
+              </label>
+              <input type="date" class="form-input" id="dateOfBirth" name="dateOfBirth" required>
+              <div class="field-hint">Format: MM/DD/YYYY</div>
+              <div class="field-error">⚠️ Date of birth is required</div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">
+                Email Address <span class="required-badge">*</span>
+              </label>
+              <input type="email" class="form-input" id="email" name="email" placeholder="your.email@example.com" required>
+              <div class="field-hint">We'll send updates to this email</div>
+              <div class="field-error">⚠️ Please enter a valid email</div>
+          </div>
+          
+            <div class="form-group">
+              <label class="form-label">
+                Phone Number <span class="required-badge">*</span>
+              </label>
+              <input type="tel" class="form-input" id="phone" name="phone" placeholder="+1 876 123-4567" required>
+              <div class="field-error">⚠️ Phone number is required</div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">
+                Date of Graduation <span class="optional-badge">If applicable</span>
+              </label>
+              <input type="date" class="form-input" id="graduationDate" name="graduationDate">
+              <div class="field-hint">Leave blank if currently enrolled</div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">
+                Parish <span class="optional-badge">Optional</span>
+              </label>
+              <select class="form-input" id="parish" name="parish">
+                <option value="">Select parish...</option>
+                <option value="Kingston">Kingston</option>
+                <option value="St. Andrew">St. Andrew</option>
+                <option value="St. Thomas">St. Thomas</option>
+                <option value="Portland">Portland</option>
+                <option value="St. Mary">St. Mary</option>
+                <option value="St. Ann">St. Ann</option>
+                <option value="Trelawny">Trelawny</option>
+                <option value="St. James">St. James</option>
+                <option value="Hanover">Hanover</option>
+                <option value="Westmoreland">Westmoreland</option>
+                <option value="St. Elizabeth">St. Elizabeth</option>
+                <option value="Manchester">Manchester</option>
+                <option value="Clarendon">Clarendon</option>
+                <option value="St. Catherine">St. Catherine</option>
+              </select>
+            </div>
+            
+            <div class="form-group full-width">
+              <label class="form-label">
+                Street Address <span class="optional-badge">Optional</span>
+              </label>
+              <input type="text" class="form-input" id="streetAddress" name="streetAddress" placeholder="Street name and number">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">
+                Town/City <span class="optional-badge">Optional</span>
+              </label>
+              <input type="text" class="form-input" id="town" name="town" placeholder="Enter town or city">
+            </div>
+            </div>
+            
+          <div class="form-navigation">
+            <button type="button" class="btn btn-secondary" id="backToStep1">
+              <span class="btn-icon">←</span> Back
+            </button>
+            <button type="button" class="btn btn-primary" id="toStep3">
+              Continue <span class="btn-icon">→</span>
+            </button>
+          </div>
+            </div>
+            
+        <!-- Step 3: Delivery Method -->
+        <div class="form-step" data-step="3">
+          <div class="section-header">
+            <div class="section-icon">
+              <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+            </div>
+            <div class="section-text">
+              <h2 class="section-title">Delivery Options</h2>
+              <p class="section-subtitle">How would you like to receive your document?</p>
+            </div>
+            </div>
+            
+          <div class="delivery-grid">
+            <div class="delivery-card" data-method="Pick up">
+              <div class="delivery-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+              </div>
+              <div class="delivery-info">
+                <h4>Pick up at School</h4>
+                <p>Collect from the administration office</p>
+              </div>
+            </div>
+            
+            <div class="delivery-card" data-method="Regular Mail">
+              <div class="delivery-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              </div>
+              <div class="delivery-info">
+                <h4>Regular Mail</h4>
+                <p>Delivery via Jamaica Post</p>
+              </div>
+            </div>
+            
+            <div class="delivery-card" data-method="Courier">
+              <div class="delivery-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+              </div>
+              <div class="delivery-info">
+                <h4>Courier Service</h4>
+                <p>Express delivery (additional fees apply)</p>
+              </div>
+            </div>
+            
+            <div class="delivery-card" data-method="Fax">
+              <div class="delivery-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+              </div>
+              <div class="delivery-info">
+                <h4>Fax</h4>
+                <p>Send to your fax number</p>
+              </div>
+            </div>
+          </div>
+          
+          <input type="hidden" id="deliveryMethod" name="deliveryMethod" value="">
+          
+          <!-- Recipient Information (conditional) -->
+          <div id="recipientSection" style="display: none; margin-top: 32px;">
+            <div class="info-card info">
+              <div class="info-card-icon">ℹ️</div>
+              <div class="info-card-content">
+                <h4>Recipient Details Required</h4>
+                <p>Since you've chosen delivery, please provide the recipient's information below.</p>
+              </div>
+            </div>
+            
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">
+                  Recipient Name <span class="optional-badge">Optional</span>
+                </label>
+                <input type="text" class="form-input" id="recipientName" name="recipientName" placeholder="Name of person/organization">
+            </div>
+            
+              <div class="form-group">
+                <label class="form-label">
+                  Recipient Email <span class="optional-badge">Optional</span>
+                </label>
+                <input type="email" class="form-input" id="recipientEmail" name="recipientEmail" placeholder="recipient@example.com">
+            </div>
+            
+              <div class="form-group full-width">
+                <label class="form-label">
+                  Recipient Address <span class="optional-badge">Optional</span>
+                </label>
+                <input type="text" class="form-input" id="recipientAddress" name="recipientAddress" placeholder="Full address including country">
+            </div>
+            
+              <div class="form-group">
+                <label class="form-label">
+                  Recipient Phone <span class="optional-badge">Optional</span>
+                </label>
+                <input type="tel" class="form-input" id="recipientPhone" name="recipientPhone" placeholder="Phone number">
+              </div>
+              
+              <div class="form-group" id="faxField" style="display: none;">
+                <label class="form-label">
+                  Fax Number <span class="required-badge">*</span>
+                </label>
+                <input type="tel" class="form-input" id="recipientFax" name="recipientFax" placeholder="Fax number">
+                <div class="field-error">⚠️ Fax number is required for fax delivery</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-navigation">
+            <button type="button" class="btn btn-secondary" id="backToStep2">
+              <span class="btn-icon">←</span> Back
+            </button>
+            <button type="button" class="btn btn-primary" id="toStep4" disabled>
+              Continue <span class="btn-icon">→</span>
+            </button>
+          </div>
+          </div>
+          
+        <!-- Step 4: Review & Submit -->
+        <div class="form-step" data-step="4">
+          <div class="section-header">
+            <div class="section-icon">
+              <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          </div>
+            <div class="section-text">
+              <h2 class="section-title">Review Your Request</h2>
+              <p class="section-subtitle">Please verify all information before submitting</p>
+        </div>
+        </div>
+          
+          <div class="info-card warning">
+            <div class="info-card-icon">⚠️</div>
+            <div class="info-card-content">
+              <h4>Important Reminders</h4>
+              <ul>
+                <li>Transcripts require payment upon request</li>
+                <li>Processing times are estimates and may vary</li>
+                <li>Incomplete or incorrect information will delay processing</li>
+              </ul>
+      </div>
+    </div>
+          
+          <!-- Document Summary -->
+          <div class="review-section">
+            <div class="review-header">
+              <span class="review-title">📄 Document Details</span>
+              <span class="review-edit" data-goto="1">Edit</span>
+            </div>
+            <div class="review-grid">
+              <div class="review-item">
+                <span class="review-label">Document Type</span>
+                <span class="review-value highlight" id="reviewDocType">—</span>
+          </div>
+              <div class="review-item">
+                <span class="review-label">Number of Copies</span>
+                <span class="review-value" id="reviewCopies">—</span>
+        </div>
+              <div class="review-item">
+                <span class="review-label">Estimated Processing</span>
+                <span class="review-value" id="reviewTime">—</span>
+        </div>
+            </div>
+          </div>
+          
+          <!-- Student Summary -->
+          <div class="review-section">
+            <div class="review-header">
+              <span class="review-title">👤 Student Information</span>
+              <span class="review-edit" data-goto="2">Edit</span>
+            </div>
+            <div class="review-grid">
+              <div class="review-item">
+                <span class="review-label">Full Name</span>
+                <span class="review-value" id="reviewName">—</span>
+          </div>
+              <div class="review-item">
+                <span class="review-label">Date of Birth</span>
+                <span class="review-value" id="reviewDOB">—</span>
+        </div>
+              <div class="review-item">
+                <span class="review-label">Email</span>
+                <span class="review-value" id="reviewEmail">—</span>
+        </div>
+              <div class="review-item">
+                <span class="review-label">Phone</span>
+                <span class="review-value" id="reviewPhone">—</span>
+      </div>
+    </div>
+  </div>
+  
+          <!-- Delivery Summary -->
+          <div class="review-section">
+            <div class="review-header">
+              <span class="review-title">📬 Delivery Method</span>
+              <span class="review-edit" data-goto="3">Edit</span>
+            </div>
+            <div class="review-grid">
+              <div class="review-item">
+                <span class="review-label">Method</span>
+                <span class="review-value highlight" id="reviewDelivery">—</span>
+              </div>
+              <div class="review-item" id="reviewRecipientItem" style="display: none;">
+                <span class="review-label">Recipient</span>
+                <span class="review-value" id="reviewRecipient">—</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-navigation">
+            <button type="button" class="btn btn-secondary" id="backToStep3">
+              <span class="btn-icon">←</span> Back
+            </button>
+            <button type="submit" class="btn btn-gold" id="submitBtn">
+              Submit Request <span class="btn-icon">✓</span>
+            </button>
+          </div>
+        </div>
+        
+      </form>
+      
+      <!-- Success Screen -->
+      <div class="success-screen" id="successScreen">
+        <div class="success-icon">✅</div>
+        <h2 class="success-title">Request Submitted!</h2>
+        <p class="success-message">
+          Your document request has been received and is now being processed. 
+          You will receive a confirmation email shortly with further instructions.
+        </p>
+        <div class="reference-number">
+          <div class="reference-label">Reference Number</div>
+          <div class="reference-value" id="referenceNumber">YC-000000</div>
+        </div>
+        <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+          <a href="index.html" class="btn btn-secondary">
+            <span class="btn-icon">🏠</span> Back to Home
+          </a>
+          <button type="button" class="btn btn-primary" id="newRequestBtn">
+            <span class="btn-icon">+</span> New Request
+          </button>
+        </div>
+      </div>
+      
+    </div>
+  </section>
+  
+  <!-- Footer -->
+  <div class="footer">
+    <div class="w-container">
+      <div class="footer-row w-row">
+        <div class="footer-column footer-sports w-col w-col-4">
+          <div class="footer-title">Contact us</div>
+          <a href="#" class="footer-contact-block w-inline-block">
+            <div class="footer-contact-title icon">☎</div>
+            <div class="footer-contact-title">+1 876 975-2217</div>
+          </a>
+          <a href="#" class="footer-contact-block w-inline-block">
+            <div class="footer-contact-title icon">📠</div>
+            <div class="footer-contact-title">+1 876-917-6387</div>
+          </a>
+          <a href="#" class="footer-contact-block w-inline-block">
+            <div class="footer-contact-title icon">✉</div>
+            <div class="footer-contact-title">yorkcastle.high.san@moey</div>
+          </a>
+          <a href="http://www.facebook.com" target="_blank" class="footer-social-button w-inline-block"><img src="images/Icon-facebook_2.png" alt="Facebook Logo" class="footer-social-icon"></a>
+          <a href="https://www.instagram.com/york_castle_high/?hl=en" target="_blank" class="footer-social-button w-inline-block"><img src="images/pngfind.com-instagram-png-22629.png" sizes="(max-width: 767px) 96vw, (max-width: 991px) 229.3203125px, 299.984375px" srcset="images/pngfind.com-instagram-png-22629-p-500.png 500w, images/pngfind.com-instagram-png-22629-p-800.png 800w, images/pngfind.com-instagram-png-22629.png 974w" alt="Instagram Logo" class="footer-social-icon"></a>
+        </div>
+        <div class="footer-column footer-sports w-col w-col-4">
+          <div class="footer-title">About us</div>
+          <a href="history.html" class="footer-list-link">About YC</a>
+          <a href="calendar.html" class="footer-list-link">Calendar</a>
+          <a href="teachers.html" class="footer-list-link">Teachers</a>
+          <a href="contact-us.html" class="footer-list-link">Contact Us</a>
+        </div>
+        <div class="footer-column footer-sports w-col w-col-4">
+          <div class="footer-title">USEFUL LINKS</div>
+          <a href="request-student-information.html" class="footer-list-link">Request Student Information</a>
+          <a href="info-on-colleges.html" class="footer-list-link">College Information</a>
+          <a href="application-form.html" class="footer-list-link">Admission Form</a>
+          <a href="booklist.html" class="footer-list-link">Booklist</a>
+          <a href="#" data_open_privacy="true" class="footer-list-link">Privacy Policy</a>
+        </div>
+      </div>
+      <div class="bottom-footer-block w-clearfix">
+        <div class="bottom-footer-text">Copyright © York Castle High School 2025</div>
+        <div class="div-block-270 w-clearfix">
+          <div class="bottom-footer-text right">Powered by </div><img src="images/HOLY-GRAIL--LOGO.png" loading="lazy" alt="" class="image-46">
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=5ff7c2ade6e719f4bf214be0" type="text/javascript" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+  <script src="js/webflow.js" type="text/javascript"></script>
+  <script src="js/api-client.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // State
+      let currentStep = 1;
+      let formData = {
+        requestType: '',
+        numberOfCopies: 1,
+        deliveryMethod: '',
+        firstName: '',
+        middleName: '',
+        lastName: '',
+        dateOfBirth: '',
+        email: '',
+        phone: '',
+        graduationDate: '',
+        parish: '',
+        streetAddress: '',
+        town: '',
+        recipientName: '',
+        recipientEmail: '',
+        recipientAddress: '',
+        recipientPhone: '',
+        recipientFax: ''
+      };
+      
+      // Document processing times
+      const processingTimes = {
+        'Transcript': '15-21 working days',
+        'Embassy Letter': '5-7 working days',
+        'Academic Status Letter': '3-5 working days',
+        'Progress Report': '3-5 working days',
+        'Recommendation': '3-4 working days',
+        'School Leaving Certificate': '7-10 working days'
+      };
+      
+      // Elements
+      const form = document.getElementById('docRequestForm');
+      const steps = document.querySelectorAll('.step');
+      const formSteps = document.querySelectorAll('.form-step');
+      const documentCards = document.querySelectorAll('.document-type-card');
+      const deliveryCards = document.querySelectorAll('.delivery-card');
+      const copyCount = document.getElementById('copyCount');
+      const copyMinus = document.getElementById('copyMinus');
+      const copyPlus = document.getElementById('copyPlus');
+      const toastContainer = document.getElementById('toastContainer');
+      const autosaveIndicator = document.getElementById('autosaveIndicator');
+      
+      // Navigation buttons
+      const toStep2 = document.getElementById('toStep2');
+      const toStep3 = document.getElementById('toStep3');
+      const toStep4 = document.getElementById('toStep4');
+      const backToStep1 = document.getElementById('backToStep1');
+      const backToStep2 = document.getElementById('backToStep2');
+      const backToStep3 = document.getElementById('backToStep3');
+      const submitBtn = document.getElementById('submitBtn');
+      const newRequestBtn = document.getElementById('newRequestBtn');
+      
+      // Load saved data
+      loadSavedData();
+      
+      // Toast function
+      function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+          <span class="toast-icon">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+          <span class="toast-message">${message}</span>
+          <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+        `;
+        toastContainer.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+      }
+      
+      // Auto-save function
+      function saveProgress() {
+        localStorage.setItem('docRequestFormData', JSON.stringify(formData));
+        autosaveIndicator.classList.add('visible');
+        setTimeout(() => autosaveIndicator.classList.remove('visible'), 2000);
+      }
+      
+      // Load saved data
+      function loadSavedData() {
+        const saved = localStorage.getItem('docRequestFormData');
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            formData = { ...formData, ...parsed };
+            
+            // Restore form values
+            Object.keys(formData).forEach(key => {
+              const input = document.getElementById(key);
+              if (input) input.value = formData[key];
+            });
+            
+            // Restore document type selection
+            if (formData.requestType) {
+              documentCards.forEach(card => {
+                if (card.dataset.type === formData.requestType) {
+                  card.classList.add('selected');
+                }
+              });
+              document.getElementById('requestType').value = formData.requestType;
+              toStep2.disabled = false;
+            }
+            
+            // Restore copy count
+            copyCount.textContent = formData.numberOfCopies;
+            document.getElementById('numberOfCopies').value = formData.numberOfCopies;
+            
+            // Restore delivery method
+            if (formData.deliveryMethod) {
+              deliveryCards.forEach(card => {
+                if (card.dataset.method === formData.deliveryMethod) {
+                  card.classList.add('selected');
+                }
+              });
+              document.getElementById('deliveryMethod').value = formData.deliveryMethod;
+              toStep4.disabled = false;
+              updateRecipientSection();
+            }
+          } catch (e) {
+            console.error('Error loading saved data:', e);
+          }
+        }
+      }
+      
+      // Go to step
+      function goToStep(step) {
+        currentStep = step;
+        
+        // Update step indicators
+        steps.forEach((s, i) => {
+          s.classList.remove('active', 'completed');
+          if (i + 1 < step) s.classList.add('completed');
+          if (i + 1 === step) s.classList.add('active');
+        });
+        
+        // Show current step
+        formSteps.forEach(fs => {
+          fs.classList.remove('active');
+          if (parseInt(fs.dataset.step) === step) fs.classList.add('active');
+        });
+        
+        // Update review section if on step 4
+        if (step === 4) updateReviewSection();
+        
+        // Scroll to top
+        window.scrollTo({ top: 300, behavior: 'smooth' });
+      }
+      
+      // Document type selection
+      documentCards.forEach(card => {
+        card.addEventListener('click', function() {
+          documentCards.forEach(c => c.classList.remove('selected'));
+          this.classList.add('selected');
+          formData.requestType = this.dataset.type;
+          document.getElementById('requestType').value = formData.requestType;
+          toStep2.disabled = false;
+          saveProgress();
+        });
+      });
+      
+      // Copy counter
+      copyMinus.addEventListener('click', function() {
+        if (formData.numberOfCopies > 1) {
+          formData.numberOfCopies--;
+          copyCount.textContent = formData.numberOfCopies;
+          document.getElementById('numberOfCopies').value = formData.numberOfCopies;
+          saveProgress();
+        }
+      });
+      
+      copyPlus.addEventListener('click', function() {
+        if (formData.numberOfCopies < 10) {
+          formData.numberOfCopies++;
+          copyCount.textContent = formData.numberOfCopies;
+          document.getElementById('numberOfCopies').value = formData.numberOfCopies;
+          saveProgress();
+        }
+      });
+      
+      // Delivery method selection
+      deliveryCards.forEach(card => {
+        card.addEventListener('click', function() {
+          deliveryCards.forEach(c => c.classList.remove('selected'));
+          this.classList.add('selected');
+          formData.deliveryMethod = this.dataset.method;
+          document.getElementById('deliveryMethod').value = formData.deliveryMethod;
+          toStep4.disabled = false;
+          updateRecipientSection();
+          saveProgress();
+        });
+      });
+      
+      // Update recipient section visibility
+      function updateRecipientSection() {
+        const recipientSection = document.getElementById('recipientSection');
+        const faxField = document.getElementById('faxField');
+        
+        if (formData.deliveryMethod && formData.deliveryMethod !== 'Pick up') {
+          recipientSection.style.display = 'block';
+          faxField.style.display = formData.deliveryMethod === 'Fax' ? 'block' : 'none';
+        } else {
+          recipientSection.style.display = 'none';
+        }
+      }
+      
+      // Form input handlers
+      const formInputs = form.querySelectorAll('input, select');
+      formInputs.forEach(input => {
+        input.addEventListener('input', function() {
+          const key = this.id;
+          if (formData.hasOwnProperty(key)) {
+            formData[key] = this.value;
+            saveProgress();
+          }
+          
+          // Clear error state
+          this.classList.remove('error');
+          this.closest('.form-group')?.classList.remove('has-error');
+          
+          // Add success state if valid
+          if (this.value && this.checkValidity()) {
+            this.classList.add('success');
+        } else {
+            this.classList.remove('success');
+          }
+        });
+        
+        input.addEventListener('blur', function() {
+          if (this.required && !this.value) {
+            this.classList.add('error');
+            this.closest('.form-group')?.classList.add('has-error');
+          }
+        });
+      });
+      
+      // Validate step 2
+      function validateStep2() {
+        let valid = true;
+        const requiredFields = ['firstName', 'lastName', 'dateOfBirth', 'email', 'phone'];
+        
+        requiredFields.forEach(field => {
+          const input = document.getElementById(field);
+          if (!input.value) {
+            input.classList.add('error');
+            input.closest('.form-group')?.classList.add('has-error');
+            valid = false;
+          }
+        });
+        
+        // Email validation
+        const email = document.getElementById('email');
+        if (email.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+          email.classList.add('error');
+          email.closest('.form-group')?.classList.add('has-error');
+          valid = false;
+        }
+        
+        if (!valid) {
+          showToast('Please fill in all required fields', 'error');
+        }
+        
+        return valid;
+      }
+      
+      // Validate step 3
+      function validateStep3() {
+        if (!formData.deliveryMethod) {
+          showToast('Please select a delivery method', 'error');
+          return false;
+        }
+        
+        // Check fax number if fax delivery
+        if (formData.deliveryMethod === 'Fax') {
+          const fax = document.getElementById('recipientFax');
+          if (!fax.value) {
+            fax.classList.add('error');
+            fax.closest('.form-group')?.classList.add('has-error');
+            showToast('Please enter a fax number', 'error');
+            return false;
+          }
+        }
+        
+        return true;
+      }
+      
+      // Update review section
+      function updateReviewSection() {
+        // Document details
+        document.getElementById('reviewDocType').textContent = formData.requestType || '—';
+        document.getElementById('reviewCopies').textContent = formData.numberOfCopies;
+        document.getElementById('reviewTime').textContent = processingTimes[formData.requestType] || '—';
+        
+        // Student info
+        const fullName = [formData.firstName, formData.middleName, formData.lastName]
+          .filter(Boolean).join(' ');
+        document.getElementById('reviewName').textContent = fullName || '—';
+        document.getElementById('reviewDOB').textContent = formData.dateOfBirth ? 
+          new Date(formData.dateOfBirth).toLocaleDateString('en-JM', { 
+            year: 'numeric', month: 'long', day: 'numeric' 
+          }) : '—';
+        document.getElementById('reviewEmail').textContent = formData.email || '—';
+        document.getElementById('reviewPhone').textContent = formData.phone || '—';
+        
+        // Delivery
+        document.getElementById('reviewDelivery').textContent = formData.deliveryMethod || '—';
+        
+        const recipientItem = document.getElementById('reviewRecipientItem');
+        if (formData.recipientName && formData.deliveryMethod !== 'Pick up') {
+          recipientItem.style.display = 'flex';
+          document.getElementById('reviewRecipient').textContent = formData.recipientName;
+        } else {
+          recipientItem.style.display = 'none';
+        }
+      }
+      
+      // Navigation handlers
+      toStep2.addEventListener('click', () => goToStep(2));
+      toStep3.addEventListener('click', () => {
+        if (validateStep2()) goToStep(3);
+      });
+      toStep4.addEventListener('click', () => {
+        if (validateStep3()) goToStep(4);
+      });
+      backToStep1.addEventListener('click', () => goToStep(1));
+      backToStep2.addEventListener('click', () => goToStep(2));
+      backToStep3.addEventListener('click', () => goToStep(3));
+      
+      // Review edit buttons
+      document.querySelectorAll('.review-edit').forEach(btn => {
+        btn.addEventListener('click', function() {
+          goToStep(parseInt(this.dataset.goto));
+        });
+      });
+      
+      // Step indicator click
+      steps.forEach(step => {
+        step.addEventListener('click', function() {
+          const stepNum = parseInt(this.dataset.step);
+          if (stepNum < currentStep || this.classList.contains('completed')) {
+            goToStep(stepNum);
+          }
+        });
+      });
+      
+      // Form submission
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner"></span> Submitting...';
+        
+        const requestData = {
+          type: 'DOCUMENT',
+          title: `Request for ${formData.requestType}`,
+          description: `Request for ${formData.requestType} - ${formData.numberOfCopies} copy/copies via ${formData.deliveryMethod}`,
+          metadata: {
+            requestType: formData.requestType,
+            deliveryMethod: formData.deliveryMethod,
+            numberOfCopies: formData.numberOfCopies,
+            studentInfo: {
+              firstName: formData.firstName,
+              middleName: formData.middleName,
+              lastName: formData.lastName,
+              dateOfBirth: formData.dateOfBirth,
+              dateOfGraduation: formData.graduationDate || null,
+              phone: formData.phone,
+              email: formData.email,
+              address: {
+                street: formData.streetAddress,
+                town: formData.town,
+                parish: formData.parish
+              }
+            },
+            recipientInfo: {
+              name: formData.recipientName || null,
+              address: formData.recipientAddress || null,
+              phone: formData.recipientPhone || null,
+              fax: formData.recipientFax || null,
+              email: formData.recipientEmail || null
+            }
+          }
+        };
+        
+        try {
+          // Submit to API
+          if (window.apiClient && window.apiClient.submitPublicRequest) {
+          await window.apiClient.submitPublicRequest(
+            requestData.type,
+            requestData.title,
+            requestData.description,
+            requestData.metadata
+          );
+          }
+          
+          // Generate reference number
+          const refNum = 'YC-' + Date.now().toString().slice(-6);
+          document.getElementById('referenceNumber').textContent = refNum;
+          
+          // Clear saved data
+          localStorage.removeItem('docRequestFormData');
+          
+          // Show success screen
+          form.style.display = 'none';
+          document.querySelector('.step-indicator').style.display = 'none';
+          document.getElementById('successScreen').classList.add('active');
+          
+          showToast('Request submitted successfully!', 'success');
+          
+        } catch (error) {
+          showToast(error.message || 'Failed to submit request. Please try again.', 'error');
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Submit Request <span class="btn-icon">✓</span>';
+        }
+      });
+      
+      // New request button
+      newRequestBtn.addEventListener('click', function() {
+        // Reset form
+        form.reset();
+        formData = {
+          requestType: '',
+          numberOfCopies: 1,
+          deliveryMethod: '',
+          firstName: '',
+          middleName: '',
+          lastName: '',
+          dateOfBirth: '',
+          email: '',
+          phone: '',
+          graduationDate: '',
+          parish: '',
+          streetAddress: '',
+          town: '',
+          recipientName: '',
+          recipientEmail: '',
+          recipientAddress: '',
+          recipientPhone: '',
+          recipientFax: ''
+        };
+        
+        // Reset UI
+        documentCards.forEach(c => c.classList.remove('selected'));
+        deliveryCards.forEach(c => c.classList.remove('selected'));
+        copyCount.textContent = '1';
+        toStep2.disabled = true;
+        toStep4.disabled = true;
+        document.getElementById('recipientSection').style.display = 'none';
+        
+        // Show form
+        form.style.display = 'block';
+        document.querySelector('.step-indicator').style.display = 'flex';
+        document.getElementById('successScreen').classList.remove('active');
+        
+        // Reset submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Submit Request <span class="btn-icon">✓</span>';
+        
+        // Go to step 1
+        goToStep(1);
+      });
+      
+    });
+  </script>
+  
+  <!-- Sygnal Attributes 5 | User Accounts  -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sygnaltech/webflow-util@5.4.6/dist/css/webflow-membership.css">
+  <script defer="" src="https://cdn.jsdelivr.net/gh/sygnaltech/webflow-util@5.4.6/dist/nocode/webflow-membership.js"></script>
+  <script>
+window.sa5 = window.sa5 || [];
+window.sa5.push(['getMembershipConfig', 
+  (config) => {
+    return config;
+  }]);
+</script>
+</body>
+</html>

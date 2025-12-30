@@ -1,0 +1,157 @@
+.events-page {
+  padding: 0;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  margin: 0;
+  color: #1f2937;
+}
+
+.events-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.event-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s;
+}
+
+.event-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.event-card h3 {
+  margin: 0 0 12px;
+  color: #1f2937;
+  font-size: 1.25rem;
+}
+
+.event-card p {
+  color: #6b7280;
+  margin: 0 0 16px;
+  line-height: 1.6;
+}
+
+.event-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 16px;
+}
+
+.event-meta .public {
+  background-color: #d1fae5;
+  color: #065f46;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.event-meta .private {
+  background-color: #fef3c7;
+  color: #92400e;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.event-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-primary {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #2563eb;
+}
+
+.btn-secondary {
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: #4b5563;
+}
+
+.btn-edit {
+  background-color: #f3f4f6;
+  color: #374151;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+}
+
+.btn-edit:hover {
+  background-color: #e5e7eb;
+}
+
+.btn-delete {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+}
+
+.btn-delete:hover {
+  background-color: #fee2e2;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px;
+  background: white;
+  border-radius: 12px;
+  color: #6b7280;
+}
+
+.loading {
+  text-align: center;
+  padding: 48px;
+  color: #6b7280;
+}
+
+/* Form row for dates */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}

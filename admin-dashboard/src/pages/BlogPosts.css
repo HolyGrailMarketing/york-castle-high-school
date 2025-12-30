@@ -1,0 +1,141 @@
+.blog-posts-page {
+  padding: 0;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  margin: 0;
+  color: #1f2937;
+}
+
+.btn-primary {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #2563eb;
+}
+
+.btn-secondary {
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: #4b5563;
+}
+
+.posts-list {
+  display: grid;
+  gap: 20px;
+}
+
+.post-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s;
+}
+
+.post-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.post-card h3 {
+  margin: 0 0 12px;
+  color: #1f2937;
+  font-size: 1.25rem;
+}
+
+.post-excerpt {
+  color: #6b7280;
+  margin: 0 0 16px;
+  line-height: 1.6;
+}
+
+.post-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin-bottom: 16px;
+}
+
+.post-meta .published {
+  color: #10b981;
+  font-weight: 500;
+}
+
+.post-meta .draft {
+  color: #f59e0b;
+  font-weight: 500;
+}
+
+.post-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-edit {
+  background-color: #f3f4f6;
+  color: #374151;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+}
+
+.btn-edit:hover {
+  background-color: #e5e7eb;
+}
+
+.btn-delete {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+}
+
+.btn-delete:hover {
+  background-color: #fee2e2;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px;
+  background: white;
+  border-radius: 12px;
+  color: #6b7280;
+}
+
+.loading {
+  text-align: center;
+  padding: 48px;
+  color: #6b7280;
+}

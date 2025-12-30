@@ -1,0 +1,22 @@
+#!/bin/zsh
+# Quick fix script - run these commands
+
+echo "🔧 Quick Supabase Connection Fix"
+echo "================================="
+echo ""
+echo "Run these commands:"
+echo ""
+echo "1. Login:"
+echo "   npx supabase login"
+echo ""
+echo "2. Link project:"
+echo "   npx supabase link --project-ref lmixjefkbejoibldpioh"
+echo ""
+echo "3. Update .env with DATABASE_URL from:"
+echo "   https://supabase.com/dashboard/project/lmixjefkbejoibldpioh/settings/database"
+echo ""
+echo "4. Deploy:"
+echo "   npm run db:generate"
+echo "   npm run db:migrate"
+echo "   npm run db:seed"
+echo ""

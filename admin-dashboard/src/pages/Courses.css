@@ -1,0 +1,18 @@
+.courses-page {
+  max-width: 1400px;
+}
+
+.status-active {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.status-inactive {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+
+
+
+

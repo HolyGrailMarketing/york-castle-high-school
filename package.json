@@ -1,0 +1,32 @@
+{
+  "name": "york-castle-high-school",
+  "version": "1.0.0",
+  "description": "York Castle High School - Full Web Application",
+  "scripts": {
+    "setup": "npm run setup:backend && npm run setup:frontend",
+    "setup:backend": "cd backend && npm install",
+    "setup:frontend": "cd admin-dashboard && npm install",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd admin-dashboard && npm run dev",
+    "build": "npm run build:frontend",
+    "build:frontend": "cd admin-dashboard && npm run build",
+    "build:production": "NODE_ENV=production npm run build:frontend",
+    "start": "cd backend && npm start",
+    "start:production": "NODE_ENV=production cd backend && npm start",
+    "db:migrate": "cd backend && npm run prisma:migrate",
+    "db:seed": "cd backend && npm run prisma:seed",
+    "db:studio": "cd backend && npm run prisma:studio"
+  },
+  "keywords": [
+    "school",
+    "management",
+    "education"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
+
