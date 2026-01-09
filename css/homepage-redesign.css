@@ -209,10 +209,10 @@
   align-items: center;
   gap: var(--spacing-xs);
   background: var(--ychs-gold);
-  color: var(--ychs-black);
+  color: var(--ychs-charcoal);
   padding: var(--spacing-md) var(--spacing-lg);
   border-radius: var(--radius-md);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 1rem;
   transition: var(--transition-medium);
   border: 2px solid var(--ychs-gold);
@@ -225,33 +225,32 @@
   box-shadow: var(--shadow-gold);
 }
 
+
 .btn-secondary {
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-xs);
-  background: rgba(255, 255, 255, 0.15);
-  color: var(--ychs-white);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--ychs-charcoal);
   padding: var(--spacing-md) var(--spacing-lg);
   border-radius: var(--radius-md);
   font-weight: 600;
   font-size: 1rem;
   transition: var(--transition-medium);
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  border: 2px solid var(--ychs-white);
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--ychs-white);
   border-color: var(--ychs-white);
   transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
 }
 
 /* Scroll indicator */
 .scroll-indicator {
   position: absolute;
-  bottom: var(--spacing-lg);
+  bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -263,6 +262,22 @@
   text-transform: uppercase;
   letter-spacing: 2px;
   animation: bounce 2s infinite;
+  z-index: 10;
+}
+
+/* Ensure scroll indicator stays at bottom on all breakpoints */
+@media (max-width: 768px) {
+  .scroll-indicator {
+    bottom: 1.5rem;
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .scroll-indicator {
+    bottom: 1rem;
+    font-size: 0.6rem;
+  }
 }
 
 .scroll-indicator .mouse {
