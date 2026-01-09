@@ -187,10 +187,20 @@ app.use('/fonts', express.static(path.join(projectRoot, 'fonts'), staticOptions)
 app.use('/videos', express.static(path.join(projectRoot, 'videos'), staticOptions));
 app.use('/documents', express.static(path.join(projectRoot, 'documents'), staticOptions));
 
+// Explicitly serve index.html for root route
+app.get('/', (req, res) => {
+  const indexPath = path.join(projectRoot, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).json({ error: 'Homepage not found' });
+  }
+});
+
 // Serve static HTML pages from root (index.html, etc.)
 app.use(express.static(projectRoot, {
   extensions: ['html'],
-  index: 'index.html',
+  index: false, // We handle index.html explicitly above
 }));
 
 // Error handling middleware (must be last)
