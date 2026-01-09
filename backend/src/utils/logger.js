@@ -5,12 +5,25 @@ import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const projectRoot = path.join(__dirname, '../../');
+// Use PROJECT_ROOT if set (for Vercel), otherwise calculate
+const projectRoot = process.env.PROJECT_ROOT || path.join(__dirname, '../../');
 
-// Create logs directory if it doesn't exist
-const logsDir = path.join(projectRoot, 'logs');
-if (!fs.existsSync(logsDir)) {
-  fs.mkdirSync(logsDir, { recursive: true });
+// Check if we're in a serverless environment (Vercel)
+const isServerless = process.env.VERCEL === '1' || process.env.VERCEL_ENV || process.env.AWS_LAMBDA_FUNCTION_NAME;
+
+// Create logs directory if it doesn't exist (only in non-serverless environments)
+let logsDir = null;
+if (!isServerless) {
+  logsDir = path.join(projectRoot, 'logs');
+  try {
+    if (!fs.existsSync(logsDir)) {
+      fs.mkdirSync(logsDir, { recursive: true });
+    }
+  } catch (err) {
+    // If we can't create logs directory, just log to console
+    console.warn('Could not create logs directory:', err.message);
+    logsDir = null;
+  }
 }
 
 // Define log format
@@ -35,11 +48,18 @@ const consoleFormat = winston.format.combine(
 );
 
 // Create logger instance
-const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
-  format: logFormat,
-  defaultMeta: { service: 'york-castle-api' },
-  transports: [
+const transports = [];
+
+// In serverless mode, only use console transport
+if (isServerless || !logsDir) {
+  transports.push(
+    new winston.transports.Console({
+      format: consoleFormat,
+    })
+  );
+} else {
+  // In non-serverless mode, use file transports
+  transports.push(
     // Write all logs to combined.log
     new winston.transports.File({
       filename: path.join(logsDir, 'combined.log'),
@@ -52,27 +72,50 @@ const logger = winston.createLogger({
       level: 'error',
       maxsize: 5242880, // 5MB
       maxFiles: 5,
-    }),
-  ],
-  exceptionHandlers: [
+    })
+  );
+  
+  // Add console transport for development
+  if (process.env.NODE_ENV !== 'production') {
+    transports.push(
+      new winston.transports.Console({
+        format: consoleFormat,
+      })
+    );
+  }
+}
+
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
+  format: logFormat,
+  defaultMeta: { service: 'york-castle-api' },
+  transports: transports,
+});
+
+// Add exception and rejection handlers (only if we can write files)
+if (!isServerless && logsDir) {
+  logger.exceptionHandlers = [
     new winston.transports.File({
       filename: path.join(logsDir, 'exceptions.log'),
     }),
-  ],
-  rejectionHandlers: [
+  ];
+  logger.rejectionHandlers = [
     new winston.transports.File({
       filename: path.join(logsDir, 'rejections.log'),
     }),
-  ],
-});
-
-// Add console transport for non-production environments
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(
+  ];
+} else {
+  // In serverless, log exceptions/rejections to console
+  logger.exceptionHandlers = [
     new winston.transports.Console({
       format: consoleFormat,
-    })
-  );
+    }),
+  ];
+  logger.rejectionHandlers = [
+    new winston.transports.Console({
+      format: consoleFormat,
+    }),
+  ];
 }
 
 // Helper function to generate request ID
