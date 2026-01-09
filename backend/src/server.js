@@ -30,8 +30,15 @@ import { initEmailService } from './services/emailService.js';
 
 // Load environment variables
 // In Vercel, env vars are provided directly, but we still try to load .env for local dev
-const projectRoot = process.env.PROJECT_ROOT || path.join(path.dirname(fileURLToPath(import.meta.url)), '../../');
-dotenv.config({ path: path.join(projectRoot, 'backend/.env') });
+// Calculate project root for dotenv (will be recalculated later for consistency)
+const __filenameForEnv = fileURLToPath(import.meta.url);
+const __dirnameForEnv = path.dirname(__filenameForEnv);
+const envProjectRoot = process.env.PROJECT_ROOT || path.join(__dirnameForEnv, '../../');
+try {
+  dotenv.config({ path: path.join(envProjectRoot, 'backend/.env') });
+} catch (err) {
+  // Ignore if .env file doesn't exist (Vercel provides env vars directly)
+}
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
