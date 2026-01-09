@@ -325,15 +325,43 @@ app.use('/videos', express.static(path.join(projectRoot, 'videos'), staticOption
 app.use('/documents', express.static(path.join(projectRoot, 'documents'), staticOptions));
 
 // Serve other HTML pages (but not index.html - we handle that above)
-// Skip admin and backend paths
-app.get('*.html', (req, res, next) => {
+// Using regex pattern to match any path ending with .html
+app.get(/^\/[^/]+\.html$/, (req, res, next) => {
+  // Skip admin and backend paths
   if (req.path.startsWith('/admin') || req.path.startsWith('/backend')) {
     return next();
   }
   const htmlPath = path.join(projectRoot, req.path);
-  if (fs.existsSync(htmlPath) && htmlPath.endsWith('.html') && !htmlPath.includes('admin-dashboard') && !htmlPath.includes('backend')) {
+  logger.info('HTML route matched', { path: req.path, htmlPath, exists: fs.existsSync(htmlPath) });
+  if (fs.existsSync(htmlPath) && !htmlPath.includes('admin-dashboard') && !htmlPath.includes('backend')) {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.sendFile(htmlPath);
+    res.sendFile(htmlPath, (err) => {
+      if (err) {
+        logger.error('Error serving HTML file', { error: err.message, path: htmlPath });
+        next(err);
+      }
+    });
+  } else {
+    logger.warn('HTML file not found', { path: req.path, htmlPath });
+    next();
+  }
+});
+
+// Also handle HTML files in subdirectories (like dashboard/dashboard.html)
+app.get(/^\/.*\.html$/, (req, res, next) => {
+  // Skip admin and backend paths
+  if (req.path.startsWith('/admin') || req.path.startsWith('/backend')) {
+    return next();
+  }
+  const htmlPath = path.join(projectRoot, req.path);
+  if (fs.existsSync(htmlPath) && !htmlPath.includes('admin-dashboard') && !htmlPath.includes('backend')) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.sendFile(htmlPath, (err) => {
+      if (err) {
+        logger.error('Error serving HTML file (subdir)', { error: err.message, path: htmlPath });
+        next(err);
+      }
+    });
   } else {
     next();
   }
