@@ -233,6 +233,8 @@
   font-size: 11px;
   font-weight: 600;
   color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .provider-badge {
@@ -243,9 +245,6 @@
   background: #f0f0f0;
   color: #5f6368;
   border: 1px solid #dadce0;
-}
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .user-phone {
