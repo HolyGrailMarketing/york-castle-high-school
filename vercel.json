@@ -1,6 +1,6 @@
 {
   "buildCommand": "npm run build",
-  "installCommand": "npm install",
+  "installCommand": "npm install && cd admin-dashboard && npm install",
   "devCommand": "npm run dev",
   "framework": null,
   "outputDirectory": "admin-dashboard/dist"
