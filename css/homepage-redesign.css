@@ -250,7 +250,7 @@
 /* Scroll indicator */
 .scroll-indicator {
   position: absolute;
-  bottom: 2rem;
+  bottom: 40px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -261,22 +261,28 @@
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 2px;
-  animation: bounce 2s infinite;
   z-index: 10;
+  animation: bounce 2s infinite;
 }
 
 /* Ensure scroll indicator stays at bottom on all breakpoints */
+@media (max-width: 1024px) {
+  .scroll-indicator {
+    bottom: 30px;
+  }
+}
+
 @media (max-width: 768px) {
   .scroll-indicator {
-    bottom: 1.5rem;
-    font-size: 0.65rem;
+    bottom: 20px;
+    font-size: 0.7rem;
   }
 }
 
 @media (max-width: 480px) {
   .scroll-indicator {
-    bottom: 1rem;
-    font-size: 0.6rem;
+    bottom: 15px;
+    font-size: 0.65rem;
   }
 }
 
@@ -307,8 +313,12 @@
 }
 
 @keyframes bounce {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50% { transform: translateX(-50%) translateY(8px); }
+  0%, 100% { 
+    transform: translate(-50%, 0);
+  }
+  50% { 
+    transform: translate(-50%, 8px);
+  }
 }
 
 /* ============================================
