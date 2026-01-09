@@ -7,6 +7,8 @@
       "config": {
         "includeFiles": [
           "backend/**",
+          "node_modules/.prisma/**",
+          "node_modules/@prisma/**",
           "admin-dashboard/dist/**",
           "index.html",
           "*.html",
@@ -26,5 +28,5 @@
       "dest": "/api/index.mjs"
     }
   ],
-  "installCommand": "npm install && cd admin-dashboard && npm install && npm run build && cd ../backend && npm run prisma:generate"
+  "installCommand": "npm install && cd admin-dashboard && npm install && npm run build && cd ../backend && npm install && npx prisma generate && cd .."
 }
