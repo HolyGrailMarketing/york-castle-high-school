@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import os from 'os';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import compression from 'compression';
@@ -164,8 +165,22 @@ app.use(passport.initialize());
 // Request logging middleware
 app.use(requestLogger);
 
-// Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Serve uploaded files (only in non-serverless environments)
+// In serverless, files should be stored in cloud storage (S3, etc.) and served via CDN
+const isServerless = process.env.VERCEL === '1' || process.env.VERCEL_ENV || process.env.AWS_LAMBDA_FUNCTION_NAME;
+if (!isServerless) {
+  const uploadsPath = path.join(__dirname, '../uploads');
+  // Only serve if directory exists
+  if (fs.existsSync(uploadsPath)) {
+    app.use('/uploads', express.static(uploadsPath));
+  }
+} else {
+  // In serverless, serve from /tmp if needed (temporary files)
+  const tmpUploadsPath = path.join(os.tmpdir(), 'uploads');
+  if (fs.existsSync(tmpUploadsPath)) {
+    app.use('/uploads', express.static(tmpUploadsPath));
+  }
+}
 
 // API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

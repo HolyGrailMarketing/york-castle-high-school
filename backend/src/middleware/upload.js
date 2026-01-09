@@ -2,14 +2,31 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import os from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, '../../uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+// Check if we're in a serverless environment (Vercel)
+const isServerless = process.env.VERCEL === '1' || process.env.VERCEL_ENV || process.env.AWS_LAMBDA_FUNCTION_NAME;
+
+// Use /tmp for uploads in serverless environments (Vercel allows writes to /tmp)
+// Otherwise use the project uploads directory
+const uploadsDir = isServerless 
+  ? path.join(os.tmpdir(), 'uploads')
+  : path.join(__dirname, '../../uploads');
+
+// Ensure uploads directory exists (only if not serverless or if using /tmp)
+if (!isServerless || uploadsDir.startsWith(os.tmpdir())) {
+  try {
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+  } catch (err) {
+    // If we can't create the directory, log warning but continue
+    // In serverless, /tmp should always be writable
+    console.warn('Could not create uploads directory:', err.message);
+  }
 }
 
 const storage = multer.diskStorage({
