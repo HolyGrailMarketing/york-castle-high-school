@@ -3,7 +3,21 @@
   "builds": [
     {
       "src": "api/index.mjs",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "backend/**",
+          "admin-dashboard/dist/**",
+          "index.html",
+          "*.html",
+          "css/**",
+          "js/**",
+          "images/**",
+          "fonts/**",
+          "videos/**",
+          "documents/**"
+        ]
+      }
     }
   ],
   "routes": [
@@ -12,5 +26,5 @@
       "dest": "/api/index.mjs"
     }
   ],
-  "installCommand": "npm install && cd admin-dashboard && npm install && npm run build && cd ../backend && npm install"
+  "installCommand": "npm install && cd admin-dashboard && npm install && npm run build && cd ../backend && npm install && npm run prisma:generate"
 }
