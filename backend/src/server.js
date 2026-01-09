@@ -159,6 +159,33 @@ app.use('/api/documents', documentRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
+// CRITICAL: Serve root index.html FIRST, before any static middleware
+// This ensures the correct file is served and prevents admin dashboard from being served at root
+app.get('/', (req, res) => {
+  const indexPath = path.resolve(projectRoot, 'index.html');
+  
+  if (fs.existsSync(indexPath)) {
+    // Verify it's the correct file by checking content
+    const fileContent = fs.readFileSync(indexPath, 'utf8');
+    if (fileContent.includes('data-wf-page') || fileContent.includes('York Castle High School Home Page')) {
+      logger.info('Serving root index.html', { path: indexPath });
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.sendFile(indexPath, (err) => {
+        if (err) {
+          logger.error('Error serving index.html', { error: err.message, path: indexPath });
+          res.status(500).json({ error: 'Error serving homepage' });
+        }
+      });
+    } else {
+      logger.error('Wrong index.html detected - might be admin dashboard', { path: indexPath });
+      res.status(500).json({ error: 'Configuration error' });
+    }
+  } else {
+    logger.error('index.html not found', { path: indexPath, projectRoot });
+    res.status(404).json({ error: 'Homepage not found' });
+  }
+});
+
 // Serve static files with caching headers (define before use)
 const staticOptions = {
   maxAge: NODE_ENV === 'production' ? '1y' : '0',
@@ -180,43 +207,13 @@ if (fs.existsSync(adminDistPath)) {
   logger.info('Admin dashboard static files enabled', { path: adminDistPath });
 }
 
-// Serve static assets first (CSS, JS, images, etc.)
+// Serve static assets (CSS, JS, images, etc.)
 app.use('/css', express.static(path.join(projectRoot, 'css'), staticOptions));
 app.use('/js', express.static(path.join(projectRoot, 'js'), staticOptions));
 app.use('/images', express.static(path.join(projectRoot, 'images'), staticOptions));
 app.use('/fonts', express.static(path.join(projectRoot, 'fonts'), staticOptions));
 app.use('/videos', express.static(path.join(projectRoot, 'videos'), staticOptions));
 app.use('/documents', express.static(path.join(projectRoot, 'documents'), staticOptions));
-
-// Explicitly serve root index.html FIRST (before static middleware that might serve wrong file)
-// This MUST come before any static middleware to ensure correct file is served
-app.get('/', (req, res) => {
-  // Use absolute path to ensure we get the root index.html, not admin-dashboard one
-  const indexPath = path.resolve(projectRoot, 'index.html');
-  const adminIndexPath = path.resolve(projectRoot, 'admin-dashboard', 'dist', 'index.html');
-  
-  // Double-check we're not accidentally serving admin dashboard
-  if (fs.existsSync(indexPath)) {
-    // Verify it's the correct file by checking first few bytes
-    const fileContent = fs.readFileSync(indexPath, 'utf8');
-    if (fileContent.includes('data-wf-page') || fileContent.includes('York Castle High School Home Page')) {
-      logger.info('Serving root index.html', { path: indexPath });
-      res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      res.sendFile(indexPath, (err) => {
-        if (err) {
-          logger.error('Error serving index.html', { error: err.message, path: indexPath });
-          res.status(500).json({ error: 'Error serving homepage' });
-        }
-      });
-    } else {
-      logger.error('Wrong index.html detected - might be admin dashboard', { path: indexPath });
-      res.status(500).json({ error: 'Configuration error' });
-    }
-  } else {
-    logger.error('index.html not found', { path: indexPath, projectRoot });
-    res.status(404).json({ error: 'Homepage not found' });
-  }
-});
 
 // Serve other HTML pages (but not index.html - we handle that above)
 // Skip admin and backend paths
