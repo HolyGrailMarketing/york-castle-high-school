@@ -181,28 +181,31 @@ app.use('/api/analytics', analyticsRoutes);
 // CRITICAL: Serve root index.html FIRST, before any static middleware
 // This ensures the correct file is served and prevents admin dashboard from being served at root
 app.get('/', (req, res, next) => {
-  // Use path.resolve to get absolute path and prevent any path manipulation
-  const indexPath = path.resolve(projectRoot, 'index.html');
-  
-  // Explicitly check that the path is NOT in admin-dashboard
-  if (indexPath.includes('admin-dashboard') || indexPath.includes('admin-dashboard')) {
-    logger.error('ERROR: Root route trying to serve admin-dashboard file!', { indexPath, projectRoot });
-    return res.status(500).json({ error: 'Configuration error' });
-  }
-  
-  if (!fs.existsSync(indexPath)) {
-    logger.error('index.html not found', { path: indexPath, projectRoot });
-    return res.status(404).json({ error: 'Homepage not found' });
-  }
-  
-  // Verify it's the correct file by checking content
-  let fileContent;
   try {
-    fileContent = fs.readFileSync(indexPath, 'utf8');
-  } catch (err) {
-    logger.error('Error reading index.html', { error: err.message, path: indexPath });
-    return res.status(500).json({ error: 'Error reading homepage' });
-  }
+    // Use path.resolve to get absolute path and prevent any path manipulation
+    const indexPath = path.resolve(projectRoot, 'index.html');
+    
+    logger.info('Root route handler', { indexPath, projectRoot, vercel: !!process.env.VERCEL });
+    
+    // Explicitly check that the path is NOT in admin-dashboard
+    if (indexPath.includes('admin-dashboard')) {
+      logger.error('ERROR: Root route trying to serve admin-dashboard file!', { indexPath, projectRoot });
+      return res.status(500).json({ error: 'Configuration error' });
+    }
+    
+    if (!fs.existsSync(indexPath)) {
+      logger.error('index.html not found', { path: indexPath, projectRoot, cwd: process.cwd() });
+      return res.status(404).json({ error: 'Homepage not found', path: indexPath });
+    }
+    
+    // Verify it's the correct file by checking content
+    let fileContent;
+    try {
+      fileContent = fs.readFileSync(indexPath, 'utf8');
+    } catch (err) {
+      logger.error('Error reading index.html', { error: err.message, stack: err.stack, path: indexPath });
+      return res.status(500).json({ error: 'Error reading homepage', message: err.message });
+    }
   
   // Check for main site indicators (must have these)
   const hasWfPage = fileContent.includes('data-wf-page');
