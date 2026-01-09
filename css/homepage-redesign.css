@@ -95,6 +95,11 @@
   background: var(--ychs-black);
 }
 
+/* Ensure scroll indicator is positioned relative to hero section */
+.hero-redesign > .scroll-indicator {
+  position: absolute;
+}
+
 .hero-video-bg {
   position: absolute;
   top: 0;
@@ -249,9 +254,11 @@
 
 /* Scroll indicator */
 .scroll-indicator {
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
+  position: absolute !important;
+  bottom: 40px !important;
+  left: 50% !important;
+  top: auto !important;
+  right: auto !important;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
@@ -263,25 +270,31 @@
   letter-spacing: 2px;
   z-index: 10;
   animation: bounce 2s infinite;
+  pointer-events: none;
+  width: auto;
+  height: auto;
 }
 
 /* Ensure scroll indicator stays at bottom on all breakpoints */
 @media (max-width: 1024px) {
   .scroll-indicator {
-    bottom: 30px;
+    bottom: 30px !important;
+    top: auto !important;
   }
 }
 
 @media (max-width: 768px) {
   .scroll-indicator {
-    bottom: 20px;
+    bottom: 20px !important;
+    top: auto !important;
     font-size: 0.7rem;
   }
 }
 
 @media (max-width: 480px) {
   .scroll-indicator {
-    bottom: 15px;
+    bottom: 15px !important;
+    top: auto !important;
     font-size: 0.65rem;
   }
 }
@@ -314,10 +327,10 @@
 
 @keyframes bounce {
   0%, 100% { 
-    transform: translate(-50%, 0);
+    transform: translateX(-50%) translateY(0);
   }
   50% { 
-    transform: translate(-50%, 8px);
+    transform: translateX(-50%) translateY(8px);
   }
 }
 
