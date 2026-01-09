@@ -20,11 +20,19 @@ const optionalEnvVars = {
 export const validateEnvironment = () => {
   const errors = [];
   const warnings = [];
+  
+  // In serverless mode (Vercel), be more lenient - env vars might be set at runtime
+  const isServerless = process.env.VERCEL === '1' || process.env.VERCEL_ENV || process.env.AWS_LAMBDA_FUNCTION_NAME;
 
   // Check required variables
   for (const varName of requiredEnvVars) {
     if (!process.env[varName]) {
-      errors.push(`Missing required environment variable: ${varName}`);
+      if (isServerless) {
+        // In serverless, make it a warning instead of error
+        warnings.push(`Missing environment variable: ${varName} (may be set at runtime)`);
+      } else {
+        errors.push(`Missing required environment variable: ${varName}`);
+      }
     }
   }
 

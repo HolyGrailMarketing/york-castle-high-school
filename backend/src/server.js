@@ -59,14 +59,21 @@ process.on('uncaughtException', (error) => {
 });
 
 // Validate environment variables on startup
+// Wrap in try-catch and make it non-fatal in serverless
 try {
   validateEnvironment();
   logger.info('Environment validation passed');
 } catch (error) {
-  logger.error('Environment validation failed', { error: error.message });
-  // Don't exit in serverless mode - let Vercel handle it
-  if (!process.env.VERCEL && !process.env.VERCEL_ENV) {
-    process.exit(1);
+  // In serverless, just log the error but don't crash
+  const isServerless = process.env.VERCEL === '1' || process.env.VERCEL_ENV;
+  if (isServerless) {
+    console.error('Environment validation failed (non-fatal in serverless):', error.message);
+    logger.warn('Environment validation failed (continuing in serverless mode)', { error: error.message });
+  } else {
+    logger.error('Environment validation failed', { error: error.message });
+    if (!process.env.VERCEL && !process.env.VERCEL_ENV) {
+      process.exit(1);
+    }
   }
 }
 
