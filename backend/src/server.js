@@ -175,17 +175,27 @@ app.get('/', (req, res) => {
     // Verify it's the correct file by checking content
     const fileContent = fs.readFileSync(indexPath, 'utf8');
     
-    // Check for main site indicators
-    const isMainSite = fileContent.includes('data-wf-page') || 
-                      fileContent.includes('York Castle High School Home Page') ||
-                      fileContent.includes('data-wf-site');
+    // Check for main site indicators (must have these)
+    const hasWfPage = fileContent.includes('data-wf-page');
+    const hasWfSite = fileContent.includes('data-wf-site');
+    const hasHomePage = fileContent.includes('York Castle High School Home Page');
     
-    // Check that it's NOT admin dashboard
-    const isAdminDashboard = fileContent.includes('Admin Portal') ||
-                            fileContent.includes('/admin/assets/') ||
-                            fileContent.includes('id="root"');
+    // Check that it's NOT admin dashboard (must NOT have these)
+    const hasAdminAssets = fileContent.includes('/admin/assets/');
+    const hasAdminPortal = fileContent.includes('Admin Portal');
+    const hasRootDiv = fileContent.includes('<div id="root">');
+    const hasLangEn = fileContent.includes('<html lang="en">');
+    const hasReactRoot = fileContent.includes('id="root"');
     
-    if (isMainSite && !isAdminDashboard) {
+    // Main site must have webflow attributes and NOT have admin dashboard indicators
+    const isMainSite = (hasWfPage || hasWfSite || hasHomePage) && 
+                      !hasAdminAssets && 
+                      !hasAdminPortal && 
+                      !hasRootDiv && 
+                      !hasLangEn &&
+                      !hasReactRoot;
+    
+    if (isMainSite) {
       logger.info('Serving root index.html', { path: indexPath });
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       res.sendFile(indexPath, (err) => {
@@ -195,13 +205,22 @@ app.get('/', (req, res) => {
         }
       });
     } else {
-      logger.error('Wrong index.html detected', { 
+      logger.error('Wrong index.html detected - REJECTING (admin dashboard detected)', { 
         path: indexPath, 
-        isMainSite, 
-        isAdminDashboard,
-        firstChars: fileContent.substring(0, 200)
+        hasWfPage,
+        hasWfSite,
+        hasHomePage,
+        hasAdminAssets,
+        hasAdminPortal,
+        hasRootDiv,
+        hasLangEn,
+        firstChars: fileContent.substring(0, 300)
       });
-      res.status(500).json({ error: 'Configuration error - wrong file being served' });
+      // Don't serve the wrong file - return error instead
+      res.status(500).json({ 
+        error: 'Configuration error - wrong file being served',
+        message: 'The root route attempted to serve admin dashboard HTML. This should not happen.'
+      });
     }
   } else {
     logger.error('index.html not found', { path: indexPath, projectRoot });
