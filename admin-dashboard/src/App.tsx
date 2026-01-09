@@ -15,8 +15,8 @@ import Requests from './pages/Requests';
 import Analytics from './pages/Analytics';
 
 function App() {
-  // Use /admin as base path in production
-  const basename = import.meta.env.PROD ? '/admin' : '/';
+  // Always use /admin as base path since we're served from the backend
+  const basename = '/admin';
   
   return (
     <AuthProvider>
@@ -32,6 +32,7 @@ function App() {
           <Route path="/index.html" element={<Navigate to="/" replace />} />
           
           <Route path="/login" element={<Login />} />
+          <Route path="/auth/callback" element={<Login />} />
           <Route
             path="/"
             element={

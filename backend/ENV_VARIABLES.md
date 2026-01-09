@@ -53,30 +53,32 @@ JWT_SECRET=your-super-secret-jwt-key-change-this-in-production-min-32-chars
 CORS_ORIGIN=http://localhost:5173,http://localhost:3000
 
 # ============================================
-# EMAIL CONFIGURATION (Optional)
+# EMAIL CONFIGURATION (Optional - Resend)
 # ============================================
 # Configure these if you want email notifications to work
 # Leave empty if email features are not needed
+# Sign up at https://resend.com to get your API key
 
-# SMTP Host
-# Example: smtp.gmail.com, smtp.sendgrid.net
-SMTP_HOST=
+# Resend API Key
+# Get your API key from: https://resend.com/api-keys
+# Example: re_1234567890abcdef
+RESEND_API_KEY=
 
-# SMTP Port
-# Common ports: 587 (TLS), 465 (SSL), 25
-SMTP_PORT=587
+# Resend From Email Address
+# Must be a verified domain in your Resend account
+# Example: noreply@yorkcastlehighschool.org
+# Alternative: You can use EMAIL_FROM instead
+RESEND_FROM_EMAIL=noreply@yorkcastlehighschool.org
 
-# SMTP Username
-# Your email account username
-SMTP_USER=
+# Alternative From Email (if RESEND_FROM_EMAIL is not set)
+EMAIL_FROM=noreply@yorkcastlehighschool.org
 
-# SMTP Password
-# Your email account password or app-specific password
-SMTP_PASS=
-
-# SMTP From Address
-# Email address to send from
-SMTP_FROM=noreply@yorkcastle.edu.jm
+# Frontend/App URL (for invitation emails and OAuth callbacks)
+# This should match your production domain
+# Example: https://yorkcastlehighschool.org
+FRONTEND_URL=https://yorkcastlehighschool.org
+# or
+APP_URL=https://yorkcastlehighschool.org
 
 # ============================================
 # LOGGING (Optional)
@@ -119,11 +121,10 @@ LOG_LEVEL=debug
 ### Optional Variables
 
 - **CORS_ORIGIN**: Comma-separated list of allowed origins for CORS
-- **SMTP_HOST**: SMTP server hostname for email
-- **SMTP_PORT**: SMTP server port (587 for TLS, 465 for SSL)
-- **SMTP_USER**: SMTP authentication username
-- **SMTP_PASS**: SMTP authentication password
-- **SMTP_FROM**: Email address to send from
+- **RESEND_API_KEY**: Resend API key for sending emails (get from https://resend.com/api-keys)
+- **RESEND_FROM_EMAIL**: Verified email address to send from (must be verified in Resend, e.g., `noreply@yorkcastlehighschool.org`)
+- **EMAIL_FROM**: Alternative from email address (used if RESEND_FROM_EMAIL is not set)
+- **FRONTEND_URL** or **APP_URL**: Production URL for invitation emails and OAuth callbacks (e.g., `https://yorkcastlehighschool.org`)
 - **LOG_LEVEL**: Logging level (error, warn, info, debug)
 
 ## Validation

@@ -1,10 +1,79 @@
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
 import { generateToken } from '../utils/jwt.js';
+import { validateEmailDomain, isAllowedDomain } from '../utils/domainValidator.js';
+import passport from 'passport';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 
 const prisma = new PrismaClient({
   log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
 });
+
+// Configure Google OAuth Strategy (only if credentials are provided)
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: process.env.GOOGLE_CALLBACK_URL || '/api/auth/google/callback',
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          const email = profile.emails?.[0]?.value;
+          const name = profile.displayName || profile.name?.givenName + ' ' + profile.name?.familyName;
+          const picture = profile.photos?.[0]?.value;
+          const providerId = profile.id;
+
+          if (!email) {
+            return done(new Error('No email found in Google profile'), null);
+          }
+
+          // Validate domain
+          if (!isAllowedDomain(email)) {
+            return done(new Error('Email domain not allowed'), null);
+          }
+
+          // Check if user exists (must be pre-created by admin)
+          const user = await prisma.user.findUnique({
+            where: { email },
+          });
+
+          if (!user) {
+            return done(new Error('User account not found. Please contact your administrator.'), null);
+          }
+
+          // Update user with Google info if not already set
+          const updatedUser = await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              providerId: providerId || user.providerId,
+              picture: picture || user.picture,
+              name: name || user.name,
+            },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              role: true,
+              phone: true,
+              provider: true,
+              providerId: true,
+              picture: true,
+              createdAt: true,
+            },
+          });
+
+          return done(null, updatedUser);
+        } catch (error) {
+          return done(error, null);
+        }
+      }
+    )
+  );
+} else {
+  console.warn('⚠️  Google OAuth credentials not configured. Google Sign-In will not be available.');
+}
 
 export const register = async (req, res, next) => {
   try {
@@ -81,7 +150,22 @@ export const login = async (req, res, next) => {
       });
     }
 
-    // Verify password
+    // Check if user is OAuth-only (no password)
+    if (user.provider === 'GOOGLE' && !user.password) {
+      return res.status(401).json({
+        error: 'Invalid credentials',
+        message: 'This account uses Google Sign-In. Please sign in with Google.',
+      });
+    }
+
+    // Verify password (only for EMAIL provider users)
+    if (!user.password) {
+      return res.status(401).json({
+        error: 'Invalid credentials',
+        message: 'Email or password is incorrect',
+      });
+    }
+
     const isValidPassword = await bcrypt.compare(password, user.password);
 
     if (!isValidPassword) {
@@ -124,4 +208,56 @@ export const getMe = async (req, res) => {
   res.json({
     user: req.user,
   });
+};
+
+// Google OAuth handlers
+export const googleAuth = (req, res, next) => {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    return res.status(503).json({
+      error: 'Google OAuth not configured',
+      message: 'Google Sign-In is not available. Please configure Google OAuth credentials.',
+    });
+  }
+  return passport.authenticate('google', {
+    scope: ['profile', 'email'],
+  })(req, res, next);
+};
+
+export const googleCallback = async (req, res, next) => {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    return res.status(503).json({
+      error: 'Google OAuth not configured',
+      message: 'Google Sign-In is not available. Please configure Google OAuth credentials.',
+    });
+  }
+  
+  passport.authenticate('google', { session: false }, async (err, user, info) => {
+    if (err) {
+      return res.status(401).json({
+        error: 'Authentication failed',
+        message: err.message || 'Google authentication failed',
+      });
+    }
+
+    if (!user) {
+      return res.status(401).json({
+        error: 'Authentication failed',
+        message: info?.message || 'Failed to authenticate with Google',
+      });
+    }
+
+    try {
+      // Generate JWT token
+      const token = generateToken(user.id);
+
+      // Redirect to frontend with token
+      // Since we're serving from the same server, use relative path
+      const protocol = req.protocol;
+      const host = req.get('host');
+      const baseUrl = `${protocol}://${host}`;
+      res.redirect(`${baseUrl}/admin/auth/callback?token=${token}`);
+    } catch (error) {
+      next(error);
+    }
+  })(req, res, next);
 };

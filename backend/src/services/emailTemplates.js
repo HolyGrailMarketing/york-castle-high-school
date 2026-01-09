@@ -242,6 +242,59 @@ export const templates = {
       text: `Welcome to York Castle High School\n\nDear ${name},\n\nWelcome to the York Castle High School portal!\n\nYour Account:\nEmail: ${email}\nRole: ${role}\n\nBest regards,\nYork Castle High School`,
     };
   },
+
+  /**
+   * Invitation email for newly created users
+   */
+  invitation: (name, email, role, authMethod, loginUrl) => {
+    const isOAuth = authMethod === 'GOOGLE';
+    const loginInstructions = isOAuth
+      ? `
+        <div class="highlight">
+          <p><strong>Sign In with Google:</strong></p>
+          <p>Your account has been set up to use Google Sign-In. Please use your Google account with the email <strong>${email}</strong> to sign in.</p>
+          <p>Make sure you're using a Google account from one of these domains:</p>
+          <ul>
+            <li>@moeschools.edu.jm</li>
+            <li>@yorkcastlehighschool.org</li>
+          </ul>
+        </div>
+        <p style="text-align: center; margin: 30px 0;">
+          <a href="${loginUrl}" class="button">Sign In with Google</a>
+        </p>
+      `
+      : `
+        <div class="highlight">
+          <p><strong>Your Account Details:</strong></p>
+          <p>Email: ${email}</p>
+          <p>Role: ${role}</p>
+        </div>
+        <p>You can now sign in to the portal using your email and password.</p>
+        <p style="text-align: center; margin: 30px 0;">
+          <a href="${loginUrl}" class="button">Sign In to Portal</a>
+        </p>
+        <p><small>If you need to reset your password, please contact the system administrator.</small></p>
+      `;
+
+    const content = `
+      <h2 style="color: ${schoolColors.primary};">You've Been Invited to York Castle High School Portal</h2>
+      <p>Dear ${name},</p>
+      <p>An account has been created for you on the York Castle High School administrative portal.</p>
+      ${loginInstructions}
+      <p>If you have any questions or need assistance, please contact the system administrator.</p>
+      <p>Best regards,<br><strong>York Castle High School</strong></p>
+    `;
+
+    const textContent = isOAuth
+      ? `You've Been Invited to York Castle High School Portal\n\nDear ${name},\n\nAn account has been created for you on the York Castle High School administrative portal.\n\nSign In with Google:\nYour account has been set up to use Google Sign-In. Please use your Google account with the email ${email} to sign in.\n\nMake sure you're using a Google account from one of these domains:\n- @moeschools.edu.jm\n- @yorkcastlehighschool.org\n\nSign in at: ${loginUrl}\n\nBest regards,\nYork Castle High School`
+      : `You've Been Invited to York Castle High School Portal\n\nDear ${name},\n\nAn account has been created for you on the York Castle High School administrative portal.\n\nYour Account:\nEmail: ${email}\nRole: ${role}\n\nSign in at: ${loginUrl}\n\nBest regards,\nYork Castle High School`;
+
+    return {
+      subject: 'Invitation to York Castle High School Portal',
+      html: baseTemplate(content, 'Account Invitation'),
+      text: textContent,
+    };
+  },
 };
 
 

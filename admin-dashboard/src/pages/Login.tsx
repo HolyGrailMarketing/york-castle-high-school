@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import GoogleSignIn from '../components/GoogleSignIn';
 import logo from '../assets/logo.png';
 import './Login.css';
 
@@ -12,6 +13,17 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Handle OAuth callback
+  useEffect(() => {
+    const token = searchParams.get('token');
+    if (token) {
+      // Store token and redirect to dashboard
+      localStorage.setItem('token', token);
+      window.location.href = '/admin/dashboard';
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,8 +136,16 @@ const Login = () => {
             )}
           </button>
         </form>
+        
+        <div className="login-divider">
+          <span>OR</span>
+        </div>
+
+        <GoogleSignIn />
+
         <div className="login-footer">
           <p>Secure access for authorized personnel only</p>
+          <p className="login-domain-note">Google Sign-In available for @moeschools.edu.jm and @yorkcastlehighschool.org</p>
         </div>
       </div>
     </div>

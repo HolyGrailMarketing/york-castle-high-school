@@ -1,5 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
+import { sendInvitationEmail, isEmailConfigured } from '../services/emailService.js';
+import logger from '../utils/logger.js';
 
 const prisma = new PrismaClient();
 
@@ -146,14 +148,28 @@ export const deleteUser = async (req, res, next) => {
 
 export const createUser = async (req, res, next) => {
   try {
-    const { email, password, name, role, phone } = req.body;
+    const { email, password, name, role, phone, authMethod = 'EMAIL' } = req.body;
 
-    if (!email || !password || !name) {
-      return res.status(400).json({ error: 'Email, password, and name are required' });
+    if (!email || !name) {
+      return res.status(400).json({ error: 'Email and name are required' });
+    }
+
+    // Password required for EMAIL auth method
+    if (authMethod === 'EMAIL' && !password) {
+      return res.status(400).json({ error: 'Password is required for email authentication' });
     }
 
     if (role && !['ADMIN', 'STAFF', 'STUDENT', 'PARENT'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
+    }
+
+    // Validate email domain for OAuth users
+    if (authMethod === 'GOOGLE') {
+      const { validateEmailDomain } = await import('../utils/domainValidator.js');
+      const validation = validateEmailDomain(email);
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.error });
+      }
     }
 
     // Check if user already exists
@@ -165,7 +181,8 @@ export const createUser = async (req, res, next) => {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Hash password only for EMAIL auth method
+    const hashedPassword = authMethod === 'EMAIL' ? await bcrypt.hash(password, 10) : null;
 
     const user = await prisma.user.create({
       data: {
@@ -174,6 +191,9 @@ export const createUser = async (req, res, next) => {
         name,
         role: role || 'STUDENT',
         phone: phone || null,
+        provider: authMethod === 'GOOGLE' ? 'GOOGLE' : 'EMAIL',
+        providerId: null, // Will be set on first Google sign-in
+        picture: null, // Will be set on first Google sign-in
       },
       select: {
         id: true,
@@ -181,10 +201,68 @@ export const createUser = async (req, res, next) => {
         name: true,
         role: true,
         phone: true,
+        provider: true,
+        providerId: true,
+        picture: true,
         createdAt: true,
         updatedAt: true,
       },
     });
+
+    // Send invitation email
+    if (isEmailConfigured()) {
+      try {
+        // Construct login URL - prioritize explicit URL, then derive from sending email domain
+        let loginUrl = process.env.FRONTEND_URL || process.env.APP_URL;
+        
+        // If no explicit URL, extract domain from sending email address
+        if (!loginUrl) {
+          const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.EMAIL_FROM;
+          if (fromEmail && fromEmail.includes('@')) {
+            // Extract domain from email (e.g., noreply@yorkcastle.edu.jm -> yorkcastle.edu.jm)
+            const emailDomain = fromEmail.split('@')[1];
+            // Use HTTPS for production domains (not localhost or test domains)
+            const protocol = (emailDomain.includes('localhost') || emailDomain.includes('127.0.0.1')) 
+              ? 'http' 
+              : 'https';
+            loginUrl = `${protocol}://${emailDomain}`;
+          } else {
+            // Fallback to request host (for development)
+            const protocol = req.protocol || 'http';
+            const host = req.get('host') || 'localhost:3000';
+            loginUrl = `${protocol}://${host}`;
+          }
+        }
+        
+        const fullLoginUrl = `${loginUrl}/admin/login`;
+        await sendInvitationEmail(email, name, user.role, authMethod, fullLoginUrl);
+        logger.info('Invitation email sent successfully', { 
+          email, 
+          name, 
+          authMethod,
+          loginUrl: fullLoginUrl 
+        });
+      } catch (emailError) {
+        // Log error but don't fail user creation if email fails
+        logger.error('Failed to send invitation email', {
+          error: emailError.message,
+          stack: emailError.stack,
+          email,
+          name,
+          authMethod,
+        });
+        // Also log to console for immediate visibility
+        console.error('❌ Failed to send invitation email:', emailError.message);
+      }
+    } else {
+      logger.warn('Email service not configured - invitation email not sent', {
+        email,
+        name,
+        authMethod,
+      });
+      console.warn('⚠️  Email service not configured. Invitation email was not sent.');
+      console.warn('   Please configure RESEND_API_KEY and RESEND_FROM_EMAIL in your .env file');
+    }
 
     res.status(201).json({ message: 'User created successfully', user });
   } catch (error) {

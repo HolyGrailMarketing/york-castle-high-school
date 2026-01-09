@@ -1,5 +1,5 @@
 import express from 'express';
-import { register, login, logout, getMe } from '../controllers/authController.js';
+import { register, login, logout, getMe, googleAuth, googleCallback } from '../controllers/authController.js';
 import { authenticate } from '../middleware/auth.js';
 import { registerValidation, loginValidation, handleValidationErrors } from '../utils/validation.js';
 import { authLimiter, generalLimiter } from '../middleware/rateLimiter.js';
@@ -67,6 +67,10 @@ router.post('/login', authLimiter, loginValidation, handleValidationErrors, logi
 
 router.post('/logout', generalLimiter, logout);
 router.get('/me', generalLimiter, authenticate, getMe);
+
+// Google OAuth routes
+router.get('/google', authLimiter, googleAuth);
+router.get('/google/callback', authLimiter, googleCallback);
 
 export default router;
 

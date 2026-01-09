@@ -14,6 +14,7 @@ import { requestLogger } from './middleware/requestLogger.js';
 import { validateEnvironment, testDatabaseConnection } from './utils/envValidator.js';
 import logger from './utils/logger.js';
 import { PrismaClient } from '@prisma/client';
+import passport from 'passport';
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
 import applicationRoutes from './routes/applications.js';
@@ -29,6 +30,21 @@ import { initEmailService } from './services/emailService.js';
 
 dotenv.config();
 
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Rejection at:', { promise, reason });
+  // Don't exit in development - allow server to continue
+  if (process.env.NODE_ENV === 'production') {
+    process.exit(1);
+  }
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught Exception:', { error: error.message, stack: error.stack });
+  process.exit(1);
+});
+
 // Validate environment variables on startup
 try {
   validateEnvironment();
@@ -43,14 +59,24 @@ const prisma = new PrismaClient({
   log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
 });
 
-// Test database connection
+// Test database connection (non-blocking in development)
+const nodeEnv = process.env.NODE_ENV || 'development';
 testDatabaseConnection(prisma)
   .then(() => {
     logger.info('Database connection successful');
   })
   .catch((error) => {
     logger.error('Database connection failed', { error: error.message });
-    process.exit(1);
+    if (nodeEnv === 'production') {
+      // In production, exit if database is not available
+      logger.error('Cannot start server in production without database connection');
+      process.exit(1);
+    } else {
+      // In development, log warning but continue (frontend can still be served)
+      logger.warn('Server starting without database connection. API routes will fail until database is configured.');
+      console.warn('⚠️  Database connection failed. Server will start but API routes may not work.');
+      console.warn('   Please check your DATABASE_URL in backend/.env');
+    }
   });
 
 // Initialize email service
@@ -92,9 +118,10 @@ app.use(securityHeaders);
 app.use(compression());
 
 // CORS configuration
+// When running on single server, allow same origin
 const allowedOrigins = NODE_ENV === 'production' 
   ? (process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3000'])
-  : ['http://localhost:5173', 'http://localhost:3000'];
+  : ['http://localhost:3000']; // Single server mode - no separate frontend server
 
 app.use(cors({
   origin: allowedOrigins,
@@ -104,6 +131,9 @@ app.use(cors({
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Initialize Passport (for Google OAuth)
+app.use(passport.initialize());
 
 // Request logging middleware
 app.use(requestLogger);
@@ -129,25 +159,26 @@ app.use('/api/documents', documentRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
-// Serve admin dashboard (built React app) in production
-if (NODE_ENV === 'production') {
-  const adminDistPath = path.join(projectRoot, 'admin-dashboard/dist');
-  
-  // Serve static assets from admin dashboard
-  app.use('/admin', express.static(adminDistPath));
-  
-  // Serve admin dashboard index.html for all /admin/* routes (React Router)
-  app.get('/admin/*', (req, res) => {
-    res.sendFile(path.join(adminDistPath, 'index.html'));
-  });
-}
-
-// Serve static files with caching headers
+// Serve static files with caching headers (define before use)
 const staticOptions = {
   maxAge: NODE_ENV === 'production' ? '1y' : '0',
   etag: true,
   lastModified: true,
 };
+
+// Serve admin dashboard (built React app)
+const adminDistPath = path.join(projectRoot, 'admin-dashboard/dist');
+if (fs.existsSync(adminDistPath)) {
+  // Serve static assets from admin dashboard
+  app.use('/admin', express.static(adminDistPath, staticOptions));
+  
+  // Serve admin dashboard index.html for all /admin/* routes (React Router)
+  app.get('/admin/*', (req, res) => {
+    res.sendFile(path.join(adminDistPath, 'index.html'));
+  });
+  
+  logger.info('Admin dashboard static files enabled', { path: adminDistPath });
+}
 
 app.use('/css', express.static(path.join(projectRoot, 'css'), staticOptions));
 app.use('/js', express.static(path.join(projectRoot, 'js'), staticOptions));
@@ -189,13 +220,13 @@ app.listen(PORT, () => {
   
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
-  if (NODE_ENV === 'production') {
-    console.log(`🌐 Homepage: http://localhost:${PORT}/`);
+  console.log(`🌐 Homepage: http://localhost:${PORT}/`);
+  if (fs.existsSync(adminDistPath)) {
     console.log(`👨‍💼 Admin Dashboard: http://localhost:${PORT}/admin`);
   } else {
-    console.log(`🔌 API: http://localhost:${PORT}/api`);
-    console.log(`💡 Admin Dashboard (dev): http://localhost:5173`);
+    console.log(`⚠️  Admin Dashboard not built. Run: cd admin-dashboard && npm run build`);
   }
+  console.log(`🔌 API: http://localhost:${PORT}/api`);
 });
 
 // Graceful shutdown

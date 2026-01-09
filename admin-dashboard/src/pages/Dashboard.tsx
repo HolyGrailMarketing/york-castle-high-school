@@ -32,7 +32,7 @@ const Dashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const data = await apiService.getDashboardStats();
+      const data = await apiService.getDashboardStats() as DashboardStats;
       setStats(data);
     } catch (error) {
       console.error('Failed to fetch stats:', error);

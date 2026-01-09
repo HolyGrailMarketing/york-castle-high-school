@@ -10,6 +10,9 @@ export interface User {
   name: string;
   role: UserRole;
   phone?: string;
+  provider?: 'EMAIL' | 'GOOGLE';
+  providerId?: string | null;
+  picture?: string | null;
   createdAt: string;
   updatedAt?: string;
 }

@@ -1,10 +1,9 @@
 import axios from 'axios';
 import type { User, Application, SixthFormApplication, Course, BlogPost, Event, Document, Request } from '../types';
 
-// In production, use relative path since everything is on the same server
-// In development, use the full URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || 
-  (import.meta.env.PROD ? '/api' : 'http://localhost:3000/api');
+// Use relative path since everything is served from the same server
+// This works in both development and production when served from backend
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 class ApiService {
   private token: string | null = null;
@@ -32,7 +31,7 @@ class ApiService {
     } catch (error: any) {
       if (error.response?.status === 401) {
         localStorage.removeItem('token');
-        window.location.href = '/login';
+        window.location.href = '/admin/login';
       }
       throw error.response?.data || error.message;
     }
@@ -58,7 +57,7 @@ class ApiService {
     return this.request<{ user: User }>('GET', `/users/${id}`);
   }
 
-  async createUser(data: { email: string; password: string; name: string; role?: string; phone?: string }) {
+  async createUser(data: { email: string; password?: string; name: string; role?: string; phone?: string; authMethod?: 'EMAIL' | 'GOOGLE' }) {
     return this.request<{ user: User }>('POST', '/users', data);
   }
 

@@ -24,7 +24,10 @@
     "db:generate": "npx prisma generate",
     "db:seed": "node prisma/seed.js",
     "db:test": "node scripts/test-db-connection.js",
-    "deploy:supabase": "./scripts/deploy-to-supabase.sh"
+    "import:requests": "node scripts/import-requests-csv.js",
+    "remove:duplicates": "node scripts/remove-duplicate-requests.js",
+    "deploy:supabase": "./scripts/deploy-to-supabase.sh",
+    "test:email": "node scripts/test-email.js"
   },
   "keywords": [],
   "author": "",
@@ -41,7 +44,9 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.7",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "resend": "^3.5.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
     "uuid": "^9.0.1",

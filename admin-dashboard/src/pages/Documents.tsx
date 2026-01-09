@@ -87,10 +87,8 @@ const Documents = () => {
 
   const handleDownload = async (id: string, fileName: string) => {
     try {
-      // This would typically trigger a download from the API
       showToast(`Downloading ${fileName}...`, 'info');
-      // In a real implementation:
-      // window.open(`/api/documents/${id}/download`, '_blank');
+      await apiService.downloadDocument(id);
     } catch (error) {
       showToast('Failed to download document', 'error');
     }

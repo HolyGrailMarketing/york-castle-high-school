@@ -39,15 +39,23 @@ enum RequestStatus {
   REJECTED
 }
 
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+}
+
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  password      String
+  id            String       @id @default(uuid())
+  email         String       @unique
+  password      String?      // Optional for OAuth users
   name          String
-  role          UserRole  @default(STUDENT)
+  role          UserRole     @default(STUDENT)
   phone         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  provider      AuthProvider @default(EMAIL)
+  providerId    String?      // Google user ID
+  picture       String?      // Profile picture URL
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   // Relations
   applications         Application[]
@@ -59,6 +67,8 @@ model User {
 
   @@index([email])
   @@index([role])
+  @@index([provider])
+  @@index([providerId])
 }
 
 model Application {
@@ -217,6 +227,9 @@ model Request {
   @@index([type])
   @@index([status])
   @@index([userId])
+  @@index([createdAt])
+  @@index([status, createdAt])
+  @@index([title])
 }
 
 model Teacher {

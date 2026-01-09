@@ -254,6 +254,28 @@
   to { transform: rotate(360deg); }
 }
 
+.login-divider {
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+  text-align: center;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.login-divider span {
+  padding: 0 16px;
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
 .login-footer {
   margin-top: 30px;
   text-align: center;
@@ -266,6 +288,13 @@
   font-size: 12px;
   color: #9ca3af;
   letter-spacing: 0.5px;
+  margin: 4px 0;
+}
+
+.login-domain-note {
+  font-size: 11px !important;
+  color: #6b7280 !important;
+  margin-top: 8px !important;
 }
 
 /* Responsive */

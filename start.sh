@@ -51,25 +51,29 @@ if [ ! -d "backend/prisma/migrations" ]; then
     echo ""
 fi
 
-echo "🎯 Starting servers..."
+# Build frontend for single server deployment
+if [ ! -d "admin-dashboard/dist" ]; then
+    echo "🏗️  Building admin dashboard..."
+    cd admin-dashboard
+    npm run build
+    cd ..
+    echo "✅ Admin dashboard built"
+    echo ""
+fi
+
+echo "🎯 Starting server..."
 echo ""
-echo "Backend will run on: http://localhost:3000"
-echo "Admin Dashboard will run on: http://localhost:5173"
+echo "Server will run on: http://localhost:3000"
+echo "  - Homepage: http://localhost:3000/"
+echo "  - Admin Dashboard: http://localhost:3000/admin"
+echo "  - API: http://localhost:3000/api"
+echo "  - API Docs: http://localhost:3000/api-docs"
 echo ""
-echo "Press Ctrl+C to stop both servers"
+echo "Press Ctrl+C to stop the server"
 echo ""
 
-# Start both servers
-cd backend && npm run dev &
-BACKEND_PID=$!
-
-cd ../admin-dashboard && npm run dev &
-FRONTEND_PID=$!
-
-# Wait for user interrupt
-trap "kill $BACKEND_PID $FRONTEND_PID; exit" INT TERM
-
-wait
+# Start backend server (which serves everything)
+cd backend && npm run dev
 
 
 

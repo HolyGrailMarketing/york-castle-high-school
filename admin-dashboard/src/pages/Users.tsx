@@ -10,6 +10,7 @@ interface UserFormData {
   password: string;
   role: UserRole;
   phone: string;
+  authMethod: 'EMAIL' | 'GOOGLE';
 }
 
 const initialFormData: UserFormData = {
@@ -18,6 +19,14 @@ const initialFormData: UserFormData = {
   password: '',
   role: 'STUDENT',
   phone: '',
+  authMethod: 'EMAIL',
+};
+
+const ALLOWED_DOMAINS = ['moeschools.edu.jm', 'yorkcastlehighschool.org'];
+
+const isValidDomain = (email: string): boolean => {
+  const domain = email.split('@')[1]?.toLowerCase();
+  return domain ? ALLOWED_DOMAINS.includes(domain) : false;
 };
 
 const Users = () => {
@@ -60,7 +69,7 @@ const Users = () => {
   };
 
   const handleAddUser = () => {
-    setFormData(initialFormData);
+    setFormData({ ...initialFormData, authMethod: 'EMAIL' });
     setError('');
     setShowAddModal(true);
   };
@@ -73,6 +82,7 @@ const Users = () => {
       password: '',
       role: user.role,
       phone: user.phone || '',
+      authMethod: user.provider || 'EMAIL',
     });
     setError('');
     setShowEditModal(true);
@@ -86,14 +96,27 @@ const Users = () => {
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.email || !formData.password) {
-      setError('Name, email, and password are required');
+    if (!formData.name || !formData.email) {
+      setError('Name and email are required');
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
+    // Validate email domain for OAuth users
+    if (formData.authMethod === 'GOOGLE' && !isValidDomain(formData.email)) {
+      setError(`Email must be from one of these domains: ${ALLOWED_DOMAINS.join(', ')}`);
       return;
+    }
+
+    // Password required for EMAIL auth method
+    if (formData.authMethod === 'EMAIL') {
+      if (!formData.password) {
+        setError('Password is required for email authentication');
+        return;
+      }
+      if (formData.password.length < 6) {
+        setError('Password must be at least 6 characters');
+        return;
+      }
     }
 
     setSubmitting(true);
@@ -101,9 +124,10 @@ const Users = () => {
       await apiService.createUser({
         name: formData.name,
         email: formData.email,
-        password: formData.password,
+        password: formData.authMethod === 'EMAIL' ? formData.password : undefined,
         role: formData.role,
         phone: formData.phone || undefined,
+        authMethod: formData.authMethod,
       });
       setShowAddModal(false);
       await fetchUsers();
@@ -266,6 +290,11 @@ const Users = () => {
                 >
                   {user.role}
                 </span>
+                {user.provider === 'GOOGLE' && (
+                  <span className="provider-badge" title="Google OAuth User">
+                    🔐 Google
+                  </span>
+                )}
                 {user.phone && (
                   <span className="user-phone">📞 {user.phone}</span>
                 )}
@@ -310,17 +339,36 @@ const Users = () => {
           </div>
 
           <div className="form-group">
-            <label>Password *</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
+            <label>Authentication Method *</label>
+            <select 
+              name="authMethod" 
+              value={formData.authMethod} 
               onChange={handleInputChange}
-              placeholder="Enter password (min 6 characters)"
-              required
-              minLength={6}
-            />
+            >
+              <option value="EMAIL">Email/Password</option>
+              <option value="GOOGLE">Google OAuth</option>
+            </select>
+            {formData.authMethod === 'GOOGLE' && (
+              <span className="field-hint">
+                Email must be from: @moeschools.edu.jm or @yorkcastlehighschool.org
+              </span>
+            )}
           </div>
+
+          {formData.authMethod === 'EMAIL' && (
+            <div className="form-group">
+              <label>Password *</label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                placeholder="Enter password (min 6 characters)"
+                required
+                minLength={6}
+              />
+            </div>
+          )}
 
           <div className="form-row">
             <div className="form-group">

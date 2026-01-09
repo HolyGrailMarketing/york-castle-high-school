@@ -4,10 +4,10 @@ const prisma = new PrismaClient();
 
 export const getRequests = async (req, res, next) => {
   try {
-    const { type, status, page = 1, limit = 20 } = req.query;
+    const { type, status, page = 1, limit = 20, search } = req.query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    const where = {};
+    let where = {};
 
     // Users can only see their own requests unless they're admin/staff
     if (!['ADMIN', 'STAFF'].includes(req.user.role)) {
@@ -17,6 +17,42 @@ export const getRequests = async (req, res, next) => {
     if (type) where.type = type;
     if (status) where.status = status;
 
+    // Add search functionality using PostgreSQL JSONB operators
+    if (search && search.trim()) {
+      const searchTerm = search.trim();
+      const searchLower = `%${searchTerm.toLowerCase()}%`;
+      
+      // Use raw SQL for efficient JSONB metadata search
+      const metadataSearchIds = await prisma.$queryRaw`
+        SELECT id FROM "Request"
+        WHERE 
+          metadata::text ILIKE ${searchLower}
+          OR metadata->'studentInfo'->>'firstName' ILIKE ${searchLower}
+          OR metadata->'studentInfo'->>'lastName' ILIKE ${searchLower}
+          OR metadata->'studentInfo'->>'middleName' ILIKE ${searchLower}
+          OR metadata->'studentInfo'->>'email' ILIKE ${searchLower}
+          OR metadata->'studentInfo'->>'phoneNumber' ILIKE ${searchLower}
+          OR metadata->>'requestType' ILIKE ${searchLower}
+      `;
+      
+      const metadataIds = metadataSearchIds.map((r) => r.id);
+      
+      where.OR = [
+        { title: { contains: searchTerm, mode: 'insensitive' } },
+        { description: { contains: searchTerm, mode: 'insensitive' } },
+        {
+          user: {
+            OR: [
+              { name: { contains: searchTerm, mode: 'insensitive' } },
+              { email: { contains: searchTerm, mode: 'insensitive' } },
+            ],
+          },
+        },
+        ...(metadataIds.length > 0 ? [{ id: { in: metadataIds } }] : []),
+      ];
+    }
+
+    // Fetch requests from database with optimized query
     const [requests, total] = await Promise.all([
       prisma.request.findMany({
         where,

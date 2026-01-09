@@ -1,73 +1,67 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import logger from '../utils/logger.js';
+import { templates } from './emailTemplates.js';
 
-let transporter = null;
+let resend = null;
 let emailConfigured = false;
 
 export const initEmailService = () => {
-  const requiredVars = ['SMTP_HOST', 'SMTP_USER', 'SMTP_PASS'];
-  const hasAllVars = requiredVars.every(v => process.env[v]);
+  const apiKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.EMAIL_FROM;
 
-  if (hasAllVars) {
+  if (apiKey) {
     try {
-      transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT) || 587,
-        secure: parseInt(process.env.SMTP_PORT) === 465, // SSL for port 465
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      });
-
-      // Verify connection
-      transporter.verify((error, success) => {
-        if (error) {
-          logger.warn('Email service configuration invalid', { error: error.message });
-          emailConfigured = false;
-        } else {
-          logger.info('Email service configured and verified');
-          emailConfigured = true;
-        }
-      });
-
+      resend = new Resend(apiKey);
       emailConfigured = true;
+      logger.info('Resend email service configured');
     } catch (error) {
-      logger.error('Failed to initialize email service', { error: error.message });
+      logger.error('Failed to initialize Resend email service', { error: error.message });
       emailConfigured = false;
     }
   } else {
-    logger.warn('Email service not configured - missing required environment variables');
+    logger.warn('Email service not configured - RESEND_API_KEY is missing');
     emailConfigured = false;
+  }
+
+  if (!fromEmail) {
+    logger.warn('RESEND_FROM_EMAIL not set - emails may fail to send');
   }
 };
 
 export const isEmailConfigured = () => emailConfigured;
 
 export const sendEmail = async (to, subject, text, html) => {
-  if (!transporter || !emailConfigured) {
+  if (!resend || !emailConfigured) {
+    const error = new Error('Email service not configured. RESEND_API_KEY is missing.');
     logger.warn('Email service not configured. Skipping email send.', { to, subject });
-    return;
+    throw error;
+  }
+
+  const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.EMAIL_FROM;
+  if (!fromEmail) {
+    const error = new Error('RESEND_FROM_EMAIL not configured. Cannot send email.');
+    logger.error('RESEND_FROM_EMAIL not configured. Cannot send email.', { to, subject });
+    throw error;
   }
 
   try {
-    const result = await transporter.sendMail({
-      from: process.env.SMTP_FROM || process.env.EMAIL_FROM || process.env.SMTP_USER,
+    const result = await resend.emails.send({
+      from: fromEmail,
       to,
       subject,
       text,
       html,
     });
 
-    logger.info('Email sent successfully', {
+    logger.info('Email sent successfully via Resend', {
       to,
       subject,
-      messageId: result.messageId,
+      emailId: result.data?.id,
     });
 
     return result;
   } catch (error) {
-    logger.error('Failed to send email', {
+    logger.error('Failed to send email via Resend', {
       to,
       subject,
       error: error.message,
@@ -75,8 +69,6 @@ export const sendEmail = async (to, subject, text, html) => {
     throw error;
   }
 };
-
-import { templates } from './emailTemplates.js';
 
 export const sendApplicationStatusEmail = async (email, name, status, applicationId = null) => {
   const template = templates.applicationStatus(name, status, applicationId);
@@ -98,3 +90,7 @@ export const sendWelcomeEmail = async (email, name, role) => {
   await sendEmail(email, template.subject, template.text, template.html);
 };
 
+export const sendInvitationEmail = async (email, name, role, authMethod, loginUrl) => {
+  const template = templates.invitation(name, email, role, authMethod, loginUrl);
+  await sendEmail(email, template.subject, template.text, template.html);
+};

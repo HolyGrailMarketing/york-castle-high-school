@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { apiService } from '../services/api';
 import Modal from '../components/Modal';
 import type { Request } from '../types';
@@ -6,33 +6,79 @@ import './Requests.css';
 
 const Requests = () => {
   const [requests, setRequests] = useState<Request[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+  const [searchInput, setSearchInput] = useState(''); // What user types
+  const [searchQuery, setSearchQuery] = useState(''); // Debounced value for API
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [newStatus, setNewStatus] = useState('');
   const [responseText, setResponseText] = useState('');
+  const [page, setPage] = useState(1);
+  const [limit] = useState(50); // Show 50 per page instead of 20
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 50,
+    total: 0,
+    pages: 0,
+  });
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Debounce search input - wait 500ms after user stops typing
   useEffect(() => {
-    fetchRequests();
-  }, [statusFilter, typeFilter]);
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    
+    debounceTimerRef.current = setTimeout(() => {
+      setSearchQuery(searchInput);
+    }, 500);
 
-  const fetchRequests = async () => {
-    setLoading(true);
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [searchInput]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter, typeFilter, searchQuery]);
+
+  // Fetch requests function
+  const fetchRequests = useCallback(async () => {
+    if (!initialLoading) {
+      setSearching(true);
+    }
     try {
-      const params: any = {};
+      const params: any = {
+        page,
+        limit,
+      };
       if (statusFilter) params.status = statusFilter;
       if (typeFilter) params.type = typeFilter;
+      if (searchQuery.trim()) params.search = searchQuery.trim();
       const data = await apiService.getRequests(params);
       setRequests(data.requests);
+      if (data.pagination) {
+        setPagination(data.pagination);
+      }
     } catch (error) {
       console.error('Failed to fetch requests:', error);
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
+      setSearching(false);
     }
-  };
+  }, [statusFilter, typeFilter, searchQuery, page, limit, initialLoading]);
+
+  // Fetch requests when filters or page changes
+  useEffect(() => {
+    fetchRequests();
+  }, [fetchRequests]);
 
   const handleViewRequest = (request: Request) => {
     setSelectedRequest(request);
@@ -84,6 +130,24 @@ const Requests = () => {
     }
   };
 
+  // Get the actual document type from metadata
+  const getDocumentType = (req: Request) => {
+    // If it's a document request, get the specific document type from metadata
+    if (req.type === 'DOCUMENT' && req.metadata?.requestType) {
+      return req.metadata.requestType;
+    }
+    // Fallback to title if requestType not available but title contains document type
+    if (req.type === 'DOCUMENT' && req.title) {
+      // Extract document type from title (e.g., "Transcript Request - John Doe" -> "Transcript")
+      const match = req.title.match(/^([^-]+)\s+Request/i);
+      if (match) {
+        return match[1].trim();
+      }
+    }
+    // Return the generic type for non-document requests
+    return req.type;
+  };
+
   // Get requester name from user or metadata
   const getRequesterName = (req: Request) => {
     if (req.user?.name) {
@@ -120,7 +184,12 @@ const Requests = () => {
       });
       if (s.email) sections.push({ label: 'Student Email', value: s.email });
       if (s.phone) sections.push({ label: 'Student Phone', value: s.phone });
+      if (s.phoneNumber) sections.push({ label: 'Student Phone', value: s.phoneNumber });
       if (s.dateOfBirth) sections.push({ label: 'Date of Birth', value: new Date(s.dateOfBirth).toLocaleDateString() });
+      if (s.dateOfGraduation) {
+        const gradDate = new Date(s.dateOfGraduation);
+        sections.push({ label: 'Year of Graduation', value: gradDate.getFullYear().toString() });
+      }
       if (s.address) {
         const addr = [s.address.street, s.address.town, s.address.parish].filter(Boolean).join(', ');
         if (addr) sections.push({ label: 'Address', value: addr });
@@ -139,7 +208,7 @@ const Requests = () => {
     return sections;
   };
 
-  if (loading) {
+  if (initialLoading) {
     return <div className="loading">Loading requests...</div>;
   }
 
@@ -148,6 +217,13 @@ const Requests = () => {
       <div className="page-header">
         <h1>Manage Requests</h1>
         <div className="filters">
+          <input
+            type="text"
+            placeholder="Search by name, email, title..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="search-input"
+          />
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
@@ -173,38 +249,109 @@ const Requests = () => {
         </div>
       </div>
 
-      {requests.length === 0 ? (
+      <div className="requests-stats">
+        <span className="stat-item">
+          <strong>{pagination.total || requests.length}</strong> total requests
+        </span>
+        <span className="stat-divider">|</span>
+        <span className="stat-item">
+          Showing {requests.length} of {pagination.total || requests.length}
+        </span>
+        <span className="stat-divider">|</span>
+        <span className="stat-item pending">
+          {requests.filter(r => r.status === 'PENDING').length} pending
+        </span>
+        <span className="stat-item in-progress">
+          {requests.filter(r => r.status === 'IN_PROGRESS').length} in progress
+        </span>
+        <span className="stat-item completed">
+          {requests.filter(r => r.status === 'COMPLETED').length} completed
+        </span>
+      </div>
+
+      {requests.length === 0 && !searching ? (
         <div className="empty-state">
           <span className="empty-icon">📭</span>
           <h3>No requests found</h3>
           <p>There are no requests matching your filters.</p>
         </div>
       ) : (
-        <div className="requests-grid">
-          {requests.map((req) => (
-            <div key={req.id} className="request-card" onClick={() => handleViewRequest(req)}>
-              <div className="request-card-header">
-                <span className="request-type-icon">{getTypeIcon(req.type)}</span>
-                <span 
-                  className="request-status-badge"
-                  style={{ backgroundColor: getStatusColor(req.status) }}
-                >
-                  {req.status.replace('_', ' ')}
-                </span>
-              </div>
-              <h3 className="request-title">{req.title}</h3>
-              <p className="request-description">{req.description || 'No description'}</p>
-              <div className="request-meta">
-                <span className="request-user">
-                  👤 {getRequesterName(req)}
-                </span>
-                <span className="request-date">
-                  📅 {new Date(req.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-              <button className="view-details-btn">View Details →</button>
-            </div>
-          ))}
+        <div className={`requests-list-container ${searching ? 'is-searching' : ''}`}>
+          <table className="requests-table">
+            <thead>
+              <tr>
+                <th className="col-type">Type</th>
+                <th className="col-requester">Requester</th>
+                <th className="col-email">Email</th>
+                <th className="col-date">Date</th>
+                <th className="col-status">Status</th>
+                <th className="col-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {requests.map((req) => (
+                <tr key={req.id} className="request-row" onClick={() => handleViewRequest(req)}>
+                  <td className="col-type">
+                    <span className="type-badge">
+                      <span className="type-icon">{getTypeIcon(req.type)}</span>
+                      <span className="type-label">{getDocumentType(req)}</span>
+                    </span>
+                  </td>
+                  <td className="col-requester">
+                    <span className="requester-name">{getRequesterName(req)}</span>
+                  </td>
+                  <td className="col-email">
+                    <span className="email-text">
+                      {req.user?.email || req.metadata?.studentInfo?.email || '—'}
+                    </span>
+                  </td>
+                  <td className="col-date">
+                    <span className="date-text">{new Date(req.createdAt).toLocaleDateString()}</span>
+                    <span className="time-text">{new Date(req.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  </td>
+                  <td className="col-status">
+                    <span 
+                      className="status-badge"
+                      style={{ backgroundColor: getStatusColor(req.status) }}
+                    >
+                      {req.status.replace('_', ' ')}
+                    </span>
+                  </td>
+                  <td className="col-actions">
+                    <button 
+                      className="action-btn view-btn"
+                      onClick={(e) => { e.stopPropagation(); handleViewRequest(req); }}
+                    >
+                      View
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {pagination.pages > 1 && (
+        <div className="pagination-controls">
+          <button
+            className="pagination-btn"
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1 || searching}
+          >
+            ← Previous
+          </button>
+          <div className="pagination-info">
+            Page {pagination.page} of {pagination.pages}
+          </div>
+          <button
+            className="pagination-btn"
+            onClick={() => setPage(p => Math.min(pagination.pages, p + 1))}
+            disabled={page === pagination.pages || searching}
+          >
+            Next →
+          </button>
         </div>
       )}
 
@@ -214,7 +361,7 @@ const Requests = () => {
           <div className="request-detail-modal">
             <div className="detail-header">
               <span className="detail-type-badge">
-                {getTypeIcon(selectedRequest.type)} {selectedRequest.type}
+                {getTypeIcon(selectedRequest.type)} {getDocumentType(selectedRequest)}
               </span>
               <span 
                 className="detail-status-badge"

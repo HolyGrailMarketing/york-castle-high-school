@@ -4,9 +4,8 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   plugins: [react()],
-  // Only use /admin/ base path when building for production
-  // In development, use root path
-  base: mode === 'production' ? '/admin/' : '/',
+  // Always use /admin/ base path when building (for single server setup)
+  base: '/admin/',
   server: {
     port: 5173,
     proxy: {

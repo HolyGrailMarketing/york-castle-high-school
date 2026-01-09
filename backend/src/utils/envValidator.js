@@ -12,10 +12,9 @@ const optionalEnvVars = {
   PORT: '3000',
   NODE_ENV: 'development',
   CORS_ORIGIN: '',
-  SMTP_HOST: '',
-  SMTP_PORT: '',
-  SMTP_USER: '',
-  SMTP_PASS: '',
+  RESEND_API_KEY: '',
+  RESEND_FROM_EMAIL: '',
+  EMAIL_FROM: '',
 };
 
 export const validateEnvironment = () => {
@@ -57,10 +56,11 @@ export const validateEnvironment = () => {
   }
 
   // Check email configuration (warn if incomplete)
-  const emailVars = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS'];
-  const emailConfigured = emailVars.filter(v => process.env[v]).length;
-  if (emailConfigured > 0 && emailConfigured < emailVars.length) {
-    warnings.push('Email configuration is incomplete. Some email features may not work.');
+  if (process.env.RESEND_API_KEY && !process.env.RESEND_FROM_EMAIL && !process.env.EMAIL_FROM) {
+    warnings.push('RESEND_API_KEY is set but RESEND_FROM_EMAIL is missing. Emails may fail to send.');
+  }
+  if ((process.env.RESEND_FROM_EMAIL || process.env.EMAIL_FROM) && !process.env.RESEND_API_KEY) {
+    warnings.push('RESEND_FROM_EMAIL is set but RESEND_API_KEY is missing. Email service will not work.');
   }
 
   // Throw if there are critical errors
