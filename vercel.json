@@ -1,10 +1,16 @@
 {
-  "buildCommand": "npm run build",
-  "installCommand": "npm install && cd admin-dashboard && npm install && cd ../backend && npm install",
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/(.*)",
-      "destination": "/api/index.js"
+      "src": "api/index.js",
+      "use": "@vercel/node"
     }
-  ]
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.js"
+    }
+  ],
+  "installCommand": "npm install && cd admin-dashboard && npm install && npm run build && cd ../backend && npm install"
 }
