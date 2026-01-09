@@ -162,12 +162,30 @@ app.use('/api/analytics', analyticsRoutes);
 // CRITICAL: Serve root index.html FIRST, before any static middleware
 // This ensures the correct file is served and prevents admin dashboard from being served at root
 app.get('/', (req, res) => {
-  const indexPath = path.resolve(projectRoot, 'index.html');
+  // Use path.join to ensure we get the exact file from project root
+  const indexPath = path.join(projectRoot, 'index.html');
+  
+  // Explicitly check that the path is NOT in admin-dashboard
+  if (indexPath.includes('admin-dashboard')) {
+    logger.error('ERROR: Root route trying to serve admin-dashboard file!', { indexPath, projectRoot });
+    return res.status(500).json({ error: 'Configuration error' });
+  }
   
   if (fs.existsSync(indexPath)) {
     // Verify it's the correct file by checking content
     const fileContent = fs.readFileSync(indexPath, 'utf8');
-    if (fileContent.includes('data-wf-page') || fileContent.includes('York Castle High School Home Page')) {
+    
+    // Check for main site indicators
+    const isMainSite = fileContent.includes('data-wf-page') || 
+                      fileContent.includes('York Castle High School Home Page') ||
+                      fileContent.includes('data-wf-site');
+    
+    // Check that it's NOT admin dashboard
+    const isAdminDashboard = fileContent.includes('Admin Portal') ||
+                            fileContent.includes('/admin/assets/') ||
+                            fileContent.includes('id="root"');
+    
+    if (isMainSite && !isAdminDashboard) {
       logger.info('Serving root index.html', { path: indexPath });
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       res.sendFile(indexPath, (err) => {
@@ -177,8 +195,13 @@ app.get('/', (req, res) => {
         }
       });
     } else {
-      logger.error('Wrong index.html detected - might be admin dashboard', { path: indexPath });
-      res.status(500).json({ error: 'Configuration error' });
+      logger.error('Wrong index.html detected', { 
+        path: indexPath, 
+        isMainSite, 
+        isAdminDashboard,
+        firstChars: fileContent.substring(0, 200)
+      });
+      res.status(500).json({ error: 'Configuration error - wrong file being served' });
     }
   } else {
     logger.error('index.html not found', { path: indexPath, projectRoot });
