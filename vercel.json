@@ -10,14 +10,14 @@
           "node_modules/.prisma/**",
           "node_modules/@prisma/**",
           "admin-dashboard/dist/**",
-          "index.html",
-          "*.html",
+          "**/*.html",
           "css/**",
           "js/**",
           "images/**",
           "fonts/**",
           "videos/**",
-          "documents/**"
+          "documents/**",
+          "dashboard/**"
         ]
       }
     }
