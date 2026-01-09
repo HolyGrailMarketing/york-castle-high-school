@@ -299,23 +299,32 @@ app.use((req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  logger.info('Server started', {
-    port: PORT,
+// Only start listening if not running on Vercel (serverless)
+// Vercel will handle the HTTP server
+if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
+  app.listen(PORT, () => {
+    logger.info('Server started', {
+      port: PORT,
+      environment: NODE_ENV,
+      nodeVersion: process.version,
+    });
+    
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
+    console.log(`🌐 Homepage: http://localhost:${PORT}/`);
+    if (fs.existsSync(adminDistPath)) {
+      console.log(`👨‍💼 Admin Dashboard: http://localhost:${PORT}/admin`);
+    } else {
+      console.log(`⚠️  Admin Dashboard not built. Run: cd admin-dashboard && npm run build`);
+    }
+    console.log(`🔌 API: http://localhost:${PORT}/api`);
+  });
+} else {
+  logger.info('Running on Vercel - serverless mode', {
     environment: NODE_ENV,
     nodeVersion: process.version,
   });
-  
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
-  console.log(`🌐 Homepage: http://localhost:${PORT}/`);
-  if (fs.existsSync(adminDistPath)) {
-    console.log(`👨‍💼 Admin Dashboard: http://localhost:${PORT}/admin`);
-  } else {
-    console.log(`⚠️  Admin Dashboard not built. Run: cd admin-dashboard && npm run build`);
-  }
-  console.log(`🔌 API: http://localhost:${PORT}/api`);
-});
+}
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
