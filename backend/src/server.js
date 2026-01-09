@@ -188,29 +188,48 @@ app.use('/fonts', express.static(path.join(projectRoot, 'fonts'), staticOptions)
 app.use('/videos', express.static(path.join(projectRoot, 'videos'), staticOptions));
 app.use('/documents', express.static(path.join(projectRoot, 'documents'), staticOptions));
 
-// Serve static files from root (for assets referenced with relative paths)
-// This must come before the explicit route handlers
-app.use(express.static(projectRoot, {
-  ...staticOptions,
-  index: ['index.html'], // Allow index.html to be served by static middleware
-  extensions: ['html'],
-}));
-
-// Explicitly serve index.html for root route (fallback if static middleware doesn't catch it)
+// Explicitly serve root index.html FIRST (before static middleware that might serve wrong file)
+// This MUST come before any static middleware to ensure correct file is served
 app.get('/', (req, res) => {
-  const indexPath = path.join(projectRoot, 'index.html');
-  logger.info('Serving root route', { indexPath, exists: fs.existsSync(indexPath) });
+  // Use absolute path to ensure we get the root index.html, not admin-dashboard one
+  const indexPath = path.resolve(projectRoot, 'index.html');
+  const adminIndexPath = path.resolve(projectRoot, 'admin-dashboard', 'dist', 'index.html');
+  
+  // Double-check we're not accidentally serving admin dashboard
   if (fs.existsSync(indexPath)) {
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.sendFile(indexPath, { root: projectRoot }, (err) => {
-      if (err) {
-        logger.error('Error serving index.html', { error: err.message, path: indexPath });
-        res.status(500).json({ error: 'Error serving homepage' });
-      }
-    });
+    // Verify it's the correct file by checking first few bytes
+    const fileContent = fs.readFileSync(indexPath, 'utf8');
+    if (fileContent.includes('data-wf-page') || fileContent.includes('York Castle High School Home Page')) {
+      logger.info('Serving root index.html', { path: indexPath });
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.sendFile(indexPath, (err) => {
+        if (err) {
+          logger.error('Error serving index.html', { error: err.message, path: indexPath });
+          res.status(500).json({ error: 'Error serving homepage' });
+        }
+      });
+    } else {
+      logger.error('Wrong index.html detected - might be admin dashboard', { path: indexPath });
+      res.status(500).json({ error: 'Configuration error' });
+    }
   } else {
     logger.error('index.html not found', { path: indexPath, projectRoot });
     res.status(404).json({ error: 'Homepage not found' });
+  }
+});
+
+// Serve other HTML pages (but not index.html - we handle that above)
+// Skip admin and backend paths
+app.get('*.html', (req, res, next) => {
+  if (req.path.startsWith('/admin') || req.path.startsWith('/backend')) {
+    return next();
+  }
+  const htmlPath = path.join(projectRoot, req.path);
+  if (fs.existsSync(htmlPath) && htmlPath.endsWith('.html') && !htmlPath.includes('admin-dashboard') && !htmlPath.includes('backend')) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.sendFile(htmlPath);
+  } else {
+    next();
   }
 });
 
