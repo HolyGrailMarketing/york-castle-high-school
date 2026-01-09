@@ -56,7 +56,7 @@ process.on('uncaughtException', (error) => {
   if (!process.env.VERCEL && !process.env.VERCEL_ENV) {
     process.exit(1);
   }
-}););
+});
 
 // Validate environment variables on startup
 // Wrap in try-catch and make it non-fatal in serverless
