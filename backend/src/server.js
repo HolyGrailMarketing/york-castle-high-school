@@ -28,13 +28,16 @@ import analyticsRoutes from './routes/analytics.js';
 import healthRoutes from './routes/health.js';
 import { initEmailService } from './services/emailService.js';
 
-dotenv.config();
+// Load environment variables
+// In Vercel, env vars are provided directly, but we still try to load .env for local dev
+const projectRoot = process.env.PROJECT_ROOT || path.join(path.dirname(fileURLToPath(import.meta.url)), '../../');
+dotenv.config({ path: path.join(projectRoot, 'backend/.env') });
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
   logger.error('Unhandled Rejection at:', { promise, reason });
-  // Don't exit in development - allow server to continue
-  if (process.env.NODE_ENV === 'production') {
+  // Don't exit in serverless mode (Vercel) or development
+  if (process.env.NODE_ENV === 'production' && !process.env.VERCEL && !process.env.VERCEL_ENV) {
     process.exit(1);
   }
 });
@@ -42,7 +45,10 @@ process.on('unhandledRejection', (reason, promise) => {
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
   logger.error('Uncaught Exception:', { error: error.message, stack: error.stack });
-  process.exit(1);
+  // Don't exit in serverless mode (Vercel)
+  if (!process.env.VERCEL && !process.env.VERCEL_ENV) {
+    process.exit(1);
+  }
 });
 
 // Validate environment variables on startup
@@ -51,7 +57,10 @@ try {
   logger.info('Environment validation passed');
 } catch (error) {
   logger.error('Environment validation failed', { error: error.message });
-  process.exit(1);
+  // Don't exit in serverless mode - let Vercel handle it
+  if (!process.env.VERCEL && !process.env.VERCEL_ENV) {
+    process.exit(1);
+  }
 }
 
 // Initialize Prisma client
@@ -67,15 +76,17 @@ testDatabaseConnection(prisma)
   })
   .catch((error) => {
     logger.error('Database connection failed', { error: error.message });
-    if (nodeEnv === 'production') {
-      // In production, exit if database is not available
+    if (nodeEnv === 'production' && !process.env.VERCEL && !process.env.VERCEL_ENV) {
+      // In production (non-serverless), exit if database is not available
       logger.error('Cannot start server in production without database connection');
       process.exit(1);
     } else {
-      // In development, log warning but continue (frontend can still be served)
+      // In development or serverless, log warning but continue (frontend can still be served)
       logger.warn('Server starting without database connection. API routes will fail until database is configured.');
-      console.warn('⚠️  Database connection failed. Server will start but API routes may not work.');
-      console.warn('   Please check your DATABASE_URL in backend/.env');
+      if (!process.env.VERCEL && !process.env.VERCEL_ENV) {
+        console.warn('⚠️  Database connection failed. Server will start but API routes may not work.');
+        console.warn('   Please check your DATABASE_URL in backend/.env');
+      }
     }
   });
 
@@ -84,7 +95,8 @@ initEmailService();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const projectRoot = path.join(__dirname, '../../');
+// Use PROJECT_ROOT env var if set (for Vercel), otherwise calculate from __dirname
+const projectRoot = process.env.PROJECT_ROOT || path.join(__dirname, '../../');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
