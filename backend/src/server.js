@@ -180,6 +180,7 @@ if (fs.existsSync(adminDistPath)) {
   logger.info('Admin dashboard static files enabled', { path: adminDistPath });
 }
 
+// Serve static assets first (CSS, JS, images, etc.)
 app.use('/css', express.static(path.join(projectRoot, 'css'), staticOptions));
 app.use('/js', express.static(path.join(projectRoot, 'js'), staticOptions));
 app.use('/images', express.static(path.join(projectRoot, 'images'), staticOptions));
@@ -187,21 +188,31 @@ app.use('/fonts', express.static(path.join(projectRoot, 'fonts'), staticOptions)
 app.use('/videos', express.static(path.join(projectRoot, 'videos'), staticOptions));
 app.use('/documents', express.static(path.join(projectRoot, 'documents'), staticOptions));
 
-// Explicitly serve index.html for root route
+// Serve static files from root (for assets referenced with relative paths)
+// This must come before the explicit route handlers
+app.use(express.static(projectRoot, {
+  ...staticOptions,
+  index: ['index.html'], // Allow index.html to be served by static middleware
+  extensions: ['html'],
+}));
+
+// Explicitly serve index.html for root route (fallback if static middleware doesn't catch it)
 app.get('/', (req, res) => {
   const indexPath = path.join(projectRoot, 'index.html');
+  logger.info('Serving root route', { indexPath, exists: fs.existsSync(indexPath) });
   if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.sendFile(indexPath, { root: projectRoot }, (err) => {
+      if (err) {
+        logger.error('Error serving index.html', { error: err.message, path: indexPath });
+        res.status(500).json({ error: 'Error serving homepage' });
+      }
+    });
   } else {
+    logger.error('index.html not found', { path: indexPath, projectRoot });
     res.status(404).json({ error: 'Homepage not found' });
   }
 });
-
-// Serve static HTML pages from root (index.html, etc.)
-app.use(express.static(projectRoot, {
-  extensions: ['html'],
-  index: false, // We handle index.html explicitly above
-}));
 
 // Error handling middleware (must be last)
 app.use(errorHandler);
