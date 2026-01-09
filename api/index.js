@@ -10,18 +10,22 @@ process.env.VERCEL = '1';
 process.env.PROJECT_ROOT = path.join(__dirname, '../');
 
 // Import app after setting environment variables
+// Wrap in try-catch to handle any import errors gracefully
 let app;
 try {
-  app = await import('../backend/src/server.js');
-  app = app.default || app;
+  const serverModule = await import('../backend/src/server.js');
+  app = serverModule.default || serverModule;
 } catch (error) {
   console.error('Failed to import server:', error);
+  console.error('Error stack:', error.stack);
   // Create a minimal error handler
-  app = (await import('express')).default();
+  const express = (await import('express')).default;
+  app = express();
   app.use((req, res) => {
     res.status(500).json({ 
       error: 'Server initialization failed',
-      message: error.message 
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   });
 }
