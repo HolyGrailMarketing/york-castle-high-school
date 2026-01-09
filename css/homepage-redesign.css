@@ -229,20 +229,23 @@
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-xs);
-  background: transparent;
+  background: rgba(255, 255, 255, 0.15);
   color: var(--ychs-white);
   padding: var(--spacing-md) var(--spacing-lg);
   border-radius: var(--radius-md);
   font-weight: 600;
   font-size: 1rem;
   transition: var(--transition-medium);
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.25);
   border-color: var(--ychs-white);
   transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
 }
 
 /* Scroll indicator */
