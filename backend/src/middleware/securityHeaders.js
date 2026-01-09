@@ -5,12 +5,44 @@ export const securityHeaders = helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https:"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Needed for Swagger UI
-      connectSrc: ["'self'"],
-      frameSrc: ["'self'"], // Allow iframes for Swagger UI
+      styleSrc: [
+        "'self'", 
+        "'unsafe-inline'", 
+        "https://fonts.googleapis.com",
+        "https://cdn.jsdelivr.net"
+      ],
+      fontSrc: [
+        "'self'", 
+        "https://fonts.gstatic.com",
+        "data:"
+      ],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      scriptSrc: [
+        "'self'", 
+        "'unsafe-inline'", 
+        "'unsafe-eval'",
+        "https://ajax.googleapis.com",
+        "https://d3e54v103j8qbb.cloudfront.net",
+        "https://cdn.jsdelivr.net",
+        "https://cdn.voiceflow.com",
+        "https://www.googletagmanager.com",
+        "https://www.google.com",
+        "https://cdn.embedly.com"
+      ],
+      connectSrc: [
+        "'self'",
+        "https://general-runtime.voiceflow.com",
+        "https://www.google-analytics.com",
+        "https://*.voiceflow.com"
+      ],
+      frameSrc: [
+        "'self'",
+        "https://www.youtube.com",
+        "https://youtube.com",
+        "https://cdn.embedly.com",
+        "https://www.google.com"
+      ],
+      mediaSrc: ["'self'", "https:", "blob:"],
     },
   },
   crossOriginEmbedderPolicy: false, // Disable for compatibility
