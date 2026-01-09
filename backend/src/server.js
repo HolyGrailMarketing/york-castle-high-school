@@ -161,71 +161,80 @@ app.use('/api/analytics', analyticsRoutes);
 
 // CRITICAL: Serve root index.html FIRST, before any static middleware
 // This ensures the correct file is served and prevents admin dashboard from being served at root
-app.get('/', (req, res) => {
-  // Use path.join to ensure we get the exact file from project root
-  const indexPath = path.join(projectRoot, 'index.html');
+app.get('/', (req, res, next) => {
+  // Use path.resolve to get absolute path and prevent any path manipulation
+  const indexPath = path.resolve(projectRoot, 'index.html');
   
   // Explicitly check that the path is NOT in admin-dashboard
-  if (indexPath.includes('admin-dashboard')) {
+  if (indexPath.includes('admin-dashboard') || indexPath.includes('admin-dashboard')) {
     logger.error('ERROR: Root route trying to serve admin-dashboard file!', { indexPath, projectRoot });
     return res.status(500).json({ error: 'Configuration error' });
   }
   
-  if (fs.existsSync(indexPath)) {
-    // Verify it's the correct file by checking content
-    const fileContent = fs.readFileSync(indexPath, 'utf8');
-    
-    // Check for main site indicators (must have these)
-    const hasWfPage = fileContent.includes('data-wf-page');
-    const hasWfSite = fileContent.includes('data-wf-site');
-    const hasHomePage = fileContent.includes('York Castle High School Home Page');
-    
-    // Check that it's NOT admin dashboard (must NOT have these)
-    const hasAdminAssets = fileContent.includes('/admin/assets/');
-    const hasAdminPortal = fileContent.includes('Admin Portal');
-    const hasRootDiv = fileContent.includes('<div id="root">');
-    const hasLangEn = fileContent.includes('<html lang="en">');
-    const hasReactRoot = fileContent.includes('id="root"');
-    
-    // Main site must have webflow attributes and NOT have admin dashboard indicators
-    const isMainSite = (hasWfPage || hasWfSite || hasHomePage) && 
-                      !hasAdminAssets && 
-                      !hasAdminPortal && 
-                      !hasRootDiv && 
-                      !hasLangEn &&
-                      !hasReactRoot;
-    
-    if (isMainSite) {
-      logger.info('Serving root index.html', { path: indexPath });
-      res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      res.sendFile(indexPath, (err) => {
-        if (err) {
-          logger.error('Error serving index.html', { error: err.message, path: indexPath });
-          res.status(500).json({ error: 'Error serving homepage' });
-        }
-      });
-    } else {
-      logger.error('Wrong index.html detected - REJECTING (admin dashboard detected)', { 
-        path: indexPath, 
-        hasWfPage,
-        hasWfSite,
-        hasHomePage,
-        hasAdminAssets,
-        hasAdminPortal,
-        hasRootDiv,
-        hasLangEn,
-        firstChars: fileContent.substring(0, 300)
-      });
-      // Don't serve the wrong file - return error instead
-      res.status(500).json({ 
-        error: 'Configuration error - wrong file being served',
-        message: 'The root route attempted to serve admin dashboard HTML. This should not happen.'
-      });
-    }
-  } else {
+  if (!fs.existsSync(indexPath)) {
     logger.error('index.html not found', { path: indexPath, projectRoot });
-    res.status(404).json({ error: 'Homepage not found' });
+    return res.status(404).json({ error: 'Homepage not found' });
   }
+  
+  // Verify it's the correct file by checking content
+  let fileContent;
+  try {
+    fileContent = fs.readFileSync(indexPath, 'utf8');
+  } catch (err) {
+    logger.error('Error reading index.html', { error: err.message, path: indexPath });
+    return res.status(500).json({ error: 'Error reading homepage' });
+  }
+  
+  // Check for main site indicators (must have these)
+  const hasWfPage = fileContent.includes('data-wf-page');
+  const hasWfSite = fileContent.includes('data-wf-site');
+  const hasHomePage = fileContent.includes('York Castle High School Home Page');
+  
+  // Check that it's NOT admin dashboard (must NOT have these)
+  const hasAdminAssets = fileContent.includes('/admin/assets/');
+  const hasAdminPortal = fileContent.includes('Admin Portal');
+  const hasRootDiv = fileContent.includes('<div id="root">');
+  const hasLangEn = fileContent.includes('<html lang="en">');
+  const hasReactRoot = fileContent.includes('id="root"');
+  
+  // Main site must have webflow attributes and NOT have admin dashboard indicators
+  const isMainSite = (hasWfPage || hasWfSite || hasHomePage) && 
+                    !hasAdminAssets && 
+                    !hasAdminPortal && 
+                    !hasRootDiv && 
+                    !hasLangEn &&
+                    !hasReactRoot;
+  
+  if (!isMainSite) {
+    logger.error('Wrong index.html detected - REJECTING (admin dashboard detected)', { 
+      path: indexPath, 
+      hasWfPage,
+      hasWfSite,
+      hasHomePage,
+      hasAdminAssets,
+      hasAdminPortal,
+      hasRootDiv,
+      hasLangEn,
+      firstChars: fileContent.substring(0, 300)
+    });
+    // Don't serve the wrong file - return error instead
+    return res.status(500).json({ 
+      error: 'Configuration error - wrong file being served',
+      message: 'The root route attempted to serve admin dashboard HTML. This should not happen.'
+    });
+  }
+  
+  // All checks passed - serve the correct file
+  logger.info('Serving root index.html (VALIDATED)', { path: indexPath });
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      logger.error('Error serving index.html', { error: err.message, path: indexPath });
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Error serving homepage' });
+      }
+    }
+  });
 });
 
 // Serve static files with caching headers (define before use)
