@@ -246,17 +246,31 @@ app.get('/', (req, res, next) => {
     });
   }
   
-  // All checks passed - serve the correct file
-  logger.info('Serving root index.html (VALIDATED)', { path: indexPath });
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.sendFile(indexPath, (err) => {
-    if (err) {
-      logger.error('Error serving index.html', { error: err.message, path: indexPath });
-      if (!res.headersSent) {
-        res.status(500).json({ error: 'Error serving homepage' });
+    // All checks passed - serve the correct file
+    logger.info('Serving root index.html (VALIDATED)', { path: indexPath });
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.sendFile(indexPath, (err) => {
+      if (err) {
+        logger.error('Error serving index.html', { error: err.message, stack: err.stack, path: indexPath });
+        if (!res.headersSent) {
+          res.status(500).json({ error: 'Error serving homepage', message: err.message });
+        }
       }
+    });
+  } catch (error) {
+    logger.error('Unexpected error in root route handler', { 
+      error: error.message, 
+      stack: error.stack,
+      projectRoot,
+      vercel: !!process.env.VERCEL
+    });
+    if (!res.headersSent) {
+      res.status(500).json({ 
+        error: 'Internal server error',
+        message: error.message 
+      });
     }
-  });
+  }
 });
 
 // Serve static files with caching headers (define before use)
