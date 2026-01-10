@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { authService } from '../services/api';
 import GoogleSignIn from '../components/GoogleSignIn';
 import logo from '../assets/logo.png';
 import './Login.css';
@@ -19,12 +20,32 @@ const Login = () => {
   useEffect(() => {
     const token = searchParams.get('token');
     if (token) {
-      // Store token
+      setLoading(true);
+      setError('');
+      
+      // Store token in localStorage and authService immediately
       localStorage.setItem('token', token);
+      authService.setToken(token);
+      
       // Clear the token from URL to avoid issues on refresh
       window.history.replaceState({}, '', '/admin/auth/callback');
-      // Redirect to dashboard - AuthContext will pick up the token from localStorage
-      window.location.href = '/admin/dashboard';
+      
+      // Verify token by fetching user data
+      authService.getMe()
+        .then(() => {
+          // User fetched successfully - token is valid
+          // Use full page reload to ensure AuthContext re-initializes with the token
+          // This ensures the AuthContext picks up the token from localStorage on mount
+          window.location.href = '/admin/';
+        })
+        .catch((err) => {
+          console.error('Failed to fetch user after OAuth:', err);
+          setError('Authentication failed. Please try again.');
+          setLoading(false);
+          // Clear invalid token
+          localStorage.removeItem('token');
+          authService.setToken(null);
+        });
     }
   }, [searchParams]);
 
@@ -43,6 +64,9 @@ const Login = () => {
     }
   };
 
+  // Show loading state if processing OAuth callback
+  const isProcessingOAuth = loading && searchParams.get('token');
+
   return (
     <div className="login-container">
       <div className="login-background">
@@ -56,7 +80,13 @@ const Login = () => {
           <h1>York Castle High School</h1>
           <p className="login-subtitle">Administrative Portal</p>
         </div>
-        <form onSubmit={handleSubmit}>
+        {isProcessingOAuth && (
+          <div className="oauth-loading">
+            <span className="spinner"></span>
+            <p>Completing Google Sign-In...</p>
+          </div>
+        )}
+        <form onSubmit={handleSubmit} style={{ display: isProcessingOAuth ? 'none' : 'block' }}>
           {error && (
             <div className="error-message">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -140,11 +170,15 @@ const Login = () => {
           </button>
         </form>
         
-        <div className="login-divider">
-          <span>OR</span>
-        </div>
+        {!isProcessingOAuth && (
+          <>
+            <div className="login-divider">
+              <span>OR</span>
+            </div>
 
-        <GoogleSignIn />
+            <GoogleSignIn />
+          </>
+        )}
 
         <div className="login-footer">
           <p>Secure access for authorized personnel only</p>
