@@ -17,6 +17,10 @@
       "destination": "/api/index.mjs"
     },
     {
+      "source": "/admin/:path*",
+      "destination": "/admin/index.html"
+    },
+    {
       "source": "/:file.html",
       "destination": "/api/index.mjs"
     }
