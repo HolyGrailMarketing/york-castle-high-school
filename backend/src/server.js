@@ -199,6 +199,269 @@ app.use(passport.initialize());
 // Request logging middleware
 app.use(requestLogger);
 
+// Serve static assets (CSS, JS, images, videos, fonts, documents) BEFORE API routes
+// This ensures static files are served correctly with proper MIME types
+// Use dynamic path resolution to check both staticRoot and projectRoot at request time
+const serveStaticWithFallback = (route, dirName) => {
+  return (req, res, next) => {
+    // Get the original path - in Vercel, req.url might be more reliable than req.path
+    let originalPath = req.path || req.url?.split('?')[0] || '';
+    
+    // Log the request for debugging (only in development or first few requests)
+    if (process.env.NODE_ENV === 'development' || !process.env.STATIC_LOGGED) {
+      logger.debug('Static file request', { 
+        route, 
+        originalPath, 
+        reqPath: req.path, 
+        reqUrl: req.url,
+        dirName 
+      });
+      if (process.env.VERCEL && !process.env.STATIC_LOGGED) {
+        process.env.STATIC_LOGGED = 'true';
+      }
+    }
+    
+    // In Vercel, req.path might not include the route prefix, so check both
+    let filePathFromUrl = originalPath;
+    
+    // Handle both '/css/file.css' and 'file.css' formats
+    if (filePathFromUrl.startsWith(route)) {
+      filePathFromUrl = filePathFromUrl.slice(route.length);
+    }
+    
+    // Remove leading slash if present
+    let relativePath = filePathFromUrl.startsWith('/') ? filePathFromUrl.slice(1) : filePathFromUrl;
+    
+    // Handle case where req.path is just the route (e.g., '/css')
+    if (!relativePath || relativePath === '') {
+      return next();
+    }
+    
+    // URL decode the filename to handle encoded characters (e.g., %C2%B7 -> ·)
+    try {
+      relativePath = decodeURIComponent(relativePath);
+    } catch (e) {
+      // If decoding fails, log and continue with original
+      logger.debug('Failed to decode URL path, using original', { path: originalPath, error: e.message });
+    }
+    
+    // Try multiple paths: staticRoot first, then projectRoot, then public directory, then cwd
+    const possiblePaths = [
+      path.join(staticRoot, dirName, relativePath),
+      path.join(projectRoot, 'public', dirName, relativePath),
+      path.join(projectRoot, dirName, relativePath),
+      path.join(process.cwd(), dirName, relativePath),
+      path.join(__dirname, '../../', dirName, relativePath), // Relative to server.js
+      path.join('/var/task', dirName, relativePath), // Vercel root
+      path.join('/var/task/public', dirName, relativePath), // Vercel public
+      path.join('/var/task/backend', dirName, relativePath), // Vercel backend (fallback)
+    ];
+    
+    // Try to find and serve the file
+    for (const filePath of possiblePaths) {
+      try {
+        if (fs.existsSync(filePath)) {
+          const stats = fs.statSync(filePath);
+          if (stats.isFile()) {
+            // File found! Set appropriate MIME type based on file extension
+            const ext = path.extname(filePath).toLowerCase();
+            const mimeTypes = {
+              '.css': 'text/css; charset=utf-8',
+              '.js': 'application/javascript; charset=utf-8',
+              '.mjs': 'application/javascript; charset=utf-8',
+              '.json': 'application/json; charset=utf-8',
+              '.png': 'image/png',
+              '.jpg': 'image/jpeg',
+              '.jpeg': 'image/jpeg',
+              '.gif': 'image/gif',
+              '.svg': 'image/svg+xml',
+              '.webp': 'image/webp',
+              '.woff': 'font/woff',
+              '.woff2': 'font/woff2',
+              '.ttf': 'font/ttf',
+              '.otf': 'font/otf',
+              '.mp4': 'video/mp4',
+              '.webm': 'video/webm',
+              '.pdf': 'application/pdf',
+              '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+              '.ico': 'image/x-icon',
+              '.avif': 'image/avif',
+            };
+            
+            if (mimeTypes[ext]) {
+              res.setHeader('Content-Type', mimeTypes[ext]);
+            }
+            
+            // Set cache headers for static assets
+            if (NODE_ENV === 'production') {
+              res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            } else {
+              res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+            }
+            
+            // Send the file
+            res.sendFile(filePath, (err) => {
+              if (err && !res.headersSent) {
+                logger.warn(`Error serving static file: ${filePath}`, { error: err.message, path: req.path, code: err.code });
+                res.status(404).end();
+              }
+            });
+            return; // File served, exit middleware
+          }
+        }
+      } catch (statError) {
+        // File might exist but statSync failed (permissions, etc.)
+        logger.debug(`Error checking file: ${filePath}`, { error: statError.message, code: statError.code });
+        continue;
+      }
+    }
+    
+    // File not found in any location - return 404 with appropriate content type
+    logger.debug(`Static file not found: ${req.path}`, { 
+      dirName, 
+      route, 
+      relativePath,
+      checkedPaths: possiblePaths.slice(0, 3).map(p => ({ path: p, exists: fs.existsSync(p) })),
+      staticRoot,
+      projectRoot,
+      cwd: process.cwd(),
+      vercel: !!process.env.VERCEL
+    });
+    
+    // Return 404 with correct content type based on extension
+    const ext = path.extname(req.path).toLowerCase();
+    if (ext === '.css') {
+      res.status(404).type('text/css').send('/* File not found */');
+    } else if (ext === '.js' || ext === '.mjs') {
+      res.status(404).type('application/javascript').send('// File not found');
+    } else {
+      res.status(404).end();
+    }
+    return; // Don't call next() - we've handled the request
+  };
+};
+
+// Serve static files BEFORE API routes (critical for proper MIME types)
+// Use our custom middleware first, then fall back to Express static middleware
+app.use('/css', serveStaticWithFallback('/css', 'css'));
+app.use('/js', serveStaticWithFallback('/js', 'js'));
+app.use('/images', serveStaticWithFallback('/images', 'images'));
+app.use('/fonts', serveStaticWithFallback('/fonts', 'fonts'));
+app.use('/videos', serveStaticWithFallback('/videos', 'videos'));
+app.use('/documents', serveStaticWithFallback('/documents', 'documents'));
+
+// Serve static files from root directories (css, js, images at project root)
+// This handles files that might be at project root, not in public/
+const rootDirs = [
+  projectRoot,
+  staticRoot,
+  process.cwd(),
+  '/var/task', // Vercel
+];
+
+for (const rootDir of rootDirs) {
+  if (fs.existsSync(rootDir)) {
+    // Only serve if it's a static file request (has extension)
+    app.use((req, res, next) => {
+      // Skip API routes and admin routes - they're handled separately
+      if (req.path.startsWith('/api/') || req.path.startsWith('/admin') || req.path.startsWith('/health') || req.path.startsWith('/api-docs')) {
+        return next();
+      }
+      
+      // Only handle requests for files with extensions (static assets)
+      const isStaticFile = /\.(css|js|mjs|json|png|jpg|jpeg|gif|svg|webp|woff|woff2|ttf|mp4|webm|pdf|docx|ico|avif)$/i.test(req.path);
+      if (!isStaticFile) {
+        return next();
+      }
+      
+      // Check if file exists at root level
+      const filePath = path.join(rootDir, req.path);
+      if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+        const ext = path.extname(filePath).toLowerCase();
+        const mimeTypes = {
+          '.css': 'text/css; charset=utf-8',
+          '.js': 'application/javascript; charset=utf-8',
+          '.mjs': 'application/javascript; charset=utf-8',
+          '.json': 'application/json; charset=utf-8',
+          '.png': 'image/png',
+          '.jpg': 'image/jpeg',
+          '.jpeg': 'image/jpeg',
+          '.gif': 'image/gif',
+          '.svg': 'image/svg+xml',
+          '.webp': 'image/webp',
+          '.mp4': 'video/mp4',
+          '.webm': 'video/webm',
+          '.woff': 'font/woff',
+          '.woff2': 'font/woff2',
+          '.ttf': 'font/ttf',
+          '.ico': 'image/x-icon',
+          '.avif': 'image/avif',
+        };
+        
+        if (mimeTypes[ext]) {
+          res.setHeader('Content-Type', mimeTypes[ext]);
+        }
+        if (NODE_ENV === 'production') {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+        
+        res.sendFile(filePath, (err) => {
+          if (err && !res.headersSent) {
+            logger.warn(`Error serving file from root: ${filePath}`, { error: err.message });
+            // Return 404 with correct content type
+            if (ext === '.css') {
+              res.status(404).type('text/css').send('/* File not found */');
+            } else if (ext === '.js' || ext === '.mjs') {
+              res.status(404).type('application/javascript').send('// File not found');
+            } else {
+              res.status(404).end();
+            }
+          }
+        });
+        return; // File served or error handled - don't call next()
+      }
+      // File not found - continue to next middleware (Express static or catch-all)
+      next();
+    });
+    logger.info('Root-level static file serving enabled', { rootDir });
+    break;
+  }
+}
+
+// Fallback: Use Express static middleware for public directory
+// This serves files from public/ directory structure
+const publicDirs = [
+  path.join(projectRoot, 'public'),
+  path.join(staticRoot, 'public'),
+  path.join(process.cwd(), 'public'),
+  '/var/task/public', // Vercel
+  path.join(__dirname, '../../public'), // Relative to server.js
+];
+
+for (const publicDir of publicDirs) {
+  if (fs.existsSync(publicDir)) {
+    app.use(express.static(publicDir, {
+      setHeaders: (res, filePath, stat) => {
+        const ext = path.extname(filePath).toLowerCase();
+        const mimeTypes = {
+          '.css': 'text/css; charset=utf-8',
+          '.js': 'application/javascript; charset=utf-8',
+          '.mjs': 'application/javascript; charset=utf-8',
+          '.json': 'application/json; charset=utf-8',
+        };
+        if (mimeTypes[ext]) {
+          res.setHeader('Content-Type', mimeTypes[ext]);
+        }
+        if (NODE_ENV === 'production') {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+      }
+    }));
+    logger.info('Express static middleware enabled for public directory', { publicDir });
+    break; // Only use the first existing public directory
+  }
+}
+
 // Serve uploaded files (only in non-serverless environments)
 // In serverless, files should be stored in cloud storage (S3, etc.) and served via CDN
 if (!isServerless) {
@@ -470,104 +733,7 @@ app.get('/favicon.ico', (req, res, next) => {
   }
 });
 
-// Serve static assets (CSS, JS, images, etc.)
-// Use dynamic path resolution to check both staticRoot and projectRoot at request time
-const serveStaticWithFallback = (route, dirName) => {
-  return (req, res, next) => {
-    logger.debug(`Static middleware called: ${req.path}`, { route, dirName });
-    
-    // Remove the route prefix from req.path (e.g., '/css/file.css' -> '/file.css' -> 'file.css')
-    // Also handle subdirectories like '/images/gallery/image.jpg' -> 'gallery/image.jpg'
-    let filePathFromUrl = req.path;
-    if (filePathFromUrl.startsWith(route)) {
-      filePathFromUrl = filePathFromUrl.slice(route.length);
-    }
-    // Remove leading slash if present
-    const relativePath = filePathFromUrl.startsWith('/') ? filePathFromUrl.slice(1) : filePathFromUrl;
-    
-    if (!relativePath) {
-      // If no file path, skip this middleware
-      logger.debug(`Skipping static middleware: empty relativePath for ${req.path}`, { route, dirName });
-      return next();
-    }
-    
-    // Try multiple paths: staticRoot first, then projectRoot, then public directory
-    const possiblePaths = [
-      path.join(staticRoot, dirName, relativePath),
-      path.join(projectRoot, 'public', dirName, relativePath),
-      path.join(projectRoot, dirName, relativePath),
-    ];
-    
-    logger.debug(`Checking paths for ${req.path}`, { 
-      relativePath, 
-      possiblePaths: possiblePaths.map(p => ({ path: p, exists: fs.existsSync(p) }))
-    });
-    
-    for (const filePath of possiblePaths) {
-      try {
-        if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-          logger.info(`Found static file: ${req.path}`, { filePath, dirName });
-          
-          // Set appropriate MIME type based on file extension
-          const ext = path.extname(filePath).toLowerCase();
-          const mimeTypes = {
-            '.css': 'text/css; charset=utf-8',
-            '.js': 'application/javascript; charset=utf-8',
-            '.json': 'application/json; charset=utf-8',
-            '.png': 'image/png',
-            '.jpg': 'image/jpeg',
-            '.jpeg': 'image/jpeg',
-            '.gif': 'image/gif',
-            '.svg': 'image/svg+xml',
-            '.webp': 'image/webp',
-            '.woff': 'font/woff',
-            '.woff2': 'font/woff2',
-            '.ttf': 'font/ttf',
-            '.mp4': 'video/mp4',
-            '.webm': 'video/webm',
-            '.pdf': 'application/pdf',
-            '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          };
-          
-          if (mimeTypes[ext]) {
-            res.setHeader('Content-Type', mimeTypes[ext]);
-          }
-          
-          res.sendFile(filePath, staticOptions, (err) => {
-            if (err && !res.headersSent) {
-              logger.warn(`Error serving static file: ${filePath}`, { error: err.message, path: req.path });
-              next();
-            }
-          });
-          return;
-        }
-      } catch (statError) {
-        // File might exist but statSync failed (permissions, etc.)
-        logger.debug(`Error checking file: ${filePath}`, { error: statError.message });
-        continue;
-      }
-    }
-    
-    // File not found in any location - log with details for debugging
-    logger.warn(`Static file not found: ${req.path}`, { 
-      dirName, 
-      route,
-      relativePath,
-      possiblePaths: possiblePaths.map(p => ({ path: p, exists: fs.existsSync(p) })),
-      staticRoot,
-      projectRoot,
-      cwd: process.cwd()
-    });
-    next();
-  };
-};
-
-app.use('/css', serveStaticWithFallback('/css', 'css'));
-app.use('/js', serveStaticWithFallback('/js', 'js'));
-app.use('/images', serveStaticWithFallback('/images', 'images'));
-app.use('/fonts', serveStaticWithFallback('/fonts', 'fonts'));
-app.use('/videos', serveStaticWithFallback('/videos', 'videos'));
-app.use('/documents', serveStaticWithFallback('/documents', 'documents'));
+// Static file middleware already defined above before API routes - no duplicate needed
 
 // Serve other HTML pages (but not index.html - we handle that above)
 // Using regex pattern to match any path ending with .html

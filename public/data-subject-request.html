@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Subject Rights Request - York Castle High School</title>
+  <meta name="description" content="Submit a data subject rights request under the Jamaican Data Protection Act">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/york-castle-high-school.webflow.css">
+  <link rel="stylesheet" href="css/homepage-redesign.css">
+
+  <style>
+    .request-form-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .request-form-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .request-form-header h1 {
+      color: var(--ychs-charcoal);
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .request-form-header p {
+      color: #666;
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
+    .request-form {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+    }
+
+    .form-section {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    .form-section:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .form-section h3 {
+      color: var(--ychs-charcoal);
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--ychs-charcoal);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #e5e5e5;
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--ychs-gold);
+    }
+
+    .form-group textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .radio-option input[type="radio"] {
+      width: auto;
+      margin: 0;
+    }
+
+    .help-text {
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 0.25rem;
+    }
+
+    .required {
+      color: #dc3545;
+    }
+
+    .submit-section {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid #e5e5e5;
+    }
+
+    .btn-submit {
+      background: var(--ychs-gold);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 6px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      min-width: 200px;
+    }
+
+    .btn-submit:hover {
+      background: var(--ychs-charcoal);
+    }
+
+    .btn-submit:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .processing-message {
+      display: none;
+      background: #d4edda;
+      color: #155724;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-top: 1rem;
+      text-align: center;
+    }
+
+    .error-message {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-top: 1rem;
+      display: none;
+    }
+
+    .rights-info {
+      background: #f8f9fa;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      border-left: 4px solid var(--ychs-gold);
+    }
+
+    .rights-info h4 {
+      color: var(--ychs-charcoal);
+      margin-bottom: 1rem;
+    }
+
+    .rights-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .rights-list li {
+      padding: 0.75rem;
+      background: white;
+      border-radius: 6px;
+      border: 1px solid #e5e5e5;
+    }
+
+    .rights-list strong {
+      color: var(--ychs-charcoal);
+    }
+
+    @media (max-width: 768px) {
+      .request-form-container {
+        padding: 1rem;
+      }
+
+      .request-form {
+        padding: 1.5rem;
+      }
+
+      .request-form-header h1 {
+        font-size: 2rem;
+      }
+
+      .rights-list {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <div class="header-wrapper">
+    <div class="navbar principal-navbar w-nav">
+      <div class="container-23 w-container">
+        <nav class="nav-menu w-nav-menu">
+          <div class="nav-brand">
+            <a href="index.html" class="brand-link w-nav-brand">
+              <img src="images/logo-badge.webp" alt="York Castle High School Logo" class="nav-logo">
+            </a>
+          </div>
+          <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <div class="dropdown w-dropdown">
+              <div class="nav-link dropdown-toggle w-dropdown-toggle">
+                <div>About</div>
+                <div class="dropdown-icon w-icon-dropdown-toggle"></div>
+              </div>
+              <nav class="dropdown-list w-dropdown-list">
+                <a href="history.html" class="dropdown-link w-dropdown-link">Our History</a>
+                <a href="mission-and-vision.html" class="dropdown-link w-dropdown-link">Mission & Vision</a>
+                <a href="principals-message.html" class="dropdown-link w-dropdown-link">Principal's Message</a>
+              </nav>
+            </div>
+            <div class="dropdown w-dropdown">
+              <div class="nav-link dropdown-toggle w-dropdown-toggle">
+                <div>Admissions</div>
+                <div class="dropdown-icon w-icon-dropdown-toggle"></div>
+              </div>
+              <nav class="dropdown-list w-dropdown-list">
+                <a href="sign-up.html" class="dropdown-link w-dropdown-link">Apply Now</a>
+                <a href="sixth-form-application.html" class="dropdown-link w-dropdown-link">Sixth Form</a>
+                <a href="info-on-colleges.html" class="dropdown-link w-dropdown-link">College Info</a>
+              </nav>
+            </div>
+            <div class="dropdown w-dropdown">
+              <div class="nav-link dropdown-toggle w-dropdown-toggle">
+                <div>Resources</div>
+                <div class="dropdown-icon w-icon-dropdown-toggle"></div>
+              </div>
+              <nav class="dropdown-list w-dropdown-list">
+                <a href="courses.html" class="dropdown-link w-dropdown-link">Courses</a>
+                <a href="teachers.html" class="dropdown-link w-dropdown-link">Staff Directory</a>
+                <a href="booklist.html" class="dropdown-link w-dropdown-link">Book Lists</a>
+                <a href="doc-request.html" class="dropdown-link w-dropdown-link">Document Request</a>
+              </nav>
+            </div>
+            <a href="contact-us.html" class="nav-link">Contact</a>
+          </div>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="request-form-container">
+    <div class="request-form-header">
+      <h1>Data Subject Rights Request</h1>
+      <p>
+        Under the Jamaican Data Protection Act, you have rights regarding your personal data that we process.
+        Use this form to submit a request to exercise your data subject rights.
+      </p>
+    </div>
+
+    <!-- Rights Information -->
+    <div class="rights-info">
+      <h4>Your Data Subject Rights</h4>
+      <ul class="rights-list">
+        <li><strong>Right to Access</strong>: Request a copy of all personal data we hold about you</li>
+        <li><strong>Right to Correction</strong>: Request correction of inaccurate or incomplete data</li>
+        <li><strong>Right to Deletion</strong>: Request deletion of your personal data</li>
+        <li><strong>Right to Portability</strong>: Request your data in a machine-readable format</li>
+        <li><strong>Right to Restrict Processing</strong>: Request limitation of how we process your data</li>
+        <li><strong>Right to Object</strong>: Object to processing based on legitimate interests</li>
+      </ul>
+    </div>
+
+    <!-- Request Form -->
+    <form class="request-form" id="dataSubjectForm">
+      <!-- Request Type -->
+      <div class="form-section">
+        <h3>Type of Request <span class="required">*</span></h3>
+        <div class="form-group">
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="access" name="requestType" value="access" required>
+              <label for="access"><strong>Access Request</strong> - Get a copy of all personal data we hold about you</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="correction" name="requestType" value="correction">
+              <label for="correction"><strong>Correction Request</strong> - Request correction of inaccurate data</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="deletion" name="requestType" value="deletion">
+              <label for="deletion"><strong>Deletion Request</strong> - Request deletion of your personal data</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="portability" name="requestType" value="portability">
+              <label for="portability"><strong>Data Portability</strong> - Get your data in a machine-readable format</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="restriction" name="requestType" value="restriction">
+              <label for="restriction"><strong>Restrict Processing</strong> - Limit how we process your data</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="objection" name="requestType" value="objection">
+              <label for="objection"><strong>Objection</strong> - Object to processing of your data</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Personal Information -->
+      <div class="form-section">
+        <h3>Your Information</h3>
+        <div class="form-group">
+          <label for="name">Full Name <span class="required">*</span></label>
+          <input type="text" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+          <label for="email">Email Address <span class="required">*</span></label>
+          <input type="email" id="email" name="email" required>
+          <div class="help-text">We use this to verify your identity and communicate about your request</div>
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone">
+        </div>
+      </div>
+
+      <!-- Request Details -->
+      <div class="form-section">
+        <h3>Request Details</h3>
+        <div class="form-group">
+          <label for="description">Please describe your request in detail <span class="required">*</span></label>
+          <textarea id="description" name="description" required placeholder="Provide specific details about what you want to access, correct, or delete. Include dates, types of data, or any other relevant information."></textarea>
+          <div class="help-text">Be as specific as possible to help us process your request efficiently</div>
+        </div>
+        <div class="form-group">
+          <label for="timeframe">Preferred timeframe for response</label>
+          <select id="timeframe" name="timeframe">
+            <option value="standard">Standard (within 30 days)</option>
+            <option value="urgent">Urgent (please explain in description)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Identity Verification -->
+      <div class="form-section">
+        <h3>Identity Verification</h3>
+        <p>For sensitive requests (access, deletion, portability), we may need to verify your identity. You can optionally upload supporting documents now, or we will contact you if verification is needed.</p>
+        <div class="form-group">
+          <label for="verificationDoc">Upload identity verification document (optional)</label>
+          <input type="file" id="verificationDoc" name="verificationDoc" accept=".pdf,.jpg,.jpeg,.png">
+          <div class="help-text">Accepted formats: PDF, JPG, PNG. Examples: ID card, passport, birth certificate</div>
+        </div>
+      </div>
+
+      <!-- Submit Section -->
+      <div class="submit-section">
+        <button type="submit" class="btn-submit" id="submitBtn">
+          Submit Request
+        </button>
+        <div class="processing-message" id="processingMessage">
+          Processing your request... Please wait.
+        </div>
+        <div class="error-message" id="errorMessage">
+          An error occurred while submitting your request. Please try again.
+        </div>
+      </div>
+    </form>
+
+    <!-- Contact Information -->
+    <div style="text-align: center; margin-top: 2rem; padding: 2rem; background: #f8f9fa; border-radius: 8px;">
+      <h3>Need Help?</h3>
+      <p>If you have questions about your rights or this form, contact our Data Protection Officer:</p>
+      <p><strong>Email:</strong> yorkcastle.high.san@moey.gov.jm</p>
+      <p><strong>Phone:</strong> +1 876 975-2217</p>
+      <p><strong>Address:</strong> York Castle High School, Brown's Town, St. Ann, Jamaica</p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer-redesign redesign">
+    <div class="footer-container">
+      <div class="footer-main">
+        <div class="footer-brand">
+          <div class="footer-logo">
+            <img src="images/logo-badge.webp" alt="York Castle High School Logo">
+            <span>York Castle<br>High School</span>
+          </div>
+          <p>A seven year grant-aided Methodist co-educational secondary school serving students from across Jamaica since 1914.</p>
+          <div class="footer-social">
+            <a href="https://m.facebook.com/YORK-CASTLE-HIGH-SCHOOL-JAMAICA-380111685446/" target="_blank" class="social-link">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+            </a>
+            <a href="https://www.instagram.com/york_castle_high/" target="_blank" class="social-link">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-column">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="history.html">About Us</a></li>
+            <li><a href="teachers.html">Staff Directory</a></li>
+            <li><a href="calendar.html">Calendar</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="blog.html">News</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-column">
+          <h4>Resources</h4>
+          <ul>
+            <li><a href="booklist.html">Book Lists</a></li>
+            <li><a href="doc-request.html">Request Transcript</a></li>
+            <li><a href="info-on-colleges.html">College Info</a></li>
+            <li><a href="https://yorkcastle.myschooljamaica.com" target="_blank">View Report Online</a></li>
+            <li><a href="#" data_open_privacy="true">Privacy Policy</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-column">
+          <h4>Contact</h4>
+          <div class="footer-contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path>
+            </svg>
+            <span>+1 876 975-2217</span>
+          </div>
+          <div class="footer-contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <span>yorkcastle.high.san@moey.gov.jm</span>
+          </div>
+          <div class="footer-contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span>Brown's Town, St. Ann, Jamaica</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>© 2025 York Castle High School. All rights reserved.</p>
+        <div class="footer-bottom-links">
+          <a href="#" data_open_privacy="true">Privacy Policy</a>
+          <a href="contact-us.html">Contact</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('dataSubjectForm');
+      const submitBtn = document.getElementById('submitBtn');
+      const processingMessage = document.getElementById('processingMessage');
+      const errorMessage = document.getElementById('errorMessage');
+
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // Show processing message
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting...';
+        processingMessage.style.display = 'block';
+        errorMessage.style.display = 'none';
+
+        try {
+          const formData = new FormData(form);
+
+          // Convert FormData to JSON for the API
+          const jsonData = {
+            requestType: formData.get('requestType'),
+            name: formData.get('name'),
+            email: formData.get('email'),
+            phone: formData.get('phone'),
+            description: formData.get('description'),
+            timeframe: formData.get('timeframe')
+          };
+
+          // Submit to API
+          const response = await fetch('/api/data-subject/request', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(jsonData)
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to submit request');
+          }
+
+          const result = await response.json();
+
+          // Show success message
+          processingMessage.innerHTML = `
+            <strong>Request Submitted Successfully!</strong><br>
+            Your reference number is: <strong>${result.request.id}</strong><br>
+            You will receive a confirmation email shortly. We will process your request within 30 days.
+          `;
+          processingMessage.style.background = '#d4edda';
+          processingMessage.style.color = '#155724';
+
+          // Reset form
+          form.reset();
+
+        } catch (error) {
+          console.error('Error submitting request:', error);
+          errorMessage.textContent = 'An error occurred while submitting your request. Please try again or contact us directly.';
+          errorMessage.style.display = 'block';
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit Request';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

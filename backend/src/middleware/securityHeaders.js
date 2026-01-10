@@ -27,7 +27,9 @@ export const securityHeaders = helmet({
         "https://cdn.voiceflow.com",
         "https://www.googletagmanager.com",
         "https://www.google.com",
-        "https://cdn.embedly.com"
+        "https://cdn.embedly.com",
+        "https://vercel.live", // Allow Vercel Live Preview feedback scripts
+        "https://*.vercel.live" // Allow Vercel Live Preview subdomains
       ],
       connectSrc: [
         "'self'",
