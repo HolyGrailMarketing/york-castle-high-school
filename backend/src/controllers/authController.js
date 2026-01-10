@@ -9,12 +9,77 @@ import logger from '../utils/logger.js';
 
 // Configure Google OAuth Strategy (only if credentials are provided)
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  // Determine callback URL - prioritize environment variable, then construct
+  // In production, MUST be full HTTPS URL for Google OAuth to work
+  let callbackURL = process.env.GOOGLE_CALLBACK_URL;
+  
+  // If not set, construct from environment
+  if (!callbackURL) {
+    if (process.env.NODE_ENV === 'production' || process.env.VERCEL || process.env.VERCEL_ENV) {
+      // Production - use HTTPS URL from environment or default
+      if (process.env.VERCEL_URL) {
+        // Vercel provides VERCEL_URL (may or may not include protocol)
+        const vercelUrl = process.env.VERCEL_URL.startsWith('http') 
+          ? process.env.VERCEL_URL 
+          : `https://${process.env.VERCEL_URL}`;
+        callbackURL = `${vercelUrl}/api/auth/google/callback`;
+      } else if (process.env.CORS_ORIGIN) {
+        // Use first origin from CORS_ORIGIN, ensure HTTPS
+        const origins = process.env.CORS_ORIGIN.split(',');
+        let baseUrl = origins[0].trim();
+        // Force HTTPS in production
+        if (baseUrl.startsWith('http://')) {
+          baseUrl = baseUrl.replace('http://', 'https://');
+        } else if (!baseUrl.startsWith('http')) {
+          baseUrl = `https://${baseUrl}`;
+        }
+        callbackURL = `${baseUrl}/api/auth/google/callback`;
+      } else {
+        // Production default - must use HTTPS for yorkcastlehighschool.org
+        // Use www version as primary, but both www and non-www should be registered in Google Console
+        callbackURL = 'https://www.yorkcastlehighschool.org/api/auth/google/callback';
+      }
+    } else {
+      // Development default - can be relative or localhost
+      callbackURL = process.env.PORT 
+        ? `http://localhost:${process.env.PORT}/api/auth/google/callback`
+        : 'http://localhost:3000/api/auth/google/callback';
+    }
+  } else {
+    // Environment variable is set - validate and ensure HTTPS in production
+    if (process.env.NODE_ENV === 'production' || process.env.VERCEL || process.env.VERCEL_ENV) {
+      if (callbackURL.startsWith('http://')) {
+        logger.warn('GOOGLE_CALLBACK_URL uses HTTP in production - forcing HTTPS', {
+          original: callbackURL,
+          service: 'york-castle-api'
+        });
+        callbackURL = callbackURL.replace('http://', 'https://');
+      }
+      // Ensure it doesn't use localhost in production
+      if (callbackURL.includes('localhost')) {
+        logger.warn('GOOGLE_CALLBACK_URL uses localhost in production - using default', {
+          original: callbackURL,
+          service: 'york-castle-api'
+        });
+        callbackURL = 'https://www.yorkcastlehighschool.org/api/auth/google/callback';
+      }
+    }
+  }
+
+  logger.info('Google OAuth Strategy configured', { 
+    clientId: process.env.GOOGLE_CLIENT_ID ? `${process.env.GOOGLE_CLIENT_ID.substring(0, 20)}...` : 'not set',
+    callbackURL,
+    environment: process.env.NODE_ENV || 'development',
+    vercel: !!process.env.VERCEL,
+    service: 'york-castle-api'
+  });
+
   passport.use(
     new GoogleStrategy(
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: process.env.GOOGLE_CALLBACK_URL || '/api/auth/google/callback',
+        callbackURL: callbackURL,
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
@@ -268,6 +333,53 @@ export const googleAuth = (req, res, next) => {
       message: 'Google Sign-In is not available. Please configure Google OAuth credentials.',
     });
   }
+  
+  // Determine callback URL - ensure HTTPS in production
+  let callbackURL = process.env.GOOGLE_CALLBACK_URL;
+  
+  // If not set in env, construct from request (but ensure HTTPS in production)
+  if (!callbackURL) {
+    // In production, use HTTPS from environment or construct from host
+    if (process.env.NODE_ENV === 'production' || process.env.VERCEL || process.env.VERCEL_ENV) {
+      // Use Vercel URL or construct from host header
+      if (process.env.VERCEL_URL) {
+        callbackURL = `https://${process.env.VERCEL_URL}/api/auth/google/callback`;
+      } else if (req.headers.host) {
+        // Ensure HTTPS in production (Vercel/CloudFlare should set X-Forwarded-Proto)
+        const protocol = req.headers['x-forwarded-proto'] || (process.env.NODE_ENV === 'production' ? 'https' : req.protocol);
+        callbackURL = `${protocol}://${req.headers.host}/api/auth/google/callback`;
+        // Force HTTPS in production if somehow still HTTP
+        if (process.env.NODE_ENV === 'production' && callbackURL.startsWith('http://')) {
+          callbackURL = callbackURL.replace('http://', 'https://');
+        }
+      } else {
+        // Fallback - use domain from CORS_ORIGIN if available
+        if (process.env.CORS_ORIGIN) {
+          const origins = process.env.CORS_ORIGIN.split(',');
+          const baseUrl = origins[0].trim().replace(/^http:\/\//, 'https://');
+          callbackURL = `${baseUrl}/api/auth/google/callback`;
+        } else {
+          callbackURL = 'https://www.yorkcastlehighschool.org/api/auth/google/callback';
+        }
+      }
+    } else {
+      // Development - use relative path or localhost
+      callbackURL = '/api/auth/google/callback';
+    }
+  }
+  
+  // Passport.js GoogleStrategy doesn't support per-request callbackURL override
+  // The callback URL is set at strategy initialization above
+  // If the environment variable isn't set, log a warning and use the strategy's default
+  if (!process.env.GOOGLE_CALLBACK_URL && (process.env.NODE_ENV === 'production' || process.env.VERCEL)) {
+    logger.warn('GOOGLE_CALLBACK_URL not set in production - callback URL may be incorrect', {
+      constructed: callbackURL,
+      host: req.headers.host,
+      protocol: req.headers['x-forwarded-proto'] || req.protocol,
+      service: 'york-castle-api'
+    });
+  }
+  
   return passport.authenticate('google', {
     scope: ['profile', 'email'],
   })(req, res, next);

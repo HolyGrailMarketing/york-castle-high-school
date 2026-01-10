@@ -47,20 +47,25 @@ Google OAuth is already implemented in the backend and frontend. You just need t
    - Give it a name (e.g., "York Castle Web Client")
    
 6. **Configure Authorized Redirect URIs**
-   Add the following redirect URIs (callback URLs):
+   Add the following redirect URIs (callback URLs) - **EXACT MATCH REQUIRED**:
    
    **For Development:**
    ```
    http://localhost:3000/api/auth/google/callback
    ```
    
-   **For Production:**
+   **For Production (York Castle High School):**
+   You MUST add ALL of these exact redirect URIs:
    ```
-   https://yourdomain.com/api/auth/google/callback
-   https://www.yourdomain.com/api/auth/google/callback
+   https://www.yorkcastlehighschool.org/api/auth/google/callback
+   https://yorkcastlehighschool.org/api/auth/google/callback
    ```
    
-   Replace `yourdomain.com` with your actual domain.
+   **Important Notes:**
+   - Use **HTTPS** (not HTTP) for production
+   - Include both **www** and **non-www** versions
+   - The path must be exactly `/api/auth/google/callback` (no trailing slash)
+   - Case-sensitive - must match exactly
    
    - Click "Create"
    - **IMPORTANT**: Copy the **Client ID** and **Client Secret** - you'll need these for the `.env` file
@@ -165,17 +170,29 @@ To create a user account that can use Google Sign-In:
 ### Vercel/Serverless Deployment
 
 1. **Add environment variables in Vercel Dashboard**:
-   - Go to your project settings
-   - Navigate to "Environment Variables"
-   - Add:
-     - `GOOGLE_CLIENT_ID`
-     - `GOOGLE_CLIENT_SECRET`
-     - `GOOGLE_CALLBACK_URL` (full URL: `https://yourdomain.com/api/auth/google/callback`)
-     - `ALLOWED_EMAIL_DOMAINS` (if different from default)
+   - Go to your Vercel project dashboard: https://vercel.com/dashboard
+   - Select your project (york-castle-high-school)
+   - Go to Settings > Environment Variables
+   - Add these variables for **Production** environment:
+     ```
+     GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+     GOOGLE_CLIENT_SECRET=your-google-client-secret
+     GOOGLE_CALLBACK_URL=https://www.yorkcastlehighschool.org/api/auth/google/callback
+     ```
+   - **IMPORTANT:** Set `GOOGLE_CALLBACK_URL` to the **full HTTPS URL** (not relative path)
+   - If you have `ALLOWED_EMAIL_DOMAINS` different from default, add that too
+   - Click "Save" after adding each variable
 
 2. **Update Google Cloud Console Redirect URIs**:
-   - Add your production domain to the authorized redirect URIs
-   - Example: `https://yorkcastle.edu.jm/api/auth/google/callback`
+   - Go to Google Cloud Console > APIs & Services > Credentials
+   - Click on your OAuth 2.0 Client ID
+   - Under "Authorized redirect URIs", add these EXACT URLs:
+     ```
+     https://www.yorkcastlehighschool.org/api/auth/google/callback
+     https://yorkcastlehighschool.org/api/auth/google/callback
+     ```
+   - Click "Save"
+   - **Wait a few minutes** for changes to propagate
 
 ### Traditional Server Deployment
 
@@ -205,12 +222,29 @@ To create a user account that can use Google Sign-In:
 2. Default domains are: `moeschools.edu.jm,yorkcastlehighschool.org`
 3. Add more domains separated by commas if needed
 
-### Issue: "Redirect URI mismatch"
+### Issue: "Redirect URI mismatch" (Error 400)
 **Solution**: 
-1. Check that the redirect URI in Google Cloud Console matches exactly
-2. For development: `http://localhost:3000/api/auth/google/callback`
-3. For production: `https://yourdomain.com/api/auth/google/callback`
-4. Make sure there are no trailing slashes or extra characters
+1. **Check the exact redirect URI in the error message** - Google shows what it received
+2. **Add the exact redirect URI to Google Cloud Console:**
+   - Go to: https://console.cloud.google.com/apis/credentials
+   - Click on your OAuth 2.0 Client ID
+   - Under "Authorized redirect URIs", click "+ ADD URI"
+   - Add the EXACT URI from the error message (must match character-for-character)
+   - Common URIs to add:
+     ```
+     https://www.yorkcastlehighschool.org/api/auth/google/callback
+     https://yorkcastlehighschool.org/api/auth/google/callback
+     http://localhost:3000/api/auth/google/callback (for development)
+     ```
+3. **Verify protocol (HTTPS vs HTTP):**
+   - Production must use **HTTPS** (not HTTP)
+   - If error shows `http://`, you need to add the HTTPS version
+4. **Check for trailing slashes:** Must be `/api/auth/google/callback` (no trailing slash)
+5. **Wait 5-10 minutes** after adding URIs for Google to propagate changes
+6. **Set GOOGLE_CALLBACK_URL environment variable in Vercel:**
+   ```
+   GOOGLE_CALLBACK_URL=https://www.yorkcastlehighschool.org/api/auth/google/callback
+   ```
 
 ### Issue: OAuth consent screen shows "This app isn't verified"
 **Solution**: 
