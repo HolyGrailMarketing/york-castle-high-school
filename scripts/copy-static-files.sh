@@ -16,11 +16,14 @@ echo "Project root: $PROJECT_ROOT"
 mkdir -p public
 echo "Created public directory"
 
-# Copy admin dashboard build output first
+# Copy admin dashboard build output to public/admin (so Vercel serves it directly)
 if [ -d "admin-dashboard/dist" ]; then
-  echo "Copying admin dashboard build output..."
-  cp -r admin-dashboard/dist/. public/ 2>&1
-  [ $? -eq 0 ] && echo "✓ Admin dashboard copied" || echo "✗ Failed to copy admin dashboard"
+  echo "Copying admin dashboard build output to public/admin..."
+  mkdir -p public/admin
+  cp -r admin-dashboard/dist/. public/admin/ 2>&1
+  [ $? -eq 0 ] && echo "✓ Admin dashboard copied to public/admin" || echo "✗ Failed to copy admin dashboard"
+else
+  echo "✗ admin-dashboard/dist not found - admin dashboard may not be built"
 fi
 
 # Copy static HTML files
@@ -94,8 +97,14 @@ echo "Checking key directories:"
 [ -d "public/js" ] && echo "✓ public/js exists ($(find public/js -type f | wc -l | tr -d ' ') files)" || echo "✗ public/js MISSING"
 [ -d "public/images" ] && echo "✓ public/images exists ($(find public/images -type f | wc -l | tr -d ' ') files)" || echo "✗ public/images MISSING"
 [ -d "public/videos" ] && echo "✓ public/videos exists ($(find public/videos -type f | wc -l | tr -d ' ') files)" || echo "✗ public/videos MISSING"
+[ -d "public/admin" ] && echo "✓ public/admin exists ($(find public/admin -type f | wc -l | tr -d ' ') files)" || echo "✗ public/admin MISSING"
 echo ""
 echo "Sample files in public/:"
 ls -1 public/ | head -15
+if [ -d "public/admin" ]; then
+  echo ""
+  echo "Admin dashboard files in public/admin/:"
+  ls -1 public/admin/ | head -10
+fi
 echo ""
 echo "=== Build script completed ==="
