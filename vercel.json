@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "installCommand": "npm install && cd backend && npm install && cd .. && npx --yes prisma@latest generate --schema=./backend/prisma/schema.prisma && cd admin-dashboard && npm install && cd ..",
+  "installCommand": "npm install && cd backend && npm install && npm run prisma:generate && cd ../admin-dashboard && npm install && cd ..",
   "buildCommand": "cd admin-dashboard && npm run build && cd .. && (mkdir -p public && cp -r admin-dashboard/dist/. public/ || true)",
   "outputDirectory": "public",
   "routes": [
