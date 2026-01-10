@@ -474,7 +474,9 @@ app.get('/favicon.ico', (req, res, next) => {
 // Use dynamic path resolution to check both staticRoot and projectRoot at request time
 const serveStaticWithFallback = (route, dirName) => {
   return (req, res, next) => {
-    // Remove the route prefix from req.path (e.g., '/css/file.css' -> 'file.css')
+    logger.debug(`Static middleware called: ${req.path}`, { route, dirName });
+    
+    // Remove the route prefix from req.path (e.g., '/css/file.css' -> '/file.css' -> 'file.css')
     // Also handle subdirectories like '/images/gallery/image.jpg' -> 'gallery/image.jpg'
     let filePathFromUrl = req.path;
     if (filePathFromUrl.startsWith(route)) {
@@ -485,6 +487,7 @@ const serveStaticWithFallback = (route, dirName) => {
     
     if (!relativePath) {
       // If no file path, skip this middleware
+      logger.debug(`Skipping static middleware: empty relativePath for ${req.path}`, { route, dirName });
       return next();
     }
     
@@ -495,45 +498,66 @@ const serveStaticWithFallback = (route, dirName) => {
       path.join(projectRoot, dirName, relativePath),
     ];
     
+    logger.debug(`Checking paths for ${req.path}`, { 
+      relativePath, 
+      possiblePaths: possiblePaths.map(p => ({ path: p, exists: fs.existsSync(p) }))
+    });
+    
     for (const filePath of possiblePaths) {
-      if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-        // Set appropriate MIME type based on file extension
-        const ext = path.extname(filePath).toLowerCase();
-        const mimeTypes = {
-          '.css': 'text/css; charset=utf-8',
-          '.js': 'application/javascript; charset=utf-8',
-          '.json': 'application/json; charset=utf-8',
-          '.png': 'image/png',
-          '.jpg': 'image/jpeg',
-          '.jpeg': 'image/jpeg',
-          '.gif': 'image/gif',
-          '.svg': 'image/svg+xml',
-          '.webp': 'image/webp',
-          '.woff': 'font/woff',
-          '.woff2': 'font/woff2',
-          '.ttf': 'font/ttf',
-          '.mp4': 'video/mp4',
-          '.webm': 'video/webm',
-          '.pdf': 'application/pdf',
-          '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        };
-        
-        if (mimeTypes[ext]) {
-          res.setHeader('Content-Type', mimeTypes[ext]);
-        }
-        
-        res.sendFile(filePath, staticOptions, (err) => {
-          if (err && !res.headersSent) {
-            logger.warn(`Error serving static file: ${filePath}`, { error: err.message });
-            next();
+      try {
+        if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+          logger.info(`Found static file: ${req.path}`, { filePath, dirName });
+          
+          // Set appropriate MIME type based on file extension
+          const ext = path.extname(filePath).toLowerCase();
+          const mimeTypes = {
+            '.css': 'text/css; charset=utf-8',
+            '.js': 'application/javascript; charset=utf-8',
+            '.json': 'application/json; charset=utf-8',
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.gif': 'image/gif',
+            '.svg': 'image/svg+xml',
+            '.webp': 'image/webp',
+            '.woff': 'font/woff',
+            '.woff2': 'font/woff2',
+            '.ttf': 'font/ttf',
+            '.mp4': 'video/mp4',
+            '.webm': 'video/webm',
+            '.pdf': 'application/pdf',
+            '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          };
+          
+          if (mimeTypes[ext]) {
+            res.setHeader('Content-Type', mimeTypes[ext]);
           }
-        });
-        return;
+          
+          res.sendFile(filePath, staticOptions, (err) => {
+            if (err && !res.headersSent) {
+              logger.warn(`Error serving static file: ${filePath}`, { error: err.message, path: req.path });
+              next();
+            }
+          });
+          return;
+        }
+      } catch (statError) {
+        // File might exist but statSync failed (permissions, etc.)
+        logger.debug(`Error checking file: ${filePath}`, { error: statError.message });
+        continue;
       }
     }
     
-    // File not found in any location
-    logger.debug(`Static file not found: ${req.path}`, { dirName, possiblePaths });
+    // File not found in any location - log with details for debugging
+    logger.warn(`Static file not found: ${req.path}`, { 
+      dirName, 
+      route,
+      relativePath,
+      possiblePaths: possiblePaths.map(p => ({ path: p, exists: fs.existsSync(p) })),
+      staticRoot,
+      projectRoot,
+      cwd: process.cwd()
+    });
     next();
   };
 };
