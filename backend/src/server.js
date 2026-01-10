@@ -253,7 +253,18 @@ app.get('/', (req, res, next) => {
     // Use path.resolve to get absolute path and prevent any path manipulation
     const indexPath = path.resolve(projectRoot, 'index.html');
     
-    logger.info('Root route handler', { indexPath, projectRoot, vercel: !!process.env.VERCEL });
+    logger.info('Root route handler', { indexPath, projectRoot, vercel: !!process.env.VERCEL, cwd: process.cwd() });
+    
+    // Debug: List files in projectRoot to see what's available
+    try {
+      const files = fs.readdirSync(projectRoot, { withFileTypes: true });
+      logger.info('Files in projectRoot', { 
+        projectRoot, 
+        files: files.map(f => ({ name: f.name, isDirectory: f.isDirectory() })).slice(0, 20) // Limit to first 20
+      });
+    } catch (dirError) {
+      logger.warn('Could not read projectRoot directory', { error: dirError.message, projectRoot });
+    }
     
     // Explicitly check that the path is NOT in admin-dashboard
     if (indexPath.includes('admin-dashboard')) {
@@ -262,8 +273,41 @@ app.get('/', (req, res, next) => {
     }
     
     if (!fs.existsSync(indexPath)) {
-      logger.error('index.html not found', { path: indexPath, projectRoot, cwd: process.cwd() });
-      return res.status(404).json({ error: 'Homepage not found', path: indexPath });
+      // Try alternative paths
+      const altPaths = [
+        path.join(process.cwd(), 'index.html'),
+        path.join(__dirname, '../../../index.html'),
+        path.join(projectRoot, '../index.html'),
+        '/var/task/index.html',
+      ];
+      
+      logger.error('index.html not found at primary path', { 
+        path: indexPath, 
+        projectRoot, 
+        cwd: process.cwd(),
+        __dirname,
+        alternativePaths: altPaths.map(p => ({ path: p, exists: fs.existsSync(p) }))
+      });
+      
+      // Try alternative paths
+      let foundPath = null;
+      for (const altPath of altPaths) {
+        if (fs.existsSync(altPath)) {
+          logger.info('Found index.html at alternative path', { path: altPath });
+          foundPath = altPath;
+          break;
+        }
+      }
+      
+      if (foundPath) {
+        indexPath = foundPath;
+      } else {
+        logger.error('index.html not found at any path', { 
+          primaryPath: path.resolve(projectRoot, 'index.html'),
+          alternativePaths: altPaths.map(p => ({ path: p, exists: fs.existsSync(p) }))
+        });
+        return res.status(404).json({ error: 'Homepage not found', path: indexPath, projectRoot, cwd: process.cwd() });
+      }
     }
     
     // Verify it's the correct file by checking content

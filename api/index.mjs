@@ -8,7 +8,9 @@ const __dirname = path.dirname(__filename);
 
 // Set environment variables for Vercel BEFORE any imports that might need them
 process.env.VERCEL = '1';
-process.env.PROJECT_ROOT = path.join(__dirname, '../');
+// In Vercel, __dirname is /var/task/api, so ../ is /var/task (project root)
+// All project files should be available at /var/task/ in the serverless function
+process.env.PROJECT_ROOT = path.resolve(__dirname, '../');
 
 // Add backend node_modules to module resolution path
 const backendNodeModules = path.join(__dirname, '../backend/node_modules');
