@@ -150,14 +150,25 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 // Configure trust proxy for serverless/proxy environments (Vercel, etc.)
 // This is required for express-rate-limit and security headers to work correctly
 // Vercel and other proxies set X-Forwarded-* headers that Express needs to trust
-if (isServerless || process.env.NODE_ENV === 'production') {
-  // Trust all proxies in serverless/production (Vercel handles proxy security)
-  app.set('trust proxy', true);
-  logger.info('Trust proxy enabled for serverless/production environment');
+// Use a specific number instead of 'true' to avoid express-rate-limit warnings
+if (isServerless) {
+  // Vercel uses one proxy layer, so trust only the first proxy
+  // This prevents the "permissive trust proxy" warning from express-rate-limit
+  app.set('trust proxy', 1);
+  logger.info('Trust proxy set to 1 for Vercel serverless environment');
+} else if (process.env.NODE_ENV === 'production') {
+  // In production (non-serverless), trust first proxy if behind a reverse proxy
+  // Adjust this number based on your deployment (1 for single proxy, 2 for double, etc.)
+  const proxyCount = process.env.TRUST_PROXY_COUNT ? parseInt(process.env.TRUST_PROXY_COUNT, 10) : 1;
+  app.set('trust proxy', proxyCount);
+  logger.info('Trust proxy configured for production environment', { proxyCount });
 } else if (process.env.TRUST_PROXY) {
   // Allow explicit trust proxy configuration via environment variable
-  app.set('trust proxy', process.env.TRUST_PROXY === 'true' || process.env.TRUST_PROXY === '1');
-  logger.info('Trust proxy configured from environment variable', { trustProxy: process.env.TRUST_PROXY });
+  const trustProxy = process.env.TRUST_PROXY === 'true' || process.env.TRUST_PROXY === '1' 
+    ? 1 
+    : parseInt(process.env.TRUST_PROXY, 10) || false;
+  app.set('trust proxy', trustProxy);
+  logger.info('Trust proxy configured from environment variable', { trustProxy });
 }
 
 // Swagger configuration

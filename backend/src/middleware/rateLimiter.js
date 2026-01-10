@@ -18,6 +18,10 @@ const createRateLimitConfig = (options) => ({
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: options.skipSuccessfulRequests || false,
+  // In serverless environments (Vercel), disable trust proxy validation
+  // Vercel uses a single proxy layer, and trust proxy is set to 1 in server.js
+  // This prevents express-rate-limit validation errors
+  validate: isServerless ? { trustProxy: false } : undefined,
   skip: (req) => {
     // Skip rate limiting for admin IPs
     if (adminIPWhitelist.includes(req.ip)) {
