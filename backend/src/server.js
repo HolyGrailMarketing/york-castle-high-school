@@ -430,8 +430,22 @@ if (fs.existsSync(adminDistPath)) {
 // Place this BEFORE static file routes to ensure it's handled correctly
 app.get('/favicon.ico', (req, res, next) => {
   try {
-    const faviconPath = path.join(projectRoot, 'images', 'favicon.ico');
-    if (fs.existsSync(faviconPath)) {
+    // Check multiple paths for favicon
+    const faviconPaths = [
+      path.join(staticRoot, 'images', 'favicon.ico'),
+      path.join(projectRoot, 'public', 'images', 'favicon.ico'),
+      path.join(projectRoot, 'images', 'favicon.ico'),
+    ];
+    
+    let faviconPath = null;
+    for (const possiblePath of faviconPaths) {
+      if (fs.existsSync(possiblePath)) {
+        faviconPath = possiblePath;
+        break;
+      }
+    }
+    
+    if (faviconPath) {
       res.setHeader('Content-Type', 'image/x-icon');
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
       res.sendFile(faviconPath, (err) => {
@@ -443,7 +457,7 @@ app.get('/favicon.ico', (req, res, next) => {
         }
       });
     } else {
-      logger.debug('Favicon not found', { path: faviconPath });
+      logger.debug('Favicon not found', { paths: faviconPaths });
       res.status(404).end();
     }
   } catch (error) {
