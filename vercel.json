@@ -85,9 +85,10 @@
     "NODE_ENV": "production"
   },
   "functions": {
-    "api/index.mjs": {
+    "api/**": {
       "memory": 1024,
-      "maxDuration": 30
+      "maxDuration": 30,
+      "excludeFiles": "{admin-dashboard,public/images,public/videos,public/documents,public/fonts,public/assets,public/css,public/js,*.cache,*.log,.git,docs,scripts,tests,__tests__}/**"
     }
   }
 }
