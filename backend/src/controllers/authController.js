@@ -83,52 +83,160 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
+          logger.info('Google OAuth profile received', {
+            profileId: profile.id,
+            hasEmail: !!profile.emails?.[0]?.value,
+            hasName: !!profile.displayName,
+            service: 'york-castle-api'
+          });
+
           const email = profile.emails?.[0]?.value;
           const name = profile.displayName || profile.name?.givenName + ' ' + profile.name?.familyName;
           const picture = profile.photos?.[0]?.value;
           const providerId = profile.id;
 
           if (!email) {
+            logger.warn('Google OAuth profile missing email', {
+              profileId: profile.id,
+              emails: profile.emails,
+              service: 'york-castle-api'
+            });
             return done(new Error('No email found in Google profile'), null);
           }
 
           // Validate domain
           if (!isAllowedDomain(email)) {
+            logger.warn('Google OAuth email domain not allowed', {
+              email,
+              profileId: profile.id,
+              service: 'york-castle-api'
+            });
             return done(new Error('Email domain not allowed'), null);
           }
 
-          // Check if user exists (must be pre-created by admin)
-          const user = await prisma.user.findUnique({
-            where: { email },
+          logger.info('Google OAuth email validated', {
+            email,
+            domain: email.split('@')[1],
+            service: 'york-castle-api'
           });
 
+          // Check if user exists (must be pre-created by admin)
+          let user;
+          try {
+            user = await prisma.user.findUnique({
+              where: { email },
+            });
+          } catch (dbError) {
+            logger.error('Database error finding user in Google OAuth', {
+              error: dbError.message,
+              code: dbError.code,
+              email,
+              service: 'york-castle-api'
+            });
+            return done(new Error('Database connection error. Please try again later.'), null);
+          }
+
           if (!user) {
+            logger.warn('Google OAuth user not found in database', {
+              email,
+              profileId: profile.id,
+              service: 'york-castle-api'
+            });
             return done(new Error('User account not found. Please contact your administrator.'), null);
           }
 
-          // Update user with Google info if not already set
-          const updatedUser = await prisma.user.update({
-            where: { id: user.id },
-            data: {
-              providerId: providerId || user.providerId,
-              picture: picture || user.picture,
-              name: name || user.name,
-            },
-            select: {
-              id: true,
-              email: true,
-              name: true,
-              role: true,
-              phone: true,
-              provider: true,
-              providerId: true,
-              picture: true,
-              createdAt: true,
-            },
+          logger.info('Google OAuth user found in database', {
+            userId: user.id,
+            email: user.email,
+            existingProvider: user.provider,
+            service: 'york-castle-api'
           });
+
+          // Update user with Google info - set provider and update fields that are provided
+          let updatedUser;
+          try {
+            // Build update data object - always set provider to GOOGLE when using Google OAuth
+            const updateData = {
+              provider: 'GOOGLE',
+            };
+
+            // Set providerId if provided (Google always provides this)
+            if (providerId) {
+              updateData.providerId = providerId;
+            }
+
+            // Set picture if provided and valid
+            if (picture) {
+              updateData.picture = picture;
+            }
+
+            // Set name if provided (Google always provides this via displayName)
+            if (name) {
+              updateData.name = name;
+            }
+
+            updatedUser = await prisma.user.update({
+              where: { id: user.id },
+              data: updateData,
+              select: {
+                id: true,
+                email: true,
+                name: true,
+                role: true,
+                phone: true,
+                provider: true,
+                providerId: true,
+                picture: true,
+                createdAt: true,
+              },
+            });
+
+            logger.info('Google OAuth user updated successfully', {
+              userId: updatedUser.id,
+              email: updatedUser.email,
+              provider: updatedUser.provider,
+              service: 'york-castle-api'
+            });
+          } catch (updateError) {
+            logger.error('Database error updating user in Google OAuth', {
+              error: updateError.message,
+              code: updateError.code,
+              stack: updateError.stack,
+              userId: user.id,
+              email: user.email,
+              service: 'york-castle-api'
+            });
+            
+            // If update fails due to record not found, return error
+            if (updateError.code === 'P2025') {
+              logger.warn('User was deleted during OAuth flow', {
+                userId: user.id,
+                email: user.email,
+                service: 'york-castle-api'
+              });
+              return done(new Error('User account not found. Please contact your administrator.'), null);
+            }
+            
+            // If update fails for other reasons (e.g., database connection), still try to proceed with existing user
+            // This allows authentication to continue even if profile update fails
+            logger.warn('User update failed but proceeding with authentication', {
+              userId: user.id,
+              email: user.email,
+              updateError: updateError.message,
+              service: 'york-castle-api'
+            });
+            updatedUser = user;
+          }
 
           return done(null, updatedUser);
         } catch (error) {
+          logger.error('Unexpected error in Google OAuth strategy callback', {
+            error: error.message,
+            stack: error.stack,
+            code: error.code,
+            profileId: profile?.id,
+            service: 'york-castle-api'
+          });
           return done(error, null);
         }
       }
@@ -387,6 +495,7 @@ export const googleAuth = (req, res, next) => {
 
 export const googleCallback = async (req, res, next) => {
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    logger.error('Google OAuth callback attempted but credentials not configured');
     return res.status(503).json({
       error: 'Google OAuth not configured',
       message: 'Google Sign-In is not available. Please configure Google OAuth credentials.',
@@ -395,6 +504,14 @@ export const googleCallback = async (req, res, next) => {
   
   passport.authenticate('google', { session: false }, async (err, user, info) => {
     if (err) {
+      logger.error('Google OAuth authentication error', {
+        error: err.message,
+        stack: err.stack,
+        code: err.code,
+        path: req.path,
+        query: req.query,
+        service: 'york-castle-api'
+      });
       return res.status(401).json({
         error: 'Authentication failed',
         message: err.message || 'Google authentication failed',
@@ -402,6 +519,12 @@ export const googleCallback = async (req, res, next) => {
     }
 
     if (!user) {
+      logger.warn('Google OAuth callback - no user returned', {
+        info: info?.message || 'No info provided',
+        query: req.query,
+        path: req.path,
+        service: 'york-castle-api'
+      });
       return res.status(401).json({
         error: 'Authentication failed',
         message: info?.message || 'Failed to authenticate with Google',
@@ -409,16 +532,62 @@ export const googleCallback = async (req, res, next) => {
     }
 
     try {
+      logger.info('Google OAuth callback successful', {
+        userId: user.id,
+        email: user.email,
+        path: req.path,
+        service: 'york-castle-api'
+      });
+
       // Generate JWT token
+      if (!process.env.JWT_SECRET) {
+        logger.error('JWT_SECRET not set - cannot generate token for Google OAuth user', {
+          userId: user.id,
+          email: user.email,
+          service: 'york-castle-api'
+        });
+        return res.status(500).json({
+          error: 'Server configuration error',
+          message: 'Authentication token generation failed. Please contact administrator.',
+        });
+      }
+
       const token = generateToken(user.id);
 
-      // Redirect to frontend with token
-      // Since we're serving from the same server, use relative path
-      const protocol = req.protocol;
-      const host = req.get('host');
-      const baseUrl = `${protocol}://${host}`;
-      res.redirect(`${baseUrl}/admin/auth/callback?token=${token}`);
+      // Determine redirect URL - use proper protocol detection for serverless
+      // In Vercel/serverless, req.protocol may not be set correctly
+      const protocol = req.headers['x-forwarded-proto'] || 
+                       (process.env.NODE_ENV === 'production' ? 'https' : req.protocol) ||
+                       'https';
+      const host = req.get('host') || req.headers.host || 'www.yorkcastlehighschool.org';
+      
+      // Ensure HTTPS in production
+      const finalProtocol = (process.env.NODE_ENV === 'production' || process.env.VERCEL) 
+        ? 'https' 
+        : protocol;
+
+      // Construct redirect URL - use admin callback endpoint
+      const redirectUrl = `${finalProtocol}://${host}/admin/auth/callback?token=${token}`;
+      
+      logger.info('Redirecting Google OAuth user to admin callback', {
+        userId: user.id,
+        email: user.email,
+        redirectUrl: redirectUrl.replace(token, '[REDACTED]'),
+        protocol: finalProtocol,
+        host,
+        service: 'york-castle-api'
+      });
+
+      res.redirect(redirectUrl);
     } catch (error) {
+      logger.error('Error in Google OAuth callback handler', {
+        error: error.message,
+        stack: error.stack,
+        userId: user?.id,
+        email: user?.email,
+        path: req.path,
+        service: 'york-castle-api'
+      });
       next(error);
     }
   })(req, res, next);
