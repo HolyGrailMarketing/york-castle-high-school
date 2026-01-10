@@ -147,6 +147,19 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
+// Configure trust proxy for serverless/proxy environments (Vercel, etc.)
+// This is required for express-rate-limit and security headers to work correctly
+// Vercel and other proxies set X-Forwarded-* headers that Express needs to trust
+if (isServerless || process.env.NODE_ENV === 'production') {
+  // Trust all proxies in serverless/production (Vercel handles proxy security)
+  app.set('trust proxy', true);
+  logger.info('Trust proxy enabled for serverless/production environment');
+} else if (process.env.TRUST_PROXY) {
+  // Allow explicit trust proxy configuration via environment variable
+  app.set('trust proxy', process.env.TRUST_PROXY === 'true' || process.env.TRUST_PROXY === '1');
+  logger.info('Trust proxy configured from environment variable', { trustProxy: process.env.TRUST_PROXY });
+}
+
 // Swagger configuration
 const swaggerOptions = {
   definition: {
