@@ -59,6 +59,7 @@ const createPrismaWithRetry = async (config, retries = MAX_RETRIES) => {
     console.error('Failed to create PrismaClient:', error.message);
     console.error('Error name:', error.name);
     console.error('Error code:', error.code);
+    console.error('Full error:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
     
     // Check if Prisma Client hasn't been generated yet
     if (error.message?.includes('did not initialize yet') || error.message?.includes('Prisma Client') || error.message?.includes('prisma generate')) {
@@ -102,18 +103,19 @@ const globalForPrisma = globalThis;
 
 let prismaInstance;
 
-// Initialize Prisma Client - must be done synchronously for proper export
-// In serverless, this will happen during module evaluation, so Prisma Client must be generated first
-console.log('Initializing Prisma Client...', { 
+// Initialize Prisma Client - CRITICAL: This uses top-level await
+// Prisma Client MUST be generated in installCommand before this module is imported
+console.log('Starting Prisma Client initialization...', { 
   isServerless, 
   nodeEnv: process.env.NODE_ENV,
-  vercel: process.env.VERCEL 
+  vercel: process.env.VERCEL,
+  hasDatabaseUrl: !!process.env.DATABASE_URL
 });
 
 if (process.env.NODE_ENV === 'production' || isServerless) {
   // In production/serverless, initialize with retry logic
-  // NOTE: This uses top-level await, which means Prisma Client MUST be generated before this module is imported
-  // This is ensured by running "prisma generate" in installCommand before building
+  // NOTE: This uses top-level await, which executes immediately when module is imported
+  // Prisma Client MUST be generated before this module is imported
   try {
     console.log('Creating Prisma Client instance for production/serverless...');
     prismaInstance = await createPrismaWithRetry(prismaClientConfig);
@@ -122,13 +124,16 @@ if (process.env.NODE_ENV === 'production' || isServerless) {
     console.error('CRITICAL: Failed to initialize Prisma Client in production/serverless');
     console.error('Error message:', error.message);
     console.error('Error stack:', error.stack);
+    console.error('Error name:', error.name);
+    console.error('Error code:', error.code);
     logger.error('CRITICAL: Failed to initialize Prisma Client in production/serverless', { 
       error: error.message,
       stack: error.stack,
+      name: error.name,
+      code: error.code,
       hint: 'Ensure "prisma generate" runs in installCommand before deployment'
     });
     // Re-throw the error - this will prevent the server from starting
-    // This is intentional - we can't run without Prisma Client
     throw error;
   }
 } else {
@@ -177,6 +182,10 @@ if (!isServerless && prismaInstance) {
 }
 
 // Export the singleton instance
+console.log('Exporting Prisma Client instance...', { 
+  hasInstance: !!prismaInstance,
+  isServerless 
+});
 export default prismaInstance;
 
 // Also export a function to disconnect (useful for testing)
