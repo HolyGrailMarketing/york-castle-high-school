@@ -4,7 +4,7 @@
   "description": "York Castle High School - Full Web Application",
   "type": "module",
   "scripts": {
-    "postinstall": "prisma generate --schema=./backend/prisma/schema.prisma",
+    "postinstall": "echo 'Postinstall: Prisma generation handled in buildCommand'",
     "setup": "npm run setup:backend && npm run setup:frontend",
     "setup:backend": "cd backend && npm install",
     "setup:frontend": "cd admin-dashboard && npm install",
