@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "cd admin-dashboard && npm install && npm run build",
+  "installCommand": "npm install && cd admin-dashboard && npm install && cd ../backend && npm install && npm run build:frontend",
   "routes": [
     {
       "src": "/api/(.*)",
@@ -8,10 +8,7 @@
     },
     {
       "src": "/admin/(.*)",
-      "dest": "/admin-dashboard/dist/$1",
-      "headers": {
-        "Cache-Control": "public, max-age=0, must-revalidate"
-      }
+      "dest": "/api/index.mjs"
     },
     {
       "src": "/(.*\\.(html|css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|webp|mp4|webm|pdf|docx|json))",
