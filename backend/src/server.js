@@ -362,6 +362,36 @@ if (fs.existsSync(adminDistPath)) {
   logger.info('Admin dashboard static files enabled', { path: adminDistPath });
 }
 
+// Serve favicon.ico from root (browsers automatically request /favicon.ico)
+// Place this BEFORE static file routes to ensure it's handled correctly
+app.get('/favicon.ico', (req, res, next) => {
+  try {
+    const faviconPath = path.join(projectRoot, 'images', 'favicon.ico');
+    if (fs.existsSync(faviconPath)) {
+      res.setHeader('Content-Type', 'image/x-icon');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      res.sendFile(faviconPath, (err) => {
+        if (err && err.code !== 'ECONNABORTED' && !res.headersSent) {
+          logger.warn('Error serving favicon', { error: err.message, path: faviconPath });
+          if (!res.headersSent) {
+            res.status(404).end();
+          }
+        }
+      });
+    } else {
+      logger.debug('Favicon not found', { path: faviconPath });
+      res.status(404).end();
+    }
+  } catch (error) {
+    logger.error('Error handling favicon request', { error: error.message });
+    if (!res.headersSent) {
+      res.status(500).end();
+    } else {
+      next(error);
+    }
+  }
+});
+
 // Serve static assets (CSS, JS, images, etc.)
 app.use('/css', express.static(path.join(projectRoot, 'css'), staticOptions));
 app.use('/js', express.static(path.join(projectRoot, 'js'), staticOptions));
