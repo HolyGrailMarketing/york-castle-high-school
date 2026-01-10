@@ -474,15 +474,25 @@ app.get('/favicon.ico', (req, res, next) => {
 // Use dynamic path resolution to check both staticRoot and projectRoot at request time
 const serveStaticWithFallback = (route, dirName) => {
   return (req, res, next) => {
-    // Remove the route prefix from req.path (e.g., '/css/file.css' -> '/file.css')
-    const filePathFromUrl = req.path.replace(route, '') || '/';
-    const fileName = filePathFromUrl.startsWith('/') ? filePathFromUrl.slice(1) : filePathFromUrl;
+    // Remove the route prefix from req.path (e.g., '/css/file.css' -> 'file.css')
+    // Also handle subdirectories like '/images/gallery/image.jpg' -> 'gallery/image.jpg'
+    let filePathFromUrl = req.path;
+    if (filePathFromUrl.startsWith(route)) {
+      filePathFromUrl = filePathFromUrl.slice(route.length);
+    }
+    // Remove leading slash if present
+    const relativePath = filePathFromUrl.startsWith('/') ? filePathFromUrl.slice(1) : filePathFromUrl;
+    
+    if (!relativePath) {
+      // If no file path, skip this middleware
+      return next();
+    }
     
     // Try multiple paths: staticRoot first, then projectRoot, then public directory
     const possiblePaths = [
-      path.join(staticRoot, dirName, fileName),
-      path.join(projectRoot, 'public', dirName, fileName),
-      path.join(projectRoot, dirName, fileName),
+      path.join(staticRoot, dirName, relativePath),
+      path.join(projectRoot, 'public', dirName, relativePath),
+      path.join(projectRoot, dirName, relativePath),
     ];
     
     for (const filePath of possiblePaths) {
