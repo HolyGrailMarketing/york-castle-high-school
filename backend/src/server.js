@@ -121,7 +121,19 @@ initEmailService();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 // Use PROJECT_ROOT env var if set (for Vercel), otherwise calculate from __dirname
-const projectRoot = process.env.PROJECT_ROOT || path.join(__dirname, '../../');
+// In Vercel serverless functions, files are at /var/task/, so we check both public directory and root
+let projectRoot = process.env.PROJECT_ROOT || path.join(__dirname, '../../');
+
+// In Vercel, if public directory exists, prefer it for static files
+// But keep projectRoot as the base for finding other files
+if (process.env.VERCEL) {
+  const publicDir = path.join(projectRoot, 'public');
+  if (fs.existsSync(publicDir)) {
+    // Use public directory as the base for static files
+    process.env.STATIC_ROOT = publicDir;
+  }
+}
+const staticRoot = process.env.STATIC_ROOT || projectRoot;
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -250,64 +262,72 @@ app.use('/api/consent', consentRoutes);
 // This ensures the correct file is served and prevents admin dashboard from being served at root
 app.get('/', (req, res, next) => {
   try {
-    // Use path.resolve to get absolute path and prevent any path manipulation
-    let indexPath = path.resolve(projectRoot, 'index.html');
+    // In Vercel, check public directory first, then project root
+    // Try multiple possible locations for index.html
+    const possiblePaths = [
+      path.join(staticRoot, 'index.html'),
+      path.join(projectRoot, 'public', 'index.html'),
+      path.join(projectRoot, 'index.html'),
+      path.join(process.cwd(), 'index.html'),
+      path.join(__dirname, '../../../index.html'),
+      '/var/task/index.html',
+      '/var/task/public/index.html',
+    ];
     
-    logger.info('Root route handler', { indexPath, projectRoot, vercel: !!process.env.VERCEL, cwd: process.cwd() });
+    logger.info('Root route handler', { 
+      projectRoot, 
+      staticRoot,
+      vercel: !!process.env.VERCEL, 
+      cwd: process.cwd(),
+      __dirname 
+    });
     
-    // Debug: List files in projectRoot to see what's available
+    // Debug: List files in projectRoot and staticRoot to see what's available
     try {
-      const files = fs.readdirSync(projectRoot, { withFileTypes: true });
-      logger.info('Files in projectRoot', { 
-        projectRoot, 
-        files: files.map(f => ({ name: f.name, isDirectory: f.isDirectory() })).slice(0, 20) // Limit to first 20
-      });
+      if (fs.existsSync(projectRoot)) {
+        const files = fs.readdirSync(projectRoot, { withFileTypes: true });
+        logger.info('Files in projectRoot', { 
+          projectRoot, 
+          fileCount: files.length,
+          sampleFiles: files.map(f => f.name).slice(0, 20),
+          hasIndexHtml: files.some(f => f.name === 'index.html'),
+          hasPublicDir: files.some(f => f.name === 'public' && f.isDirectory())
+        });
+      }
+      if (fs.existsSync(staticRoot) && staticRoot !== projectRoot) {
+        const staticFiles = fs.readdirSync(staticRoot, { withFileTypes: true });
+        logger.info('Files in staticRoot', { 
+          staticRoot, 
+          fileCount: staticFiles.length,
+          sampleFiles: staticFiles.map(f => f.name).slice(0, 20),
+          hasIndexHtml: staticFiles.some(f => f.name === 'index.html')
+        });
+      }
     } catch (dirError) {
-      logger.warn('Could not read projectRoot directory', { error: dirError.message, projectRoot });
+      logger.warn('Could not read directory', { error: dirError.message, projectRoot, staticRoot });
+    }
+    
+    // Find the first path that exists
+    let indexPath = null;
+    for (const possiblePath of possiblePaths) {
+      if (fs.existsSync(possiblePath)) {
+        indexPath = possiblePath;
+        logger.info('Found index.html', { path: indexPath });
+        break;
+      }
     }
     
     // Explicitly check that the path is NOT in admin-dashboard
-    if (indexPath.includes('admin-dashboard')) {
+    if (indexPath && indexPath.includes('admin-dashboard')) {
       logger.error('ERROR: Root route trying to serve admin-dashboard file!', { indexPath, projectRoot });
       return res.status(500).json({ error: 'Configuration error' });
     }
     
-    if (!fs.existsSync(indexPath)) {
-      // Try alternative paths
-      const altPaths = [
-        path.join(process.cwd(), 'index.html'),
-        path.join(__dirname, '../../../index.html'),
-        path.join(projectRoot, '../index.html'),
-        '/var/task/index.html',
-      ];
-      
-      logger.error('index.html not found at primary path', { 
-        path: indexPath, 
-        projectRoot, 
-        cwd: process.cwd(),
-        __dirname,
-        alternativePaths: altPaths.map(p => ({ path: p, exists: fs.existsSync(p) }))
+    if (!indexPath) {
+      logger.error('index.html not found at any path', { 
+        possiblePaths: possiblePaths.map(p => ({ path: p, exists: fs.existsSync(p) }))
       });
-      
-      // Try alternative paths
-      let foundPath = null;
-      for (const altPath of altPaths) {
-        if (fs.existsSync(altPath)) {
-          logger.info('Found index.html at alternative path', { path: altPath });
-          foundPath = altPath;
-          break;
-        }
-      }
-      
-      if (foundPath) {
-        indexPath = foundPath;
-      } else {
-        logger.error('index.html not found at any path', { 
-          primaryPath: path.resolve(projectRoot, 'index.html'),
-          alternativePaths: altPaths.map(p => ({ path: p, exists: fs.existsSync(p) }))
-        });
-        return res.status(404).json({ error: 'Homepage not found', path: indexPath, projectRoot, cwd: process.cwd() });
-      }
+      return res.status(404).json({ error: 'Homepage not found', projectRoot, staticRoot, cwd: process.cwd() });
     }
     
     // Verify it's the correct file by checking content
@@ -437,12 +457,20 @@ app.get('/favicon.ico', (req, res, next) => {
 });
 
 // Serve static assets (CSS, JS, images, etc.)
-app.use('/css', express.static(path.join(projectRoot, 'css'), staticOptions));
-app.use('/js', express.static(path.join(projectRoot, 'js'), staticOptions));
-app.use('/images', express.static(path.join(projectRoot, 'images'), staticOptions));
-app.use('/fonts', express.static(path.join(projectRoot, 'fonts'), staticOptions));
-app.use('/videos', express.static(path.join(projectRoot, 'videos'), staticOptions));
-app.use('/documents', express.static(path.join(projectRoot, 'documents'), staticOptions));
+// In Vercel, try public directory first, then project root
+const cssPath = fs.existsSync(path.join(staticRoot, 'css')) ? path.join(staticRoot, 'css') : path.join(projectRoot, 'css');
+const jsPath = fs.existsSync(path.join(staticRoot, 'js')) ? path.join(staticRoot, 'js') : path.join(projectRoot, 'js');
+const imagesPath = fs.existsSync(path.join(staticRoot, 'images')) ? path.join(staticRoot, 'images') : path.join(projectRoot, 'images');
+const fontsPath = fs.existsSync(path.join(staticRoot, 'fonts')) ? path.join(staticRoot, 'fonts') : path.join(projectRoot, 'fonts');
+const videosPath = fs.existsSync(path.join(staticRoot, 'videos')) ? path.join(staticRoot, 'videos') : path.join(projectRoot, 'videos');
+const documentsPath = fs.existsSync(path.join(staticRoot, 'documents')) ? path.join(staticRoot, 'documents') : path.join(projectRoot, 'documents');
+
+app.use('/css', express.static(cssPath, staticOptions));
+app.use('/js', express.static(jsPath, staticOptions));
+app.use('/images', express.static(imagesPath, staticOptions));
+app.use('/fonts', express.static(fontsPath, staticOptions));
+app.use('/videos', express.static(videosPath, staticOptions));
+app.use('/documents', express.static(documentsPath, staticOptions));
 
 // Serve other HTML pages (but not index.html - we handle that above)
 // Using regex pattern to match any path ending with .html

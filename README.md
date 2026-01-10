@@ -161,7 +161,7 @@ See full API documentation at `/api-docs` when server is running.
 - **Frontend**: React, TypeScript, Vite
 - **Authentication**: JWT
 - **File Upload**: Multer
-- **Email**: Nodemailer
+- **Email**: Resend
 
 ## Development
 
