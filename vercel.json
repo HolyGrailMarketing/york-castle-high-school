@@ -1,6 +1,8 @@
 {
   "version": 2,
-  "installCommand": "npm install && cd backend && npm install && cd ../admin-dashboard && npm install && npm run build && cd ..",
+  "installCommand": "npm install && cd backend && npm install && cd ../admin-dashboard && npm install && cd ..",
+  "buildCommand": "cd admin-dashboard && npm run build && cd .. && (mkdir -p public && cp -r admin-dashboard/dist/. public/ || true)",
+  "outputDirectory": "public",
   "routes": [
     {
       "src": "/api/(.*)",
