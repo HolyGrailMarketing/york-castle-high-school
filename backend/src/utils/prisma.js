@@ -36,7 +36,7 @@ const prismaClientConfig = {
 };
 
 // Connection retry configuration for serverless
-const MAX_RETRIES = isServerless ? 3 : 1;
+const MAX_RETRIES = isServerless ? 5 : 1;
 const RETRY_DELAY = 1000; // 1 second
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -45,14 +45,26 @@ const createPrismaWithRetry = async (config, retries = MAX_RETRIES) => {
   try {
     const client = new PrismaClient(config);
 
-    // Test connection in serverless to avoid cold start failures
-    if (isServerless) {
+    // In serverless, don't connect immediately - let it connect on first query
+    // This avoids connection issues during cold starts
+    if (!isServerless) {
       await client.$connect();
       logger.info('Prisma client connected successfully');
     }
 
     return client;
   } catch (error) {
+    // Check if Prisma Client hasn't been generated yet
+    if (error.message?.includes('did not initialize yet') || error.message?.includes('Prisma Client')) {
+      if (retries > 0) {
+        logger.warn(`Prisma Client not generated yet, retrying... (${retries} attempts left)`, {
+          error: error.message
+        });
+        await sleep(RETRY_DELAY);
+        return createPrismaWithRetry(config, retries - 1);
+      }
+      throw new Error(`Prisma Client has not been generated. Please ensure "prisma generate" runs in buildCommand before deployment. Original error: ${error.message}`);
+    }
     if (retries > 0) {
       logger.warn(`Prisma connection failed, retrying... (${retries} attempts left)`, {
         error: error.message
@@ -78,31 +90,60 @@ const globalForPrisma = globalThis;
 
 let prismaInstance;
 
+// Initialize Prisma Client - must be done synchronously for proper export
+// In serverless, this will happen during module evaluation, so Prisma Client must be generated first
 if (process.env.NODE_ENV === 'production' || isServerless) {
-  // In production/serverless, create instance with retry logic
-  prismaInstance = await createPrismaWithRetry(prismaClientConfig);
-} else {
-  // In development, reuse the same instance across hot reloads
-  if (!globalForPrisma.prisma) {
-    globalForPrisma.prisma = await createPrismaWithRetry(prismaClientConfig);
+  // In production/serverless, initialize with retry logic
+  // NOTE: This uses top-level await, which means Prisma Client MUST be generated before this module is imported
+  // This is ensured by running "prisma generate" in buildCommand before building
+  try {
+    prismaInstance = await createPrismaWithRetry(prismaClientConfig);
+  } catch (error) {
+    logger.error('CRITICAL: Failed to initialize Prisma Client in production/serverless', { 
+      error: error.message,
+      stack: error.stack,
+      hint: 'Ensure "prisma generate" runs in buildCommand before deployment'
+    });
+    // Re-throw the error - this will prevent the server from starting
+    // This is intentional - we can't run without Prisma Client
+    throw error;
   }
-  prismaInstance = globalForPrisma.prisma;
+} else {
+  // In development, initialize immediately and reuse across hot reloads
+  try {
+    if (!globalForPrisma.prisma) {
+      globalForPrisma.prisma = await createPrismaWithRetry(prismaClientConfig);
+    }
+    prismaInstance = globalForPrisma.prisma;
+  } catch (error) {
+    logger.error('Failed to initialize Prisma Client in development', { 
+      error: error.message,
+      stack: error.stack
+    });
+    throw error;
+  }
 }
 
 // Handle graceful shutdown
-if (!isServerless) {
+if (!isServerless && prismaInstance) {
   // In non-serverless environments, disconnect on process exit
   process.on('beforeExit', async () => {
-    await prismaInstance.$disconnect();
+    if (prismaInstance && typeof prismaInstance.$disconnect === 'function') {
+      await prismaInstance.$disconnect();
+    }
   });
   
   process.on('SIGINT', async () => {
-    await prismaInstance.$disconnect();
+    if (prismaInstance && typeof prismaInstance.$disconnect === 'function') {
+      await prismaInstance.$disconnect();
+    }
     process.exit(0);
   });
   
   process.on('SIGTERM', async () => {
-    await prismaInstance.$disconnect();
+    if (prismaInstance && typeof prismaInstance.$disconnect === 'function') {
+      await prismaInstance.$disconnect();
+    }
     process.exit(0);
   });
 }
@@ -112,5 +153,7 @@ export default prismaInstance;
 
 // Also export a function to disconnect (useful for testing)
 export const disconnectPrisma = async () => {
-  await prismaInstance.$disconnect();
+  if (prismaInstance && typeof prismaInstance.$disconnect === 'function') {
+    await prismaInstance.$disconnect();
+  }
 };
