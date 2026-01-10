@@ -59,8 +59,19 @@ async function initializeApp() {
       name: error.name,
       code: error.code,
       path: error.path,
-      cause: error.cause
+      cause: error.cause,
+      message: error.message,
+      fullError: JSON.stringify(error, Object.getOwnPropertyNames(error))
     });
+    
+    // Check if it's a Prisma Client error
+    if (error.message?.includes('did not initialize yet') || error.message?.includes('Prisma Client') || error.message?.includes('prisma generate')) {
+      console.error('PRISMA CLIENT ERROR DETECTED:', {
+        message: error.message,
+        hint: 'Ensure "prisma generate" runs in installCommand before any imports',
+        checkCommand: 'Verify npx --yes prisma generate --schema=./backend/prisma/schema.prisma runs successfully'
+      });
+    }
     
     // Create a minimal error handler
     try {

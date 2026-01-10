@@ -43,7 +43,9 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const createPrismaWithRetry = async (config, retries = MAX_RETRIES) => {
   try {
+    console.log('Attempting to create PrismaClient...');
     const client = new PrismaClient(config);
+    console.log('PrismaClient instance created successfully');
 
     // In serverless, don't connect immediately - let it connect on first query
     // This avoids connection issues during cold starts
@@ -54,24 +56,34 @@ const createPrismaWithRetry = async (config, retries = MAX_RETRIES) => {
 
     return client;
   } catch (error) {
+    console.error('Failed to create PrismaClient:', error.message);
+    console.error('Error name:', error.name);
+    console.error('Error code:', error.code);
+    
     // Check if Prisma Client hasn't been generated yet
-    if (error.message?.includes('did not initialize yet') || error.message?.includes('Prisma Client')) {
+    if (error.message?.includes('did not initialize yet') || error.message?.includes('Prisma Client') || error.message?.includes('prisma generate')) {
+      console.error('PRISMA CLIENT NOT GENERATED YET - This means "prisma generate" has not run successfully');
       if (retries > 0) {
+        console.warn(`Retrying Prisma Client creation... (${retries} attempts left)`);
         logger.warn(`Prisma Client not generated yet, retrying... (${retries} attempts left)`, {
           error: error.message
         });
         await sleep(RETRY_DELAY);
         return createPrismaWithRetry(config, retries - 1);
       }
-      throw new Error(`Prisma Client has not been generated. Please ensure "prisma generate" runs in buildCommand before deployment. Original error: ${error.message}`);
+      const errorMsg = `Prisma Client has not been generated. Please ensure "prisma generate" runs in installCommand before deployment. Original error: ${error.message}`;
+      console.error(errorMsg);
+      throw new Error(errorMsg);
     }
     if (retries > 0) {
+      console.warn(`Prisma connection failed, retrying... (${retries} attempts left)`);
       logger.warn(`Prisma connection failed, retrying... (${retries} attempts left)`, {
         error: error.message
       });
       await sleep(RETRY_DELAY);
       return createPrismaWithRetry(config, retries - 1);
     }
+    console.error('Final Prisma Client creation failure:', error.message);
     throw error;
   }
 };
@@ -92,17 +104,28 @@ let prismaInstance;
 
 // Initialize Prisma Client - must be done synchronously for proper export
 // In serverless, this will happen during module evaluation, so Prisma Client must be generated first
+console.log('Initializing Prisma Client...', { 
+  isServerless, 
+  nodeEnv: process.env.NODE_ENV,
+  vercel: process.env.VERCEL 
+});
+
 if (process.env.NODE_ENV === 'production' || isServerless) {
   // In production/serverless, initialize with retry logic
   // NOTE: This uses top-level await, which means Prisma Client MUST be generated before this module is imported
-  // This is ensured by running "prisma generate" in buildCommand before building
+  // This is ensured by running "prisma generate" in installCommand before building
   try {
+    console.log('Creating Prisma Client instance for production/serverless...');
     prismaInstance = await createPrismaWithRetry(prismaClientConfig);
+    console.log('Prisma Client initialized successfully in production/serverless');
   } catch (error) {
+    console.error('CRITICAL: Failed to initialize Prisma Client in production/serverless');
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
     logger.error('CRITICAL: Failed to initialize Prisma Client in production/serverless', { 
       error: error.message,
       stack: error.stack,
-      hint: 'Ensure "prisma generate" runs in buildCommand before deployment'
+      hint: 'Ensure "prisma generate" runs in installCommand before deployment'
     });
     // Re-throw the error - this will prevent the server from starting
     // This is intentional - we can't run without Prisma Client
@@ -111,11 +134,16 @@ if (process.env.NODE_ENV === 'production' || isServerless) {
 } else {
   // In development, initialize immediately and reuse across hot reloads
   try {
+    console.log('Creating Prisma Client instance for development...');
     if (!globalForPrisma.prisma) {
       globalForPrisma.prisma = await createPrismaWithRetry(prismaClientConfig);
     }
     prismaInstance = globalForPrisma.prisma;
+    console.log('Prisma Client initialized successfully in development');
   } catch (error) {
+    console.error('Failed to initialize Prisma Client in development');
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
     logger.error('Failed to initialize Prisma Client in development', { 
       error: error.message,
       stack: error.stack
