@@ -21,7 +21,7 @@
       "destination": "/api/index.mjs"
     },
     {
-      "source": "/:path*",
+      "source": "/:file.html",
       "destination": "/api/index.mjs"
     }
   ],

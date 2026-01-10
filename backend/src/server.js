@@ -124,16 +124,24 @@ const __dirname = path.dirname(__filename);
 // In Vercel serverless functions, files are at /var/task/, so we check both public directory and root
 let projectRoot = process.env.PROJECT_ROOT || path.join(__dirname, '../../');
 
-// In Vercel, if public directory exists, prefer it for static files
-// But keep projectRoot as the base for finding other files
-if (process.env.VERCEL) {
+// In Vercel, static files are served directly from outputDirectory (public)
+// Don't check for public directory at import time to avoid bundling static assets
+// Static files will be served by Vercel directly, not through the function
+let staticRoot = process.env.STATIC_ROOT || projectRoot;
+
+// Only check for public directory in non-Vercel environments
+// In Vercel, static files are served directly from public/ by the platform
+if (!process.env.VERCEL && !process.env.VERCEL_ENV) {
   const publicDir = path.join(projectRoot, 'public');
-  if (fs.existsSync(publicDir)) {
-    // Use public directory as the base for static files
-    process.env.STATIC_ROOT = publicDir;
+  try {
+    if (fs.existsSync(publicDir)) {
+      process.env.STATIC_ROOT = publicDir;
+      staticRoot = publicDir;
+    }
+  } catch (error) {
+    // Ignore errors checking for public directory
   }
 }
-const staticRoot = process.env.STATIC_ROOT || projectRoot;
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -351,115 +359,133 @@ app.use('/videos', serveStaticWithFallback('/videos', 'videos'));
 app.use('/documents', serveStaticWithFallback('/documents', 'documents'));
 
 // Serve static files from root directories (css, js, images at project root)
-// This handles files that might be at project root, not in public/
-const rootDirs = [
-  projectRoot,
-  staticRoot,
-  process.cwd(),
-  '/var/task', // Vercel
-];
+// IMPORTANT: In Vercel, static files are served directly by the platform
+// Don't serve static files in Vercel to avoid bundling them into the function
+if (!process.env.VERCEL && !process.env.VERCEL_ENV) {
+  const rootDirs = [
+    projectRoot,
+    staticRoot,
+    process.cwd(),
+  ];
 
-for (const rootDir of rootDirs) {
-  if (fs.existsSync(rootDir)) {
-    // Only serve if it's a static file request (has extension)
-    app.use((req, res, next) => {
-      // Skip API routes and admin routes - they're handled separately
-      if (req.path.startsWith('/api/') || req.path.startsWith('/admin') || req.path.startsWith('/health') || req.path.startsWith('/api-docs')) {
-        return next();
-      }
-      
-      // Only handle requests for files with extensions (static assets)
-      const isStaticFile = /\.(css|js|mjs|json|png|jpg|jpeg|gif|svg|webp|woff|woff2|ttf|mp4|webm|pdf|docx|ico|avif)$/i.test(req.path);
-      if (!isStaticFile) {
-        return next();
-      }
-      
-      // Check if file exists at root level
-      const filePath = path.join(rootDir, req.path);
-      if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-        const ext = path.extname(filePath).toLowerCase();
-        const mimeTypes = {
-          '.css': 'text/css; charset=utf-8',
-          '.js': 'application/javascript; charset=utf-8',
-          '.mjs': 'application/javascript; charset=utf-8',
-          '.json': 'application/json; charset=utf-8',
-          '.png': 'image/png',
-          '.jpg': 'image/jpeg',
-          '.jpeg': 'image/jpeg',
-          '.gif': 'image/gif',
-          '.svg': 'image/svg+xml',
-          '.webp': 'image/webp',
-          '.mp4': 'video/mp4',
-          '.webm': 'video/webm',
-          '.woff': 'font/woff',
-          '.woff2': 'font/woff2',
-          '.ttf': 'font/ttf',
-          '.ico': 'image/x-icon',
-          '.avif': 'image/avif',
-        };
-        
-        if (mimeTypes[ext]) {
-          res.setHeader('Content-Type', mimeTypes[ext]);
-        }
-        if (NODE_ENV === 'production') {
-          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-        }
-        
-        res.sendFile(filePath, (err) => {
-          if (err && !res.headersSent) {
-            logger.warn(`Error serving file from root: ${filePath}`, { error: err.message });
-            // Return 404 with correct content type
-            if (ext === '.css') {
-              res.status(404).type('text/css').send('/* File not found */');
-            } else if (ext === '.js' || ext === '.mjs') {
-              res.status(404).type('application/javascript').send('// File not found');
-            } else {
-              res.status(404).end();
-            }
+  for (const rootDir of rootDirs) {
+    try {
+      if (fs.existsSync(rootDir)) {
+        // Only serve if it's a static file request (has extension)
+        app.use((req, res, next) => {
+          // Skip API routes and admin routes - they're handled separately
+          if (req.path.startsWith('/api/') || req.path.startsWith('/admin') || req.path.startsWith('/health') || req.path.startsWith('/api-docs')) {
+            return next();
           }
+          
+          // Only handle requests for files with extensions (static assets)
+          const isStaticFile = /\.(css|js|mjs|json|png|jpg|jpeg|gif|svg|webp|woff|woff2|ttf|mp4|webm|pdf|docx|ico|avif)$/i.test(req.path);
+          if (!isStaticFile) {
+            return next();
+          }
+          
+          // Check if file exists at root level
+          const filePath = path.join(rootDir, req.path);
+          if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+            const ext = path.extname(filePath).toLowerCase();
+            const mimeTypes = {
+              '.css': 'text/css; charset=utf-8',
+              '.js': 'application/javascript; charset=utf-8',
+              '.mjs': 'application/javascript; charset=utf-8',
+              '.json': 'application/json; charset=utf-8',
+              '.png': 'image/png',
+              '.jpg': 'image/jpeg',
+              '.jpeg': 'image/jpeg',
+              '.gif': 'image/gif',
+              '.svg': 'image/svg+xml',
+              '.webp': 'image/webp',
+              '.mp4': 'video/mp4',
+              '.webm': 'video/webm',
+              '.woff': 'font/woff',
+              '.woff2': 'font/woff2',
+              '.ttf': 'font/ttf',
+              '.ico': 'image/x-icon',
+              '.avif': 'image/avif',
+            };
+            
+            if (mimeTypes[ext]) {
+              res.setHeader('Content-Type', mimeTypes[ext]);
+            }
+            if (NODE_ENV === 'production') {
+              res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            }
+            
+            res.sendFile(filePath, (err) => {
+              if (err && !res.headersSent) {
+                logger.warn(`Error serving file from root: ${filePath}`, { error: err.message });
+                // Return 404 with correct content type
+                if (ext === '.css') {
+                  res.status(404).type('text/css').send('/* File not found */');
+                } else if (ext === '.js' || ext === '.mjs') {
+                  res.status(404).type('application/javascript').send('// File not found');
+                } else {
+                  res.status(404).end();
+                }
+              }
+            });
+            return; // File served or error handled - don't call next()
+          }
+          // File not found - continue to next middleware (Express static or catch-all)
+          next();
         });
-        return; // File served or error handled - don't call next()
+        logger.info('Root-level static file serving enabled', { rootDir });
+        break;
       }
-      // File not found - continue to next middleware (Express static or catch-all)
-      next();
-    });
-    logger.info('Root-level static file serving enabled', { rootDir });
-    break;
+    } catch (error) {
+      logger.debug('Error checking root directory:', { rootDir, error: error.message });
+    }
   }
+} else {
+  logger.info('Skipping root-level static file serving in Vercel - static files served directly by platform');
 }
 
 // Fallback: Use Express static middleware for public directory
-// This serves files from public/ directory structure
-const publicDirs = [
-  path.join(projectRoot, 'public'),
-  path.join(staticRoot, 'public'),
-  path.join(process.cwd(), 'public'),
-  '/var/task/public', // Vercel
-  path.join(__dirname, '../../public'), // Relative to server.js
-];
+// IMPORTANT: In Vercel, static files are served directly by the platform from outputDirectory (public)
+// Don't use Express static middleware in Vercel to avoid bundling static assets into the function
+// Only use Express static middleware in non-Vercel environments
+if (!process.env.VERCEL && !process.env.VERCEL_ENV) {
+  const publicDirs = [
+    path.join(projectRoot, 'public'),
+    path.join(staticRoot, 'public'),
+    path.join(process.cwd(), 'public'),
+    path.join(__dirname, '../../public'), // Relative to server.js
+  ];
 
-for (const publicDir of publicDirs) {
-  if (fs.existsSync(publicDir)) {
-    app.use(express.static(publicDir, {
-      setHeaders: (res, filePath, stat) => {
-        const ext = path.extname(filePath).toLowerCase();
-        const mimeTypes = {
-          '.css': 'text/css; charset=utf-8',
-          '.js': 'application/javascript; charset=utf-8',
-          '.mjs': 'application/javascript; charset=utf-8',
-          '.json': 'application/json; charset=utf-8',
-        };
-        if (mimeTypes[ext]) {
-          res.setHeader('Content-Type', mimeTypes[ext]);
-        }
-        if (NODE_ENV === 'production') {
-          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-        }
+  for (const publicDir of publicDirs) {
+    try {
+      if (fs.existsSync(publicDir)) {
+        app.use(express.static(publicDir, {
+          setHeaders: (res, filePath, stat) => {
+            const ext = path.extname(filePath).toLowerCase();
+            const mimeTypes = {
+              '.css': 'text/css; charset=utf-8',
+              '.js': 'application/javascript; charset=utf-8',
+              '.mjs': 'application/javascript; charset=utf-8',
+              '.json': 'application/json; charset=utf-8',
+            };
+            if (mimeTypes[ext]) {
+              res.setHeader('Content-Type', mimeTypes[ext]);
+            }
+            if (NODE_ENV === 'production') {
+              res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            }
+          }
+        }));
+        logger.info('Express static middleware enabled for public directory', { publicDir });
+        break; // Only use the first existing public directory
       }
-    }));
-    logger.info('Express static middleware enabled for public directory', { publicDir });
-    break; // Only use the first existing public directory
+    } catch (error) {
+      // Ignore errors when checking/serving from public directory
+      logger.debug('Skipping public directory:', { publicDir, error: error.message });
+    }
   }
+} else {
+  logger.info('Skipping Express static middleware in Vercel - static files served directly by platform');
 }
 
 // Serve uploaded files (only in non-serverless environments)
