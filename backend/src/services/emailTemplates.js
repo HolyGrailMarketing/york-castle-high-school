@@ -4,10 +4,18 @@
  */
 
 const schoolColors = {
-  primary: '#8b0000', // Maroon
-  secondary: '#d4af37', // Gold
-  text: '#1f2937',
-  light: '#f9fafb',
+  primary: '#1a1a1a', // Charcoal (matches website navbar)
+  secondary: '#d4af37', // Gold (matches website)
+  goldLight: '#f4e4a6',
+  goldDark: '#b8941f',
+  charcoal: '#1a1a1a',
+  darkGray: '#2d2d2d',
+  gray: '#6b6b6b',
+  lightGray: '#f5f5f5',
+  cream: '#faf8f0',
+  white: '#ffffff',
+  text: '#1a1a1a',
+  textLight: '#6b6b6b',
 };
 
 const baseTemplate = (content, title) => `
@@ -18,80 +26,157 @@ const baseTemplate = (content, title) => `
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       line-height: 1.6;
       color: ${schoolColors.text};
+      margin: 0;
+      padding: 0;
+      background-color: ${schoolColors.lightGray};
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .email-wrapper {
       max-width: 600px;
       margin: 0 auto;
       padding: 20px;
-      background-color: #f3f4f6;
     }
     .container {
-      background-color: white;
-      border-radius: 8px;
-      padding: 30px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background-color: ${schoolColors.white};
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
     }
     .header {
+      background: linear-gradient(135deg, ${schoolColors.charcoal} 0%, ${schoolColors.darkGray} 100%);
+      padding: 30px 30px 25px;
       text-align: center;
-      border-bottom: 3px solid ${schoolColors.secondary};
-      padding-bottom: 20px;
-      margin-bottom: 30px;
+      border-bottom: 2px solid ${schoolColors.secondary};
     }
     .logo {
-      font-size: 24px;
-      font-weight: bold;
-      color: ${schoolColors.primary};
-      margin-bottom: 5px;
+      font-size: 28px;
+      font-weight: 700;
+      color: ${schoolColors.white};
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
     }
     .subtitle {
-      color: #6b7280;
-      font-size: 14px;
+      color: ${schoolColors.goldLight};
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 500;
     }
     .content {
-      margin: 20px 0;
+      padding: 30px;
+      color: ${schoolColors.text};
+    }
+    .content h2 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-top: 0;
+      margin-bottom: 20px;
+      line-height: 1.3;
+    }
+    .content p {
+      margin: 0 0 16px 0;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+    .content ul, .content ol {
+      margin: 16px 0;
+      padding-left: 24px;
+    }
+    .content li {
+      margin-bottom: 8px;
+      line-height: 1.6;
     }
     .button {
       display: inline-block;
-      padding: 12px 24px;
-      background: linear-gradient(135deg, ${schoolColors.primary}, #a52a2a);
-      color: white;
+      padding: 14px 28px;
+      background: ${schoolColors.secondary};
+      color: ${schoolColors.charcoal};
       text-decoration: none;
-      border-radius: 6px;
-      margin: 20px 0;
+      border-radius: 8px;
+      margin: 24px 0;
       font-weight: 600;
+      font-size: 15px;
+      text-align: center;
+      transition: background 0.2s ease;
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    }
+    .button:hover {
+      background: ${schoolColors.goldDark};
     }
     .footer {
       margin-top: 30px;
-      padding-top: 20px;
-      border-top: 1px solid #e5e7eb;
+      padding: 25px 30px;
+      background-color: ${schoolColors.cream};
+      border-top: 1px solid ${schoolColors.lightGray};
       font-size: 12px;
-      color: #6b7280;
+      color: ${schoolColors.textLight};
       text-align: center;
+      line-height: 1.6;
+    }
+    .footer p {
+      margin: 8px 0;
     }
     .highlight {
-      background-color: #fef3c7;
-      padding: 15px;
+      background: linear-gradient(135deg, ${schoolColors.goldLight} 0%, ${schoolColors.cream} 100%);
+      padding: 20px;
       border-left: 4px solid ${schoolColors.secondary};
-      margin: 20px 0;
-      border-radius: 4px;
+      margin: 24px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .highlight p {
+      margin: 8px 0;
+    }
+    .highlight strong {
+      color: ${schoolColors.charcoal};
+      font-weight: 600;
+    }
+    .divider {
+      height: 1px;
+      background: ${schoolColors.lightGray};
+      margin: 24px 0;
+      border: none;
+    }
+    @media only screen and (max-width: 600px) {
+      .email-wrapper {
+        padding: 10px;
+      }
+      .header, .content, .footer {
+        padding: 20px;
+      }
+      .logo {
+        font-size: 24px;
+      }
+      .content h2 {
+        font-size: 20px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div class="logo">York Castle High School</div>
-      <div class="subtitle">Excellence in Education</div>
-    </div>
-    <div class="content">
-      ${content}
-    </div>
-    <div class="footer">
-      <p>This is an automated message from York Castle High School.</p>
-      <p>Please do not reply to this email.</p>
-      <p>&copy; ${new Date().getFullYear()} York Castle High School. All rights reserved.</p>
+  <div class="email-wrapper">
+    <div class="container">
+      <div class="header">
+        <div class="logo">York Castle High School</div>
+        <div class="subtitle">Excellence in Education</div>
+      </div>
+      <div class="content">
+        ${content}
+      </div>
+      <div class="footer">
+        <p><strong>York Castle High School</strong></p>
+        <p>This is an automated message. Please do not reply to this email.</p>
+        <p>For inquiries, contact: <a href="mailto:yorkcastle.high.san@moey.gov.jm" style="color: ${schoolColors.secondary}; text-decoration: none;">yorkcastle.high.san@moey.gov.jm</a></p>
+        <p>&copy; ${new Date().getFullYear()} York Castle High School. All rights reserved.</p>
+      </div>
     </div>
   </div>
 </body>
@@ -133,15 +218,15 @@ export const templates = {
     const config = statusConfig[status] || statusConfig.UNDER_REVIEW;
 
     const content = `
-      <h2 style="color: ${config.color};">${config.title}</h2>
+      <h2 style="color: ${config.color}; margin-top: 0;">${config.title}</h2>
       <p>Dear ${name},</p>
       <p>${config.message}</p>
       <div class="highlight">
-        <p><strong>${config.details}</strong></p>
+        <p style="margin-top: 0;"><strong>${config.details}</strong></p>
+        ${applicationId ? `<p style="margin-bottom: 0;"><small style="color: ${schoolColors.textLight}; font-size: 13px;">Application ID: <strong>${applicationId}</strong></small></p>` : ''}
       </div>
-      ${applicationId ? `<p><small>Application ID: ${applicationId}</small></p>` : ''}
-      <p>If you have any questions, please contact our admissions office.</p>
-      <p>Best regards,<br><strong>York Castle High School</strong></p>
+      <p>If you have any questions, please contact our admissions office at <a href="mailto:yorkcastle.high.san@moey.gov.jm" style="color: ${schoolColors.secondary}; text-decoration: none;">yorkcastle.high.san@moey.gov.jm</a> or call us at <a href="tel:+1876975-2217" style="color: ${schoolColors.secondary}; text-decoration: none;">+1 876 975-2217</a>.</p>
+      <p>Best regards,<br><strong>York Castle High School</strong><br><span style="color: ${schoolColors.textLight}; font-size: 14px;">Admissions Office</span></p>
     `;
 
     return {
@@ -156,15 +241,17 @@ export const templates = {
    */
   requestConfirmation: (name, requestType, requestId) => {
     const content = `
-      <h2 style="color: ${schoolColors.primary};">Request Received</h2>
+      <h2 style="color: ${schoolColors.secondary}; margin-top: 0;">Request Received</h2>
       <p>Dear ${name},</p>
       <p>We have received your request for <strong>${requestType}</strong>.</p>
       <div class="highlight">
-        <p><strong>Request ID:</strong> ${requestId}</p>
-        <p>Your request is being processed and you will be notified once it's completed.</p>
+        <p style="margin-top: 0;"><strong>Request Details:</strong></p>
+        <p><strong>Request Type:</strong> ${requestType}</p>
+        <p style="margin-bottom: 0;"><strong>Request ID:</strong> <span style="font-family: monospace; background: ${schoolColors.lightGray}; padding: 4px 8px; border-radius: 4px;">${requestId}</span></p>
       </div>
-      <p>If you have any questions about your request, please contact our administration office.</p>
-      <p>Best regards,<br><strong>York Castle High School</strong></p>
+      <p>Your request is being processed and you will be notified once it's completed. We typically process requests within 3-5 business days.</p>
+      <p>If you have any questions about your request, please contact our administration office at <a href="mailto:yorkcastle.high.san@moey.gov.jm" style="color: ${schoolColors.secondary}; text-decoration: none;">yorkcastle.high.san@moey.gov.jm</a> or call us at <a href="tel:+1876975-2217" style="color: ${schoolColors.secondary}; text-decoration: none;">+1 876 975-2217</a>.</p>
+      <p>Best regards,<br><strong>York Castle High School</strong><br><span style="color: ${schoolColors.textLight}; font-size: 14px;">Administration Office</span></p>
     `;
 
     return {
@@ -198,17 +285,26 @@ export const templates = {
       details: 'Please check your request details for more information.',
     };
 
+    const statusColors = {
+      COMPLETED: schoolColors.secondary,
+      IN_PROGRESS: '#3b82f6',
+      REJECTED: '#dc2626',
+    };
+    const statusColor = statusColors[status] || schoolColors.textLight;
+    
     const content = `
-      <h2 style="color: ${schoolColors.primary};">Request Status Update</h2>
+      <h2 style="color: ${statusColor}; margin-top: 0;">Request Status Update</h2>
       <p>Dear ${name},</p>
       <p>${config.message}</p>
       <div class="highlight">
+        <p style="margin-top: 0;"><strong>Request Information:</strong></p>
         <p><strong>Request Type:</strong> ${requestType}</p>
-        <p><strong>Request ID:</strong> ${requestId}</p>
-        <p><strong>Status:</strong> ${status}</p>
+        <p><strong>Request ID:</strong> <span style="font-family: monospace; background: ${schoolColors.lightGray}; padding: 4px 8px; border-radius: 4px;">${requestId}</span></p>
+        <p style="margin-bottom: 0;"><strong>Status:</strong> <span style="color: ${statusColor}; font-weight: 600;">${status}</span></p>
       </div>
       <p>${config.details}</p>
-      <p>Best regards,<br><strong>York Castle High School</strong></p>
+      <p>If you have any questions, please contact our administration office at <a href="mailto:yorkcastle.high.san@moey.gov.jm" style="color: ${schoolColors.secondary}; text-decoration: none;">yorkcastle.high.san@moey.gov.jm</a> or call us at <a href="tel:+1876975-2217" style="color: ${schoolColors.secondary}; text-decoration: none;">+1 876 975-2217</a>.</p>
+      <p>Best regards,<br><strong>York Castle High School</strong><br><span style="color: ${schoolColors.textLight}; font-size: 14px;">Administration Office</span></p>
     `;
 
     return {
@@ -223,17 +319,17 @@ export const templates = {
    */
   welcome: (name, email, role) => {
     const content = `
-      <h2 style="color: ${schoolColors.primary};">Welcome to York Castle High School</h2>
+      <h2 style="color: ${schoolColors.secondary}; margin-top: 0;">Welcome to York Castle High School Portal</h2>
       <p>Dear ${name},</p>
-      <p>Welcome to the York Castle High School portal!</p>
+      <p>Welcome to the York Castle High School administrative portal! We're excited to have you join our team.</p>
       <div class="highlight">
-        <p><strong>Your Account Details:</strong></p>
-        <p>Email: ${email}</p>
-        <p>Role: ${role}</p>
+        <p style="margin-top: 0;"><strong>Your Account Details:</strong></p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p style="margin-bottom: 0;"><strong>Role:</strong> <span style="text-transform: capitalize;">${role}</span></p>
       </div>
-      <p>You can now access the admin dashboard and manage school resources.</p>
-      <p>If you have any questions, please contact the system administrator.</p>
-      <p>Best regards,<br><strong>York Castle High School</strong></p>
+      <p>You can now access the admin dashboard and manage school resources. Please keep your login credentials secure and do not share them with anyone.</p>
+      <p>If you have any questions or need assistance, please contact the system administrator.</p>
+      <p>Best regards,<br><strong>York Castle High School</strong><br><span style="color: ${schoolColors.textLight}; font-size: 14px;">IT Department</span></p>
     `;
 
     return {
@@ -251,38 +347,39 @@ export const templates = {
     const loginInstructions = isOAuth
       ? `
         <div class="highlight">
-          <p><strong>Sign In with Google:</strong></p>
+          <p style="margin-top: 0;"><strong>Sign In with Google:</strong></p>
           <p>Your account has been set up to use Google Sign-In. Please use your Google account with the email <strong>${email}</strong> to sign in.</p>
-          <p>Make sure you're using a Google account from one of these domains:</p>
-          <ul>
+          <p><strong>Authorized Domains:</strong></p>
+          <ul style="margin-top: 8px;">
             <li>@moeschools.edu.jm</li>
             <li>@yorkcastlehighschool.org</li>
           </ul>
+          <p style="margin-bottom: 0; color: ${schoolColors.textLight}; font-size: 14px;"><em>Make sure you're using a Google account from one of these domains.</em></p>
         </div>
         <p style="text-align: center; margin: 30px 0;">
-          <a href="${loginUrl}" class="button">Sign In with Google</a>
+          <a href="${loginUrl}" class="button" style="display: inline-block;">Sign In with Google</a>
         </p>
       `
       : `
         <div class="highlight">
-          <p><strong>Your Account Details:</strong></p>
-          <p>Email: ${email}</p>
-          <p>Role: ${role}</p>
+          <p style="margin-top: 0;"><strong>Your Account Details:</strong></p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p style="margin-bottom: 0;"><strong>Role:</strong> <span style="text-transform: capitalize;">${role}</span></p>
         </div>
         <p>You can now sign in to the portal using your email and password.</p>
         <p style="text-align: center; margin: 30px 0;">
-          <a href="${loginUrl}" class="button">Sign In to Portal</a>
+          <a href="${loginUrl}" class="button" style="display: inline-block;">Sign In to Portal</a>
         </p>
-        <p><small>If you need to reset your password, please contact the system administrator.</small></p>
+        <p style="color: ${schoolColors.textLight}; font-size: 14px;"><em>If you need to reset your password, please contact the system administrator.</em></p>
       `;
 
     const content = `
-      <h2 style="color: ${schoolColors.primary};">You've Been Invited to York Castle High School Portal</h2>
+      <h2 style="color: ${schoolColors.secondary}; margin-top: 0;">You've Been Invited to York Castle High School Portal</h2>
       <p>Dear ${name},</p>
-      <p>An account has been created for you on the York Castle High School administrative portal.</p>
+      <p>An account has been created for you on the York Castle High School administrative portal. You can now access the dashboard and manage school resources.</p>
       ${loginInstructions}
-      <p>If you have any questions or need assistance, please contact the system administrator.</p>
-      <p>Best regards,<br><strong>York Castle High School</strong></p>
+      <p>If you have any questions or need assistance, please contact the system administrator at <a href="mailto:yorkcastle.high.san@moey.gov.jm" style="color: ${schoolColors.secondary}; text-decoration: none;">yorkcastle.high.san@moey.gov.jm</a>.</p>
+      <p>Best regards,<br><strong>York Castle High School</strong><br><span style="color: ${schoolColors.textLight}; font-size: 14px;">IT Department</span></p>
     `;
 
     const textContent = isOAuth

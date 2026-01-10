@@ -106,6 +106,8 @@ const Layout = () => {
     { path: '/courses', label: 'Courses', icon: '📚' },
     { path: '/documents', label: 'Documents', icon: '📄' },
     { path: '/requests', label: 'Requests', icon: '📬' },
+    { path: '/data-subject-requests', label: 'Data Subject Rights', icon: '🔒' },
+    { path: '/audit-logs', label: 'Audit Logs', icon: '📋' },
     { path: '/analytics', label: 'Analytics', icon: '📈' },
   ];
 

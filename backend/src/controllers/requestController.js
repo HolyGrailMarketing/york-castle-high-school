@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '../utils/prisma.js';
+import logger from '../utils/logger.js';
 
 export const getRequests = async (req, res, next) => {
   try {
@@ -10,9 +9,18 @@ export const getRequests = async (req, res, next) => {
     let where = {};
 
     // Users can only see their own requests unless they're admin/staff
-    if (!['ADMIN', 'STAFF'].includes(req.user.role)) {
-      where.userId = req.user.id;
+    // Admin and staff can see all requests (including those without userId)
+    if (!req.user || !['ADMIN', 'STAFF'].includes(req.user.role)) {
+      where.userId = req.user?.id;
     }
+    // Admin/staff see all requests - no userId filter needed (can be null for public requests)
+    
+    logger.info('Fetching requests', { 
+      userRole: req.user?.role, 
+      userId: req.user?.id,
+      filters: { type, status, search },
+      isAdmin: ['ADMIN', 'STAFF'].includes(req.user?.role)
+    });
 
     if (type) where.type = type;
     if (status) where.status = status;
@@ -58,7 +66,18 @@ export const getRequests = async (req, res, next) => {
         where,
         skip,
         take: parseInt(limit),
-        include: {
+        select: {
+          id: true,
+          type: true,
+          title: true,
+          description: true,
+          status: true,
+          metadata: true, // Include metadata for frontend display
+          response: true, // Include response for display
+          createdAt: true,
+          updatedAt: true,
+          respondedAt: true,
+          userId: true,
           user: {
             select: {
               id: true,
@@ -72,6 +91,13 @@ export const getRequests = async (req, res, next) => {
       prisma.request.count({ where }),
     ]);
 
+    logger.info('Requests fetched successfully', { 
+      count: requests.length, 
+      total, 
+      userRole: req.user?.role,
+      whereClause: JSON.stringify(where)
+    });
+
     res.json({
       requests,
       pagination: {
@@ -82,6 +108,7 @@ export const getRequests = async (req, res, next) => {
       },
     });
   } catch (error) {
+    logger.error('Error fetching requests', { error: error.message, stack: error.stack });
     next(error);
   }
 };
@@ -92,7 +119,18 @@ export const getRequest = async (req, res, next) => {
 
     const request = await prisma.request.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
+        type: true,
+        title: true,
+        description: true,
+        status: true,
+        metadata: true,
+        response: true,
+        createdAt: true,
+        updatedAt: true,
+        respondedAt: true,
+        userId: true,
         user: {
           select: {
             id: true,
@@ -170,7 +208,18 @@ export const updateRequestStatus = async (req, res, next) => {
         response,
         respondedAt: new Date(),
       },
-      include: {
+      select: {
+        id: true,
+        type: true,
+        title: true,
+        description: true,
+        status: true,
+        metadata: true,
+        response: true,
+        createdAt: true,
+        updatedAt: true,
+        respondedAt: true,
+        userId: true,
         user: {
           select: {
             id: true,

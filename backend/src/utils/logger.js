@@ -21,7 +21,7 @@ if (!isServerless) {
     }
   } catch (err) {
     // If we can't create logs directory, just log to console
-    console.warn('Could not create logs directory:', err.message);
+    console.warn('[Logger] Could not create logs directory, falling back to console only:', err.message);
     logsDir = null;
   }
 }

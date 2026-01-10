@@ -257,8 +257,10 @@
   position: absolute !important;
   bottom: 40px !important;
   left: 50% !important;
-  top: auto !important;
+  top: unset !important;
   right: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
@@ -270,9 +272,27 @@
   letter-spacing: 2px;
   z-index: 10;
   animation: bounce 2s infinite;
-  pointer-events: none;
+  pointer-events: auto !important;
+  cursor: pointer;
   width: auto;
   height: auto;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.scroll-indicator:hover {
+  color: rgba(255, 255, 255, 0.9);
+  transform: translateX(-50%) translateY(-5px);
+}
+
+.scroll-indicator:active {
+  transform: translateX(-50%) translateY(-3px);
+}
+
+/* Ensure scroll indicator is positioned at bottom of hero section */
+section.hero-redesign > .scroll-indicator {
+  bottom: 40px !important;
+  top: auto !important;
 }
 
 /* Ensure scroll indicator stays at bottom on all breakpoints */
@@ -949,12 +969,15 @@
   gap: var(--spacing-xl);
   padding-bottom: var(--spacing-xl);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  align-items: start;
 }
 
 .footer-brand {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+  justify-self: start;
+  align-self: start;
 }
 
 .footer-logo {
@@ -1011,6 +1034,14 @@
   color: var(--ychs-black);
 }
 
+.footer-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  justify-content: flex-start;
+}
+
 .footer-column h4 {
   font-family: var(--font-body);
   font-size: 0.9rem;
@@ -1019,12 +1050,19 @@
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: var(--spacing-md);
+  text-align: center;
+  width: 100%;
 }
 
 .footer-column ul {
   list-style: none;
   padding: 0;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  text-align: center;
 }
 
 .footer-column li {
@@ -1043,11 +1081,14 @@
 
 .footer-contact-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
   gap: var(--spacing-sm);
   margin-bottom: var(--spacing-sm);
   color: rgba(255, 255, 255, 0.6);
   font-size: 0.95rem;
+  text-align: center;
+  width: 100%;
 }
 
 .footer-contact-item svg {
@@ -1260,20 +1301,47 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  position: relative;
+  z-index: 1;
 }
 
 .w-icon-dropdown-toggle {
   border: solid currentColor;
   border-width: 0 2px 2px 0;
   display: inline-block;
-  padding: 3px;
+  padding: 4px;
   transform: rotate(45deg);
   margin-left: 4px;
   transition: transform 0.2s ease;
+  background: rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 2;
+  width: 12px;
+  height: 12px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  border-radius: 2px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Ensure icon area has solid background to cover what's behind */
+.w-dropdown-toggle::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  background: #000;
+  z-index: 1;
+  border-radius: 3px;
 }
 
 .w-dropdown:hover .w-icon-dropdown-toggle {
   transform: rotate(-135deg);
+  background: rgba(0, 0, 0, 0.5);
 }
 
 /* Grid dropdown (Resources menu) */

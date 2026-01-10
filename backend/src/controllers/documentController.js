@@ -1,9 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../utils/prisma.js';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-
-const prisma = new PrismaClient();
+import logger from '../utils/logger.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -206,7 +205,7 @@ export const downloadDocument = async (req, res, next) => {
     // Send file
     res.download(document.filePath, document.fileName, (err) => {
       if (err) {
-        console.error('Download error:', err);
+        logger.error('Download error:', { error: err.message });
         if (!res.headersSent) {
           res.status(500).json({ error: 'Error downloading file' });
         }

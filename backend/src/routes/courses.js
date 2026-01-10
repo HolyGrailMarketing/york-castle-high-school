@@ -10,12 +10,20 @@ import {
   unenrollStudent,
 } from '../controllers/courseController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
+import { responseCache } from '../middleware/cacheMiddleware.js';
 
 const router = express.Router();
 
-// Public routes
-router.get('/', getCourses);
-router.get('/:id', getCourse);
+// Public routes with caching
+router.get('/', responseCache({
+  ttl: 3600, // 1 hour for courses list
+  keyGenerator: (req) => `courses_list_${req.query.pool || 'all'}`
+}), getCourses);
+
+router.get('/:id', responseCache({
+  ttl: 1800, // 30 minutes for individual courses
+  keyGenerator: (req) => `course_${req.params.id}`
+}), getCourse);
 
 // Protected routes
 router.use(authenticate);

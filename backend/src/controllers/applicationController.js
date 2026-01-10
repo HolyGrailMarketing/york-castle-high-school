@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../utils/prisma.js';
 import { sendApplicationStatusEmail } from '../services/emailService.js';
-
-const prisma = new PrismaClient();
+import logger from '../utils/logger.js';
 
 export const getApplications = async (req, res, next) => {
   try {
@@ -23,7 +22,18 @@ export const getApplications = async (req, res, next) => {
         where,
         skip,
         take: parseInt(limit),
-        include: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          phone: true,
+          gradeApplying: true,
+          status: true,
+          submittedAt: true,
+          reviewedAt: true,
+          reviewedBy: true,
+          userId: true,
           user: {
             select: {
               id: true,
@@ -163,7 +173,7 @@ export const updateApplicationStatus = async (req, res, next) => {
         const recipientName = `${application.firstName} ${application.lastName}`;
         await sendApplicationStatusEmail(recipientEmail, recipientName, status);
       } catch (error) {
-        console.error('Failed to send email notification:', error);
+        logger.error('Failed to send email notification:', { error: error.message });
         // Don't fail the request if email fails
       }
     }

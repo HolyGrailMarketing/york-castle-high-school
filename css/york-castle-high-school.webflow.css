@@ -708,28 +708,251 @@ blockquote {
   margin-right: 20px;
 }
 
+/* ============================================
+   TOP NAVBAR - Modern Contact Info Bar
+   ============================================ */
 .top-navbar {
-  background-color: var(--gold);
-  padding-top: 15px;
-  padding-bottom: 15px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  position: relative !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  transform: none !important;
+  margin: 0 !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  overflow: visible !important;
+  display: flex !important;
+  align-items: center !important;
 }
 
-.top-nav-link {
-  color: var(--grey);
-  margin-left: 20px;
+.top-navbar.w-nav {
+  position: relative !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  transform: none !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.top-navbar .w-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  position: relative !important;
+  width: 100% !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  transform: none !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+}
+
+/* Override Webflow defaults for top navbar menu - Keep horizontal on all sizes */
+.top-navbar .top-nav-menu,
+.top-navbar .top-nav-menu.w-nav-menu {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  flex-wrap: nowrap !important;
+  float: none !important;
+  position: static !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  right: auto !important;
+  left: 0 !important;
+  top: 0 !important;
+  bottom: auto !important;
+  transform: none !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  overflow: visible !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+}
+
+/* Override responsive styles that might force vertical layout */
+@media screen and (max-width: 991px) {
+  .top-navbar .top-nav-menu,
+  .top-navbar .top-nav-menu.w-nav-menu {
+    flex-direction: row !important;
+    max-height: 32px !important;
+  }
+}
+
+.contact-info-section {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px;
+  flex-shrink: 1 !important;
+  flex-grow: 0 !important;
+  flex-wrap: nowrap !important;
+  height: 48px !important;
+  max-height: 48px !important;
+  overflow: visible !important;
+  white-space: nowrap !important;
+  min-width: 0 !important;
+}
+
+.top-nav-link,
+.top-nav-link.w-inline-block {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 10px !important;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  text-decoration: none !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+  height: auto !important;
+  max-height: 32px !important;
+  overflow: visible !important;
+  flex-shrink: 0 !important;
+  line-height: 1.2 !important;
+  width: auto !important;
+  min-width: auto !important;
+  vertical-align: middle !important;
 }
 
 .top-nav-link:hover {
-  color: #ffffffb3;
+  background: rgba(212, 175, 55, 0.15);
+  color: #d4af37;
 }
 
 .top-nav-title {
-  display: inline-block;
+  display: inline !important;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+  white-space: nowrap !important;
+  line-height: 1.2 !important;
+  height: auto !important;
+  overflow: visible !important;
 }
 
-.top-nav-title.icon {
-  margin-right: 10px;
-  font-family: Fontawesome webfont, sans-serif;
+/* Hide the empty icon div - we use ::before on the link instead */
+.top-nav-title.icon,
+.top-nav-link .top-nav-title.icon,
+.top-nav-menu .top-nav-title.icon {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  clip: rect(0, 0, 0, 0) !important;
+}
+
+/* Phone icon - single icon on the link */
+a[href^="tel:"]::before {
+  content: '\f095';
+  font-family: 'Font Awesome 5 Free', 'FontAwesome', Fontawesome webfont, sans-serif;
+  font-weight: 900;
+  font-size: 12px;
+  color: #d4af37;
+}
+
+/* Email icon - single icon on the link */
+a[href^="mailto:"]::before {
+  content: '\f0e0';
+  font-family: 'Font Awesome 5 Free', 'FontAwesome', Fontawesome webfont, sans-serif;
+  font-weight: 900;
+  font-size: 12px;
+  color: #d4af37;
+}
+
+.contact-divider {
+  display: inline-block !important;
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 12px;
+  margin: 0 2px;
+  user-select: none;
+  white-space: nowrap !important;
+  vertical-align: middle !important;
+}
+
+.login-section {
+  display: flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
+  margin-left: auto;
+  width: auto !important;
+  max-width: 100px !important;
+  min-width: auto !important;
+  height: 48px !important;
+  max-height: 48px !important;
+  overflow: visible !important;
+  white-space: nowrap !important;
+}
+
+/* Login button - consistent sizing */
+.login-button,
+.user-log-in-log-out,
+button.top-nav-link {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: #d4af37 !important;
+  color: #1a1a1a !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 14px !important;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  width: auto !important;
+  max-width: 80px !important;
+  min-width: 60px !important;
+  height: 28px !important;
+  box-sizing: border-box !important;
+  flex-grow: 0 !important;
+  flex-shrink: 0 !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+}
+
+.login-button:hover,
+.user-log-in-log-out:hover,
+button.top-nav-link:hover {
+  background: #b8941f !important;
+  color: #1a1a1a !important;
+}
+
+/* Remove user icon from login button to keep it simple */
+.login-button::before,
+.user-log-in-log-out::before {
+  display: none;
 }
 
 .slide-intro-paragraph {
@@ -8733,19 +8956,70 @@ html.w-mod-js [data-ix="fade-in-on-load"], html.w-mod-js [data-ix="fade-in-on-lo
   }
 
   .top-navbar {
-    padding-top: 9px;
-    padding-bottom: 9px;
-    padding-right: 20px;
+    padding: 6px 0;
+    max-height: 48px !important;
+    height: auto !important;
+  }
+  
+  /* Keep top navbar menu horizontal even on tablet */
+  .top-navbar .top-nav-menu,
+  .top-navbar .top-nav-menu.w-nav-menu {
+    flex-direction: row !important;
+    gap: 4px;
+    text-align: left;
+    justify-content: space-between !important;
+    max-height: 36px !important;
+  }
+  
+  /* Only stack on very small mobile screens */
+  @media screen and (max-width: 479px) {
+    .top-navbar .top-nav-menu,
+    .top-navbar .top-nav-menu.w-nav-menu {
+      flex-direction: column;
+      gap: 6px;
+      text-align: center;
+      justify-content: center !important;
+      max-height: 80px !important;
+    }
   }
 
-  .top-nav-menu {
-    float: none;
-    text-align: center;
+  .contact-info-section {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2px;
+  }
+  
+  .login-section {
+    margin-left: 0;
+    justify-content: center;
+  }
+
+  .contact-divider {
+    display: none;
   }
 
   .top-nav-link {
-    margin-left: 10px;
-    margin-right: 10px;
+    font-size: 12px;
+    padding: 4px 8px;
+    margin: 0;
+  }
+  
+  .top-nav-title {
+    font-size: 12px;
+  }
+  
+  a[href^="tel:"]::before,
+  a[href^="mailto:"]::before {
+    font-size: 11px;
+  }
+
+  .login-button,
+  .user-log-in-log-out,
+  button.top-nav-link {
+    font-size: 10px;
+    padding: 5px 12px !important;
+    height: 26px;
+    max-width: 75px;
   }
 
   .slide-intro-paragraph {
@@ -9633,24 +9907,57 @@ html.w-mod-js [data-ix="fade-in-on-load"], html.w-mod-js [data-ix="fade-in-on-lo
   }
 
   .top-navbar {
-    padding-right: 0;
+    padding: 5px 10px;
+    max-height: 100px !important;
+    height: auto !important;
+  }
+  
+  /* Stack vertically only on very small mobile screens */
+  .top-navbar .top-nav-menu,
+  .top-navbar .top-nav-menu.w-nav-menu {
+    flex-flow: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    display: flex !important;
+    gap: 4px;
+    max-height: 100px !important;
+    height: auto !important;
   }
 
-  .top-nav-menu {
-    flex-flow: column;
-    justify-content: center;
-    align-items: center;
-    display: flex;
+  .contact-info-section {
+    flex-direction: column;
+    gap: 2px;
   }
 
   .top-nav-link {
-    margin-bottom: 0;
-    margin-left: 0;
-    margin-right: 0;
+    margin: 0;
+    font-size: 11px;
+    padding: 3px 6px;
   }
 
   .top-nav-title {
     font-size: 11px;
+  }
+  
+  a[href^="tel:"]::before,
+  a[href^="mailto:"]::before {
+    font-size: 10px;
+  }
+
+  a[href^="mailto:"] .top-nav-title:not(.icon) {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .login-button,
+  .user-log-in-log-out,
+  button.top-nav-link {
+    font-size: 10px;
+    padding: 5px 12px !important;
+    height: 24px;
+    max-width: 70px;
   }
 
   .slide-intro-paragraph {
@@ -11975,6 +12282,31 @@ html.w-mod-js [data-ix="fade-in-on-load"], html.w-mod-js [data-ix="fade-in-on-lo
   transform: rotate(45deg);
   margin-left: 4px;
   transition: transform 0.2s ease;
+  background: transparent !important;
+  position: relative;
+  z-index: 2;
+  width: 10px;
+  height: 10px;
+  box-sizing: border-box;
+}
+
+/* Ensure dropdown toggle container has background to cover what's behind */
+.w-dropdown-toggle {
+  position: relative;
+  background: inherit;
+  z-index: 1;
+}
+
+/* If there's a pseudo-element, make sure it's behind the border */
+.w-icon-dropdown-toggle::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: inherit;
+  z-index: -1;
 }
 
 .w-dropdown:hover .w-icon-dropdown-toggle {

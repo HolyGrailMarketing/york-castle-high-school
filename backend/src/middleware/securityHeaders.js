@@ -33,7 +33,8 @@ export const securityHeaders = helmet({
         "'self'",
         "https://general-runtime.voiceflow.com",
         "https://www.google-analytics.com",
-        "https://*.voiceflow.com"
+        "https://*.voiceflow.com",
+        "https://cdn.jsdelivr.net"
       ],
       frameSrc: [
         "'self'",

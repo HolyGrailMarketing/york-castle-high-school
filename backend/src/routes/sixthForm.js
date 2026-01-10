@@ -8,6 +8,7 @@ import {
 } from '../controllers/sixthFormController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { publicRequestLimiter, adminLimiter, generalLimiter } from '../middleware/rateLimiter.js';
+import { sixthFormValidation, handleValidationErrors, sanitizeBody } from '../utils/validation.js';
 
 const router = express.Router();
 
@@ -18,7 +19,7 @@ router.get('/', adminLimiter, authenticate, authorize('ADMIN', 'STAFF'), getSixt
 router.get('/:id', generalLimiter, authenticate, getSixthFormApplication);
 
 // Create sixth form application - strict rate limiting
-router.post('/', publicRequestLimiter, createSixthFormApplication);
+router.post('/', publicRequestLimiter, sanitizeBody, sixthFormValidation, handleValidationErrors, createSixthFormApplication);
 
 // Update application status (admin/staff only)
 router.put('/:id/status', adminLimiter, authenticate, authorize('ADMIN', 'STAFF'), updateSixthFormStatus);

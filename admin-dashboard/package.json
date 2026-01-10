@@ -6,13 +6,15 @@
     "dev": "vite",
     "build": "npx vite build",
     "type-check": "tsc --noEmit",
-    "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "preview": "vite preview"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.1.0",
     "@react-oauth/google": "^0.12.2",
+    "antd": "^6.1.4",
     "axios": "^1.6.2",
     "date-fns": "^2.30.0",
+    "moment": "^2.30.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.1",

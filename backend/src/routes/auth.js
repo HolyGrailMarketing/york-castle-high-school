@@ -1,7 +1,7 @@
 import express from 'express';
-import { register, login, logout, getMe, googleAuth, googleCallback } from '../controllers/authController.js';
+import { register, login, logout, getMe, updateMe, googleAuth, googleCallback } from '../controllers/authController.js';
 import { authenticate } from '../middleware/auth.js';
-import { registerValidation, loginValidation, handleValidationErrors } from '../utils/validation.js';
+import { registerValidation, loginValidation, handleValidationErrors, sanitizeBody } from '../utils/validation.js';
 import { authLimiter, generalLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
@@ -35,7 +35,7 @@ const router = express.Router();
  *       400:
  *         description: Validation error
  */
-router.post('/register', authLimiter, registerValidation, handleValidationErrors, register);
+router.post('/register', authLimiter, sanitizeBody, registerValidation, handleValidationErrors, register);
 
 /**
  * @swagger
@@ -63,10 +63,11 @@ router.post('/register', authLimiter, registerValidation, handleValidationErrors
  *       401:
  *         description: Invalid credentials
  */
-router.post('/login', authLimiter, loginValidation, handleValidationErrors, login);
+router.post('/login', authLimiter, sanitizeBody, loginValidation, handleValidationErrors, login);
 
 router.post('/logout', generalLimiter, logout);
 router.get('/me', generalLimiter, authenticate, getMe);
+router.patch('/me', generalLimiter, authenticate, updateMe);
 
 // Google OAuth routes
 router.get('/google', authLimiter, googleAuth);

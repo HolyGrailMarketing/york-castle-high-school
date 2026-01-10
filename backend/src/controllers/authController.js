@@ -1,13 +1,11 @@
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../utils/prisma.js';
 import { generateToken } from '../utils/jwt.js';
 import { validateEmailDomain, isAllowedDomain } from '../utils/domainValidator.js';
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import logger from '../utils/logger.js';
 
-const prisma = new PrismaClient({
-  log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
-});
 
 // Configure Google OAuth Strategy (only if credentials are provided)
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
@@ -72,7 +70,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     )
   );
 } else {
-  console.warn('⚠️  Google OAuth credentials not configured. Google Sign-In will not be available.');
+  logger.warn('Google OAuth credentials not configured. Google Sign-In will not be available.');
 }
 
 export const register = async (req, res, next) => {
@@ -123,7 +121,7 @@ export const register = async (req, res, next) => {
       token,
     });
   } catch (error) {
-    console.error('Registration error:', error);
+    logger.error('Registration error:', { error: error.message });
     if (error.code === 'P1001') {
       return res.status(503).json({
         error: 'Database connection failed',
@@ -187,7 +185,7 @@ export const login = async (req, res, next) => {
       token,
     });
   } catch (error) {
-    console.error('Login error:', error);
+    logger.error('Login error:', { error: error.message });
     if (error.code === 'P1001') {
       return res.status(503).json({
         error: 'Database connection failed',
@@ -208,6 +206,58 @@ export const getMe = async (req, res) => {
   res.json({
     user: req.user,
   });
+};
+
+export const updateMe = async (req, res, next) => {
+  try {
+    const { name, phone } = req.body;
+    const userId = req.user.id;
+
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (phone !== undefined) updateData.phone = phone;
+
+    // Don't allow empty values
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({
+        error: 'No fields to update',
+        message: 'Please provide at least one field to update (name or phone)',
+      });
+    }
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        phone: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    // Audit log the update
+    const { createAuditLog } = await import('../middleware/auditLog.js');
+    await createAuditLog('update', 'User', userId, req.user.id, req.user.email, {
+      changes: updateData,
+    }, req.ip || req.connection.remoteAddress, req.get('User-Agent'));
+
+    res.json({
+      message: 'Profile updated successfully',
+      user,
+    });
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({
+        error: 'User not found',
+        message: 'The user account could not be found',
+      });
+    }
+    next(error);
+  }
 };
 
 // Google OAuth handlers

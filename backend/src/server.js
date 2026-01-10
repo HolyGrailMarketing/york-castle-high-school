@@ -5,17 +5,29 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import os from 'os';
-import swaggerUi from 'swagger-ui-express';
-import swaggerJsdoc from 'swagger-jsdoc';
-import compression from 'compression';
+// Lazy load heavy dependencies in serverless
+let swaggerUi, swaggerJsdoc, compression;
+const loadHeavyDependencies = async () => {
+  if (!swaggerUi) {
+    const swaggerModule = await import('swagger-ui-express');
+    const swaggerJsdocModule = await import('swagger-jsdoc');
+    const compressionModule = await import('compression');
+    swaggerUi = swaggerModule.default;
+    swaggerJsdoc = swaggerJsdocModule.default;
+    compression = compressionModule.default;
+  }
+};
 
 import { errorHandler } from './middleware/errorHandler.js';
 import { securityHeaders } from './middleware/securityHeaders.js';
 import { requestLogger } from './middleware/requestLogger.js';
 import { validateEnvironment, testDatabaseConnection } from './utils/envValidator.js';
 import logger from './utils/logger.js';
-import { PrismaClient } from '@prisma/client';
+import prisma from './utils/prisma.js';
 import passport from 'passport';
+
+// Check if we're in a serverless environment
+const isServerless = process.env.VERCEL === '1' || process.env.VERCEL_ENV || process.env.AWS_LAMBDA_FUNCTION_NAME;
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
 import applicationRoutes from './routes/applications.js';
@@ -27,6 +39,8 @@ import documentRoutes from './routes/documents.js';
 import requestRoutes from './routes/requests.js';
 import analyticsRoutes from './routes/analytics.js';
 import healthRoutes from './routes/health.js';
+import dataSubjectRoutes from './routes/dataSubject.js';
+import consentRoutes from './routes/consent.js';
 import { initEmailService } from './services/emailService.js';
 
 // Load environment variables
@@ -66,9 +80,8 @@ try {
   logger.info('Environment validation passed');
 } catch (error) {
   // In serverless, just log the error but don't crash
-  const isServerless = process.env.VERCEL === '1' || process.env.VERCEL_ENV;
   if (isServerless) {
-    console.error('Environment validation failed (non-fatal in serverless):', error.message);
+    logger.error('Environment validation failed (non-fatal in serverless):', { error: error.message });
     logger.warn('Environment validation failed (continuing in serverless mode)', { error: error.message });
   } else {
     logger.error('Environment validation failed', { error: error.message });
@@ -78,10 +91,7 @@ try {
   }
 }
 
-// Initialize Prisma client
-const prisma = new PrismaClient({
-  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-});
+// Prisma client is now imported from utils/prisma.js (singleton)
 
 // Test database connection (non-blocking in development)
 const nodeEnv = process.env.NODE_ENV || 'development';
@@ -99,8 +109,8 @@ testDatabaseConnection(prisma)
       // In development or serverless, log warning but continue (frontend can still be served)
       logger.warn('Server starting without database connection. API routes will fail until database is configured.');
       if (!process.env.VERCEL && !process.env.VERCEL_ENV) {
-        console.warn('⚠️  Database connection failed. Server will start but API routes may not work.');
-        console.warn('   Please check your DATABASE_URL in backend/.env');
+        logger.warn('Database connection failed. Server will start but API routes may not work.');
+        logger.warn('Please check your DATABASE_URL in backend/.env');
       }
     }
   });
@@ -136,13 +146,25 @@ const swaggerOptions = {
   apis: ['./src/routes/*.js'],
 };
 
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
+// Initialize heavy dependencies for development or when API docs are requested
+let swaggerSpec = null;
+const initSwagger = async () => {
+  if (!swaggerSpec) {
+    await loadHeavyDependencies();
+    swaggerSpec = swaggerJsdoc(swaggerOptions);
+  }
+  return swaggerSpec;
+};
 
 // Security middleware (must be first)
 app.use(securityHeaders);
 
-// Compression middleware
-app.use(compression());
+// Compression middleware - load immediately for simplicity
+loadHeavyDependencies().then(() => {
+  app.use(compression());
+}).catch(err => {
+  logger.warn('Failed to load compression middleware:', { error: err.message });
+});
 
 // CORS configuration
 // When running on single server, allow same origin
@@ -167,7 +189,6 @@ app.use(requestLogger);
 
 // Serve uploaded files (only in non-serverless environments)
 // In serverless, files should be stored in cloud storage (S3, etc.) and served via CDN
-const isServerless = process.env.VERCEL === '1' || process.env.VERCEL_ENV || process.env.AWS_LAMBDA_FUNCTION_NAME;
 if (!isServerless) {
   const uploadsPath = path.join(__dirname, '../uploads');
   // Only serve if directory exists
@@ -182,8 +203,31 @@ if (!isServerless) {
   }
 }
 
-// API Documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// API Documentation (lazy loaded)
+app.use('/api-docs', async (req, res, next) => {
+  try {
+    if (!swaggerUi) {
+      await loadHeavyDependencies();
+    }
+    if (!swaggerSpec) {
+      swaggerSpec = await initSwagger();
+    }
+    return swaggerUi.serve(req, res, next);
+  } catch (error) {
+    logger.error('Failed to load Swagger UI:', { error: error.message });
+    res.status(500).json({ error: 'API documentation temporarily unavailable' });
+  }
+}, async (req, res) => {
+  try {
+    if (!swaggerSpec) {
+      swaggerSpec = await initSwagger();
+    }
+    return swaggerUi.setup(swaggerSpec)(req, res);
+  } catch (error) {
+    logger.error('Failed to setup Swagger UI:', { error: error.message });
+    res.status(500).json({ error: 'API documentation temporarily unavailable' });
+  }
+});
 
 // Enhanced health check
 app.use('/health', healthRoutes);
@@ -199,6 +243,8 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/data-subject', dataSubjectRoutes);
+app.use('/api/consent', consentRoutes);
 
 // CRITICAL: Serve root index.html FIRST, before any static middleware
 // This ensures the correct file is served and prevents admin dashboard from being served at root
@@ -385,26 +431,67 @@ app.use((req, res) => {
   }
 });
 
+// Helper function to start server on a given port
+const startServer = (port, isRetry = false) => {
+  return new Promise((resolve, reject) => {
+    const server = app.listen(port, () => {
+      logger.info('Server started', {
+        port: port,
+        isRetry: isRetry,
+        originalPort: isRetry ? PORT : port,
+        environment: NODE_ENV,
+        nodeVersion: process.version,
+      });
+      
+      logger.info(`Server running on port ${port}`);
+      logger.info(`API Documentation: http://localhost:${port}/api-docs`);
+      logger.info(`Homepage: http://localhost:${port}/`);
+      if (fs.existsSync(adminDistPath)) {
+        logger.info(`Admin Dashboard: http://localhost:${port}/admin`);
+      } else {
+        logger.warn(`Admin Dashboard not built. Run: cd admin-dashboard && npm run build`);
+      }
+      logger.info(`API: http://localhost:${port}/api`);
+      
+      resolve(server);
+    });
+
+    server.on('error', (error) => {
+      if (error.code === 'EADDRINUSE') {
+        reject({ code: 'EADDRINUSE', port: port, error: error });
+      } else {
+        reject({ error: error });
+      }
+    });
+  });
+};
+
 // Only start listening if not running on Vercel (serverless)
 // Vercel will handle the HTTP server
 if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
-  app.listen(PORT, () => {
-    logger.info('Server started', {
-      port: PORT,
-      environment: NODE_ENV,
-      nodeVersion: process.version,
+  startServer(PORT)
+    .catch((err) => {
+      if (err.code === 'EADDRINUSE') {
+        logger.warn(`Port ${PORT} is already in use. Trying alternative port ${PORT + 1}...`, {
+          originalPort: PORT,
+          alternativePort: PORT + 1,
+          suggestion: `To use a specific port, set PORT environment variable or run: lsof -ti:${PORT} | xargs kill -9`
+        });
+        
+        // Try alternative port
+        return startServer(PORT + 1, true);
+      } else {
+        logger.error('Server startup error:', { error: err.error?.message || err.message });
+        process.exit(1);
+      }
+    })
+    .catch((err) => {
+      logger.error('Failed to start server on alternative port as well.', {
+        error: err.error?.message || err.message,
+        suggestion: 'Please free up a port or set PORT environment variable to an available port.'
+      });
+      process.exit(1);
     });
-    
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
-    console.log(`🌐 Homepage: http://localhost:${PORT}/`);
-    if (fs.existsSync(adminDistPath)) {
-      console.log(`👨‍💼 Admin Dashboard: http://localhost:${PORT}/admin`);
-    } else {
-      console.log(`⚠️  Admin Dashboard not built. Run: cd admin-dashboard && npm run build`);
-    }
-    console.log(`🔌 API: http://localhost:${PORT}/api`);
-  });
 } else {
   logger.info('Running on Vercel - serverless mode', {
     environment: NODE_ENV,

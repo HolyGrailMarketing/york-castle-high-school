@@ -24,19 +24,21 @@
       <div data-collapse="none" data-animation="default" data-duration="400" data-easing="ease" data-easing2="ease" role="banner" class="top-navbar w-nav">
         <div class="w-container">
           <nav role="navigation" class="top-nav-menu w-nav-menu">
-            <a href="tel:+1876975-2217" class="top-nav-link w-inline-block">
-              <div class="top-nav-title icon"></div>
-              <div class="top-nav-title">+1 876 975-2217</div>
-            </a>
-            <a href="mailto:yorkcastle.high.san@moey.gov.jm" class="top-nav-link w-inline-block">
-              <div class="top-nav-title icon"></div>
-              <div class="top-nav-title">yorkcastle.high.san@moey.gov.jm</div>
-            </a><button class="user-log-in-log-out top-nav-link" data-wf-user-logout="Log out" data-wf-user-login="Log in" type="button">Log out</button>
+            <div class="contact-info-section">
+              <a href="tel:+1876975-2217" class="top-nav-link w-inline-block">
+                <div class="top-nav-title icon"></div>
+                <div class="top-nav-title">+1 876 975-2217</div>
+              </a>
+              <div class="contact-divider">|</div>
+              <a href="mailto:yorkcastle.high.san@moey.gov.jm" class="top-nav-link w-inline-block">
+                <div class="top-nav-title icon"></div>
+                <div class="top-nav-title">yorkcastle.high.san@moey.gov.jm</div>
+              </a>
+            </div>
+            <div class="login-section">
+              <button class="user-log-in-log-out top-nav-link login-button" data-wf-user-logout="Log out" data-wf-user-login="Log in" type="button">Log out</button>
+            </div>
           </nav>
-          <a href="blog.html" class="top-bar-link w-hidden-small w-hidden-tiny">Medical Updates →</a>
-          <div class="w-nav-button">
-            <div class="w-icon-nav-menu"></div>
-          </div>
         </div>
       </div>
       <div data-collapse="medium" data-animation="over-right" data-duration="400" data-easing="ease-in-quad" data-easing2="ease-in-sine" role="banner" class="navbar principal-navbar w-nav">
@@ -579,5 +581,264 @@
     </div>
   </footer>
 
+  <script>
+    // Make scroll indicator clickable and scroll to next section
+    document.addEventListener('DOMContentLoaded', function() {
+      const scrollIndicator = document.querySelector('.scroll-indicator');
+      if (scrollIndicator) {
+        scrollIndicator.addEventListener('click', function(e) {
+          e.preventDefault();
+          
+          // Find the next section after the hero section
+          const heroSection = scrollIndicator.closest('.hero-redesign') || scrollIndicator.closest('section');
+          let nextSection = heroSection ? heroSection.nextElementSibling : null;
+          
+          // Keep looking for the next visible section
+          while (nextSection && (
+            nextSection.style.display === 'none' || 
+            nextSection.offsetHeight === 0 ||
+            nextSection.classList.contains('hero-redesign')
+          )) {
+            nextSection = nextSection.nextElementSibling;
+          }
+          
+          // If we found a next section, scroll to it
+          if (nextSection) {
+            nextSection.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+          } else {
+            // Fallback: scroll down by viewport height
+            window.scrollBy({
+              top: window.innerHeight,
+              behavior: 'smooth'
+            });
+          }
+        });
+        
+        // Add keyboard support (Enter key)
+        scrollIndicator.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            scrollIndicator.click();
+          }
+        });
+        
+        // Make it focusable for accessibility
+        scrollIndicator.setAttribute('tabindex', '0');
+        scrollIndicator.setAttribute('role', 'button');
+        scrollIndicator.setAttribute('aria-label', 'Scroll to next section');
+      }
+    });
+  </script>
+
+  <!-- Privacy Policy Modal -->
+  <div class="w-embed w-script">
+    <style>
+      .privacy_overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 9999; }
+      .privacy_overlay.show { display: flex; }
+      .privacy_dialog { width: min(920px, 92vw); max-height: 86vh; overflow: auto; background: #ffffff; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); padding: 22px 22px 16px; text-align: left; }
+      .privacy_dialog * { text-align: left; }
+      .privacy_header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+      .privacy_logo { width: 42px; height: 42px; border-radius: 8px; background: #0a2540; }
+      .privacy_title { font-size: 22px; font-weight: 700; margin: 0; color: #0a2540; }
+      .privacy_subtitle { font-size: 13px; color: #4a5568; margin: 2px 0 0 0; }
+      .privacy_body { border-top: 1px solid #edf2f7; border-bottom: 1px solid #edf2f7; padding: 16px 0; line-height: 1.55; color: #1a202c; font-size: 14px; }
+      .privacy_body h3 { font-size: 16px; margin: 18px 0 8px 0; color: #0a2540; }
+      .privacy_body p, .privacy_body li { margin: 8px 0; }
+      .privacy_list { padding-left: 18px; }
+      .privacy_footer { display: flex; gap: 10px; justify-content: flex-end; padding-top: 12px; }
+      .privacy_btn { appearance: none; border: 0; cursor: pointer; border-radius: 10px; padding: 10px 16px; font-weight: 600; font-size: 14px; }
+      .privacy_btn_secondary { background: #f7f7f7; color: #000000; border: 1px solid #e2e2e2; }
+      .privacy_btn_primary { background: #d4af37; color: #000000; border: 1px solid #b8941f; }
+      .privacy_btn_primary:hover { filter: brightness(0.95); }
+      .privacy_btn_secondary:hover { filter: brightness(0.98); }
+      @media (prefers-reduced-motion: no-preference) { .privacy_dialog { transform: translateY(8px); transition: transform 160ms ease, opacity 160ms ease; opacity: 0; } .privacy_overlay.show .privacy_dialog { transform: translateY(0); opacity: 1; } }
+
+      /* Improved Header UI Styles */
+      .top-nav-menu {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+      }
+
+      .contact-info-section {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .contact-divider {
+        color: rgba(255, 255, 255, 0.6);
+        font-weight: bold;
+        margin: 0 5px;
+      }
+
+      .login-section {
+        margin-left: auto;
+      }
+
+      .login-button {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+        padding: 6px 16px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+      }
+
+      .login-button:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-1px);
+      }
+
+      /* Enhanced responsive design */
+      @media (max-width: 768px) {
+        .contact-info-section {
+          flex-direction: column;
+          gap: 8px;
+          align-items: flex-start;
+        }
+
+        .contact-divider {
+          display: none;
+        }
+
+        .top-nav-menu {
+          flex-direction: column;
+          gap: 10px;
+          text-align: center;
+        }
+
+        .login-section {
+          margin-left: 0;
+        }
+      }
+    </style>
+    <div class="privacy_overlay" id="ychs_privacy_overlay" role="dialog" aria-modal="true" aria-labelledby="ychs_privacy_title" aria-describedby="ychs_privacy_desc">
+      <div class="privacy_dialog" tabindex="-1">
+        <header class="privacy_header">
+          <div class="privacy_logo" aria-hidden="true"></div>
+          <div>
+            <h2 class="privacy_title" id="ychs_privacy_title">Privacy Policy</h2>
+            <p class="privacy_subtitle">Effective date: 27 August 2025 • Location: St. Ann, Jamaica</p>
+          </div>
+        </header>
+        <section class="privacy_body" id="ychs_privacy_desc">
+          <h3>About this notice</h3>
+          <p>
+            This privacy notice explains how York Castle High School collects, uses, and protects personal information when you use our website, apply for admission, communicate with us, or take part in school activities. We handle personal information in line with the Jamaican Data Protection Act and good practice in education.
+          </p>
+          <h3>Information we collect</h3>
+          <ul class="privacy_list">
+            <li>Contact details for students, parents, and staff such as name, address, phone, and email.</li>
+            <li>Admission and enrolment information such as date of birth, previous school, recommended subjects, and assessment results.</li>
+            <li>Academic and attendance records including timetables, coursework, grades, conduct notes, and attendance marks.</li>
+            <li>Pastoral and safeguarding information where relevant such as health alerts provided to us, support plans, or referrals.</li>
+            <li>Financial and payment information for fees, trips, or events processed through a trusted provider. Card details are not stored by us.</li>
+            <li>Technology and site usage data such as device type, pages viewed, and actions taken. This may be collected through cookies or similar tools.</li>
+            <li>Campus images and CCTV recordings for safety and security when you are on school property.</li>
+          </ul>
+          <h3>How we use information</h3>
+          <ul class="privacy_list">
+            <li>To deliver education, pastoral care, and co curricular activities.</li>
+            <li>To manage admissions, timetabling, examinations, and reporting.</li>
+            <li>To keep our community safe and meet safeguarding duties.</li>
+            <li>To communicate with parents, students, alumni, and staff.</li>
+            <li>To administer trips, events, and extracurricular programmes.</li>
+            <li>To operate our website, learning platforms, and school systems.</li>
+            <li>To meet legal duties such as accounting, audits, and regulatory reporting.</li>
+          </ul>
+          <h3>Legal bases we rely on</h3>
+          <p>
+            We rely on one or more of the following, depending on the activity: performance of a contract, public task in providing education, legitimate interests in running a safe and effective school, consent where required, vital interests, and legal obligations.
+          </p>
+          <h3>Cookies</h3>
+          <p>
+            We use essential cookies to make the site work and optional analytics cookies to understand site use. You can manage optional cookies at any time. Your choice will not affect essential cookies that are needed for core functions.
+          </p>
+          <h3>Sharing information</h3>
+          <p>
+            We share information with trusted service providers who help us operate the school, for example learning platforms, payment processors, IT support, transport providers, and event partners. We also share information when required with the Ministry of Education and Youth and with examination bodies such as CXC when students sit examinations. These recipients must keep your information secure and use it only to deliver their service or meet legal duties.
+          </p>
+          <h3>Data Subject Rights</h3>
+          <p>
+            Under the Jamaican Data Protection Act (2020), you have the right to:
+          </p>
+          <ul class="privacy_list">
+            <li><strong>Access:</strong> Request a copy of your personal data we hold</li>
+            <li><strong>Correction:</strong> Request correction of inaccurate or incomplete data</li>
+            <li><strong>Deletion:</strong> Request deletion of your personal data (subject to legal retention requirements)</li>
+            <li><strong>Portability:</strong> Request your data in a portable format</li>
+            <li><strong>Restriction:</strong> Request restriction of processing in certain circumstances</li>
+            <li><strong>Objection:</strong> Object to processing based on legitimate interests</li>
+          </ul>
+          <p>
+            To exercise these rights, please contact our Data Protection Officer at <strong>yorkcastle.high.san@moey.gov.jm</strong> or submit a request through our <a href="data-subject-request.html" style="color: #d4af37; text-decoration: underline;">Data Subject Request Form</a>.
+          </p>
+          <h3>Contact us</h3>
+          <p>
+            For privacy questions or requests please contact our Data Protection Officer at <strong>yorkcastle.high.san@moey.gov.jm</strong> or the school office at <strong>+1 876 975 2217</strong> or <strong>+1 876 975 2221</strong>. Fax: <strong>+1 876 917 6387</strong>. You may also use the Contact page on this website.
+          </p>
+        </section>
+        <div class="privacy_footer">
+          <button type="button" class="privacy_btn privacy_btn_secondary" id="ychs_privacy_close">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Privacy Policy Modal Handler
+    (function() {
+      const overlay = document.getElementById('ychs_privacy_overlay');
+      const closeBtn = document.getElementById('ychs_privacy_close');
+      
+      function openPrivacy() {
+        if (overlay) {
+          overlay.classList.add('show');
+          document.body.style.overflow = 'hidden';
+          const dialog = overlay.querySelector('.privacy_dialog');
+          if (dialog) dialog.focus();
+        }
+      }
+      
+      function closePrivacy() {
+        if (overlay) {
+          overlay.classList.remove('show');
+          document.body.style.overflow = '';
+        }
+      }
+      
+      // Open on click
+      document.addEventListener('click', function(e) {
+        if (e.target.matches('[data_open_privacy="true"]')) {
+          e.preventDefault();
+          openPrivacy();
+        }
+      });
+      
+      // Close buttons
+      if (closeBtn) closeBtn.addEventListener('click', closePrivacy);
+      if (overlay) {
+        overlay.addEventListener('click', function(e) {
+          if (e.target === overlay) closePrivacy();
+        });
+      }
+      
+      // ESC key to close
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && overlay && overlay.classList.contains('show')) {
+          closePrivacy();
+        }
+      });
+    })();
+  </script>
+  
+  <!-- Backend Authentication -->
+  <script src="js/auth.js"></script>
 </body>
 </html>

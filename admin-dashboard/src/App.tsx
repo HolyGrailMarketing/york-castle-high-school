@@ -13,6 +13,8 @@ import Courses from './pages/Courses';
 import Documents from './pages/Documents';
 import Requests from './pages/Requests';
 import Analytics from './pages/Analytics';
+import DataSubjectRequests from './pages/DataSubjectRequests';
+import AuditLogs from './pages/AuditLogs';
 
 function App() {
   // Always use /admin as base path since we're served from the backend
@@ -51,6 +53,8 @@ function App() {
             <Route path="courses" element={<Courses />} />
             <Route path="documents" element={<Documents />} />
             <Route path="requests" element={<Requests />} />
+            <Route path="data-subject-requests" element={<DataSubjectRequests />} />
+            <Route path="audit-logs" element={<AuditLogs />} />
             <Route path="analytics" element={<Analytics />} />
           </Route>
           

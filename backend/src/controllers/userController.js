@@ -1,9 +1,8 @@
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../utils/prisma.js';
 import { sendInvitationEmail, isEmailConfigured } from '../services/emailService.js';
 import logger from '../utils/logger.js';
-
-const prisma = new PrismaClient();
+import { auditLog } from '../middleware/auditLog.js';
 
 export const getUsers = async (req, res, next) => {
   try {
@@ -78,6 +77,9 @@ export const getUser = async (req, res, next) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Audit log personal data access
+    await auditLog('read', 'User', id, req.user.id, req.user.email, { accessedByRole: req.user.role }, req.ip || req.connection.remoteAddress, req.get('User-Agent'));
+
     res.json({ user });
   } catch (error) {
     next(error);
@@ -133,9 +135,22 @@ export const deleteUser = async (req, res, next) => {
       return res.status(400).json({ error: 'Cannot delete your own account' });
     }
 
+    // Get user details before deletion for audit log
+    const userToDelete = await prisma.user.findUnique({
+      where: { id },
+      select: { email: true, name: true, role: true }
+    });
+
     await prisma.user.delete({
       where: { id },
     });
+
+    // Audit log the deletion
+    await auditLog('delete', 'User', id, req.user.id, req.user.email, {
+      deletedUserEmail: userToDelete?.email,
+      deletedUserName: userToDelete?.name,
+      deletedUserRole: userToDelete?.role
+    }, req.ip || req.connection.remoteAddress, req.get('User-Agent'));
 
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
@@ -214,7 +229,7 @@ export const createUser = async (req, res, next) => {
       try {
         // Construct login URL - prioritize explicit URL, then derive from sending email domain
         let loginUrl = process.env.FRONTEND_URL || process.env.APP_URL;
-        
+
         // If no explicit URL, extract domain from sending email address
         if (!loginUrl) {
           const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.EMAIL_FROM;
@@ -222,8 +237,8 @@ export const createUser = async (req, res, next) => {
             // Extract domain from email (e.g., noreply@yorkcastle.edu.jm -> yorkcastle.edu.jm)
             const emailDomain = fromEmail.split('@')[1];
             // Use HTTPS for production domains (not localhost or test domains)
-            const protocol = (emailDomain.includes('localhost') || emailDomain.includes('127.0.0.1')) 
-              ? 'http' 
+            const protocol = (emailDomain.includes('localhost') || emailDomain.includes('127.0.0.1'))
+              ? 'http'
               : 'https';
             loginUrl = `${protocol}://${emailDomain}`;
           } else {
@@ -233,14 +248,14 @@ export const createUser = async (req, res, next) => {
             loginUrl = `${protocol}://${host}`;
           }
         }
-        
+
         const fullLoginUrl = `${loginUrl}/admin/login`;
         await sendInvitationEmail(email, name, user.role, authMethod, fullLoginUrl);
-        logger.info('Invitation email sent successfully', { 
-          email, 
-          name, 
+        logger.info('Invitation email sent successfully', {
+          email,
+          name,
           authMethod,
-          loginUrl: fullLoginUrl 
+          loginUrl: fullLoginUrl
         });
       } catch (emailError) {
         // Log error but don't fail user creation if email fails
@@ -252,7 +267,7 @@ export const createUser = async (req, res, next) => {
           authMethod,
         });
         // Also log to console for immediate visibility
-        console.error('❌ Failed to send invitation email:', emailError.message);
+        logger.error('Failed to send invitation email:', { error: emailError.message });
       }
     } else {
       logger.warn('Email service not configured - invitation email not sent', {
@@ -260,8 +275,8 @@ export const createUser = async (req, res, next) => {
         name,
         authMethod,
       });
-      console.warn('⚠️  Email service not configured. Invitation email was not sent.');
-      console.warn('   Please configure RESEND_API_KEY and RESEND_FROM_EMAIL in your .env file');
+      logger.warn('Email service not configured. Invitation email was not sent.');
+      logger.warn('Please configure RESEND_API_KEY and RESEND_FROM_EMAIL in your .env file');
     }
 
     res.status(201).json({ message: 'User created successfully', user });
@@ -306,4 +321,3 @@ export const updateUserRole = async (req, res, next) => {
     next(error);
   }
 };
-

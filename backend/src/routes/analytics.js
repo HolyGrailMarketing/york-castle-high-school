@@ -3,6 +3,8 @@ import {
   getDashboardStats,
   getApplicationAnalytics,
   getUserAnalytics,
+  getAuditLogs,
+  getAuditStats,
   trackEvent,
 } from '../controllers/analyticsController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
@@ -23,6 +25,10 @@ router.get('/applications', authorize('ADMIN', 'STAFF'), getApplicationAnalytics
 
 // User analytics (admin/staff only)
 router.get('/users', authorize('ADMIN', 'STAFF'), getUserAnalytics);
+
+// Audit logs (admin only)
+router.get('/audit/logs', authorize('ADMIN'), getAuditLogs);
+router.get('/audit/stats', authorize('ADMIN'), getAuditStats);
 
 export default router;
 

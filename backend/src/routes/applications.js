@@ -7,7 +7,7 @@ import {
   deleteApplication,
 } from '../controllers/applicationController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
-import { applicationValidation, handleValidationErrors } from '../utils/validation.js';
+import { applicationValidation, handleValidationErrors, sanitizeBody } from '../utils/validation.js';
 import { publicRequestLimiter, adminLimiter, generalLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
@@ -19,7 +19,7 @@ router.get('/', adminLimiter, authenticate, authorize('ADMIN', 'STAFF'), getAppl
 router.get('/:id', generalLimiter, authenticate, getApplication);
 
 // Create application (public, but can be authenticated) - strict rate limiting
-router.post('/', publicRequestLimiter, applicationValidation, handleValidationErrors, createApplication);
+router.post('/', publicRequestLimiter, sanitizeBody, applicationValidation, handleValidationErrors, createApplication);
 
 // Update application status (admin/staff only)
 router.put('/:id/status', adminLimiter, authenticate, authorize('ADMIN', 'STAFF'), updateApplicationStatus);

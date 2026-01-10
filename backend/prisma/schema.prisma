@@ -65,6 +65,9 @@ model User {
   requests             Request[]
   blogPosts            BlogPost[] @relation("Author")
   events               Event[] @relation("Creator")
+  consentRecords       ConsentRecord[]
+  dataSubjectRequests  DataSubjectRequest[]
+  auditLogs            AuditLog[]
 
   @@index([email])
   @@index([role])
@@ -262,6 +265,76 @@ model Analytics {
 
   @@index([eventType])
   @@index([entityType])
+  @@index([createdAt])
+}
+
+model ConsentRecord {
+  id            String   @id @default(uuid())
+  userId        String?  // Nullable for anonymous consent (cookie consent)
+  email         String?  // Email for cookie consent tracking
+  consentType   String   // 'cookie_analytics', 'data_processing', 'marketing', etc.
+  purpose       String   // Purpose for which consent was given
+  granted       Boolean  @default(true)
+  withdrawnAt   DateTime?
+  ipAddress     String?
+  userAgent     String?
+  consentMethod String   // 'banner', 'form', 'api', etc.
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([email])
+  @@index([consentType])
+  @@index([createdAt])
+}
+
+model DataSubjectRequest {
+  id              String   @id @default(uuid())
+  requestType     String   // 'access', 'correction', 'deletion', 'portability', 'restriction', 'objection'
+  userId          String?
+  email           String   // Required for unauthenticated requests
+  name            String?
+  phone           String?
+  description     String?  @db.Text
+  status          String   @default("PENDING")
+  response        String?  @db.Text
+  responseData    Json?    // For access requests - exported data
+  verifiedAt      DateTime?
+  completedAt     DateTime?
+  completedBy     String?  // Admin user ID who processed it
+  rejectionReason String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([email])
+  @@index([requestType])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  action        String   // 'create', 'read', 'update', 'delete', 'export', 'access'
+  entityType    String   // 'User', 'Application', 'Request', etc.
+  entityId      String
+  userId        String?  // User who performed the action
+  userEmail     String?  // For audit purposes even if user deleted
+  ipAddress     String?
+  userAgent     String?
+  changes       Json?    // Store before/after values for updates
+  metadata      Json?    // Additional context
+  createdAt     DateTime @default(now())
+
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([action])
   @@index([createdAt])
 }
 

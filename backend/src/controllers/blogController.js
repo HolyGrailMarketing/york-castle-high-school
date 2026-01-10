@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../utils/prisma.js';
 import { slugify } from '../utils/helpers.js';
-
-const prisma = new PrismaClient();
 
 export const getBlogPosts = async (req, res, next) => {
   try {
@@ -29,7 +27,17 @@ export const getBlogPosts = async (req, res, next) => {
         where,
         skip,
         take: parseInt(limit),
-        include: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          featuredImage: true,
+          published: true,
+          publishedAt: true,
+          createdAt: true,
+          updatedAt: true,
+          authorId: true,
           author: {
             select: {
               id: true,

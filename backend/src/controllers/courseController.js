@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '../utils/prisma.js';
+import { invalidateCoursesCache } from '../services/cacheService.js';
 
 export const getCourses = async (req, res, next) => {
   try {
@@ -97,6 +96,9 @@ export const createCourse = async (req, res, next) => {
       },
     });
 
+    // Invalidate cache for courses list
+    invalidateCoursesCache();
+
     res.status(201).json({
       message: 'Course created successfully',
       course,
@@ -129,6 +131,9 @@ export const updateCourse = async (req, res, next) => {
       data: updateData,
     });
 
+    // Invalidate cache for courses list
+    invalidateCoursesCache();
+
     res.json({
       message: 'Course updated successfully',
       course,
@@ -151,6 +156,9 @@ export const deleteCourse = async (req, res, next) => {
     await prisma.course.delete({
       where: { id },
     });
+
+    // Invalidate cache for courses list
+    invalidateCoursesCache();
 
     res.json({ message: 'Course deleted successfully' });
   } catch (error) {

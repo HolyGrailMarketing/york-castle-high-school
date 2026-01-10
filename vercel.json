@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/index.mjs",
+      "src": "backend/src/server.js",
       "use": "@vercel/node",
       "config": {
         "includeFiles": [
@@ -18,15 +18,38 @@
           "videos/**",
           "documents/**",
           "dashboard/**"
-        ]
+        ],
+        "maxLambdaSize": "50mb"
+      }
+    },
+    {
+      "src": "admin-dashboard/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "admin-dashboard/dist"
       }
     }
   ],
   "routes": [
     {
+      "src": "/api/(.*)",
+      "dest": "/backend/src/server.js"
+    },
+    {
+      "src": "/admin/(.*)",
+      "dest": "/admin-dashboard/dist/$1"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/api/index.mjs"
+      "dest": "/backend/src/server.js"
     }
   ],
-  "installCommand": "npm install && cd admin-dashboard && npm install && npm run build && cd .. && npx prisma generate --schema=./backend/prisma/schema.prisma"
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "functions": {
+    "backend/src/server.js": {
+      "maxDuration": 30
+    }
+  }
 }

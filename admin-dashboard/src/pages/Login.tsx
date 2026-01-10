@@ -19,8 +19,11 @@ const Login = () => {
   useEffect(() => {
     const token = searchParams.get('token');
     if (token) {
-      // Store token and redirect to dashboard
+      // Store token
       localStorage.setItem('token', token);
+      // Clear the token from URL to avoid issues on refresh
+      window.history.replaceState({}, '', '/admin/auth/callback');
+      // Redirect to dashboard - AuthContext will pick up the token from localStorage
       window.location.href = '/admin/dashboard';
     }
   }, [searchParams]);
