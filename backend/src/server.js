@@ -471,20 +471,69 @@ app.get('/favicon.ico', (req, res, next) => {
 });
 
 // Serve static assets (CSS, JS, images, etc.)
-// In Vercel, try public directory first, then project root
-const cssPath = fs.existsSync(path.join(staticRoot, 'css')) ? path.join(staticRoot, 'css') : path.join(projectRoot, 'css');
-const jsPath = fs.existsSync(path.join(staticRoot, 'js')) ? path.join(staticRoot, 'js') : path.join(projectRoot, 'js');
-const imagesPath = fs.existsSync(path.join(staticRoot, 'images')) ? path.join(staticRoot, 'images') : path.join(projectRoot, 'images');
-const fontsPath = fs.existsSync(path.join(staticRoot, 'fonts')) ? path.join(staticRoot, 'fonts') : path.join(projectRoot, 'fonts');
-const videosPath = fs.existsSync(path.join(staticRoot, 'videos')) ? path.join(staticRoot, 'videos') : path.join(projectRoot, 'videos');
-const documentsPath = fs.existsSync(path.join(staticRoot, 'documents')) ? path.join(staticRoot, 'documents') : path.join(projectRoot, 'documents');
+// Use dynamic path resolution to check both staticRoot and projectRoot at request time
+const serveStaticWithFallback = (route, dirName) => {
+  return (req, res, next) => {
+    // Remove the route prefix from req.path (e.g., '/css/file.css' -> '/file.css')
+    const filePathFromUrl = req.path.replace(route, '') || '/';
+    const fileName = filePathFromUrl.startsWith('/') ? filePathFromUrl.slice(1) : filePathFromUrl;
+    
+    // Try multiple paths: staticRoot first, then projectRoot, then public directory
+    const possiblePaths = [
+      path.join(staticRoot, dirName, fileName),
+      path.join(projectRoot, 'public', dirName, fileName),
+      path.join(projectRoot, dirName, fileName),
+    ];
+    
+    for (const filePath of possiblePaths) {
+      if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+        // Set appropriate MIME type based on file extension
+        const ext = path.extname(filePath).toLowerCase();
+        const mimeTypes = {
+          '.css': 'text/css; charset=utf-8',
+          '.js': 'application/javascript; charset=utf-8',
+          '.json': 'application/json; charset=utf-8',
+          '.png': 'image/png',
+          '.jpg': 'image/jpeg',
+          '.jpeg': 'image/jpeg',
+          '.gif': 'image/gif',
+          '.svg': 'image/svg+xml',
+          '.webp': 'image/webp',
+          '.woff': 'font/woff',
+          '.woff2': 'font/woff2',
+          '.ttf': 'font/ttf',
+          '.mp4': 'video/mp4',
+          '.webm': 'video/webm',
+          '.pdf': 'application/pdf',
+          '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        };
+        
+        if (mimeTypes[ext]) {
+          res.setHeader('Content-Type', mimeTypes[ext]);
+        }
+        
+        res.sendFile(filePath, staticOptions, (err) => {
+          if (err && !res.headersSent) {
+            logger.warn(`Error serving static file: ${filePath}`, { error: err.message });
+            next();
+          }
+        });
+        return;
+      }
+    }
+    
+    // File not found in any location
+    logger.debug(`Static file not found: ${req.path}`, { dirName, possiblePaths });
+    next();
+  };
+};
 
-app.use('/css', express.static(cssPath, staticOptions));
-app.use('/js', express.static(jsPath, staticOptions));
-app.use('/images', express.static(imagesPath, staticOptions));
-app.use('/fonts', express.static(fontsPath, staticOptions));
-app.use('/videos', express.static(videosPath, staticOptions));
-app.use('/documents', express.static(documentsPath, staticOptions));
+app.use('/css', serveStaticWithFallback('/css', 'css'));
+app.use('/js', serveStaticWithFallback('/js', 'js'));
+app.use('/images', serveStaticWithFallback('/images', 'images'));
+app.use('/fonts', serveStaticWithFallback('/fonts', 'fonts'));
+app.use('/videos', serveStaticWithFallback('/videos', 'videos'));
+app.use('/documents', serveStaticWithFallback('/documents', 'documents'));
 
 // Serve other HTML pages (but not index.html - we handle that above)
 // Using regex pattern to match any path ending with .html
@@ -493,20 +542,29 @@ app.get(/^\/[^/]+\.html$/, (req, res, next) => {
   if (req.path.startsWith('/admin') || req.path.startsWith('/backend')) {
     return next();
   }
-  const htmlPath = path.join(projectRoot, req.path);
-  logger.info('HTML route matched', { path: req.path, htmlPath, exists: fs.existsSync(htmlPath) });
-  if (fs.existsSync(htmlPath) && !htmlPath.includes('admin-dashboard') && !htmlPath.includes('backend')) {
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.sendFile(htmlPath, (err) => {
-      if (err) {
-        logger.error('Error serving HTML file', { error: err.message, path: htmlPath });
-        next(err);
-      }
-    });
-  } else {
-    logger.warn('HTML file not found', { path: req.path, htmlPath });
-    next();
+  
+  // Try multiple paths: staticRoot first, then projectRoot
+  const possiblePaths = [
+    path.join(staticRoot, req.path),
+    path.join(projectRoot, 'public', req.path),
+    path.join(projectRoot, req.path),
+  ];
+  
+  for (const htmlPath of possiblePaths) {
+    if (fs.existsSync(htmlPath) && !htmlPath.includes('admin-dashboard') && !htmlPath.includes('backend')) {
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.sendFile(htmlPath, (err) => {
+        if (err) {
+          logger.error('Error serving HTML file', { error: err.message, path: htmlPath });
+          next(err);
+        }
+      });
+      return;
+    }
   }
+  
+  logger.warn('HTML file not found', { path: req.path, possiblePaths });
+  next();
 });
 
 // Also handle HTML files in subdirectories (like dashboard/dashboard.html)
@@ -515,18 +573,28 @@ app.get(/^\/.*\.html$/, (req, res, next) => {
   if (req.path.startsWith('/admin') || req.path.startsWith('/backend')) {
     return next();
   }
-  const htmlPath = path.join(projectRoot, req.path);
-  if (fs.existsSync(htmlPath) && !htmlPath.includes('admin-dashboard') && !htmlPath.includes('backend')) {
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.sendFile(htmlPath, (err) => {
-      if (err) {
-        logger.error('Error serving HTML file (subdir)', { error: err.message, path: htmlPath });
-        next(err);
-      }
-    });
-  } else {
-    next();
+  
+  // Try multiple paths: staticRoot first, then projectRoot
+  const possiblePaths = [
+    path.join(staticRoot, req.path),
+    path.join(projectRoot, 'public', req.path),
+    path.join(projectRoot, req.path),
+  ];
+  
+  for (const htmlPath of possiblePaths) {
+    if (fs.existsSync(htmlPath) && !htmlPath.includes('admin-dashboard') && !htmlPath.includes('backend')) {
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.sendFile(htmlPath, (err) => {
+        if (err) {
+          logger.error('Error serving HTML file (subdir)', { error: err.message, path: htmlPath });
+          next(err);
+        }
+      });
+      return;
+    }
   }
+  
+  next();
 });
 
 // Error handling middleware (must be last)
@@ -537,14 +605,55 @@ app.use('/api/*', (req, res) => {
   res.status(404).json({ error: 'API route not found' });
 });
 
-// 404 handler for other routes (serve 404.html if exists, otherwise JSON)
+// 404 handler for other routes (serve 404.html if exists, otherwise JSON for API routes, HTML for others)
 app.use((req, res) => {
-  const notFoundPage = path.join(projectRoot, '404.html');
-  if (fs.existsSync(notFoundPage)) {
-    res.status(404).sendFile(notFoundPage);
-  } else {
-    res.status(404).json({ error: 'Route not found' });
+  // Don't return JSON for static file requests (images, CSS, JS, etc.)
+  // This prevents MIME type errors when files are missing
+  const isStaticFileRequest = /\.(css|js|png|jpg|jpeg|gif|svg|webp|woff|woff2|ttf|mp4|webm|pdf|docx|json|ico)$/i.test(req.path);
+  
+  if (isStaticFileRequest) {
+    // For static files, return 404 with appropriate content type
+    const ext = path.extname(req.path).toLowerCase();
+    if (ext === '.css') {
+      res.status(404).type('text/css').send('/* File not found */');
+    } else if (ext === '.js') {
+      res.status(404).type('application/javascript').send('// File not found');
+    } else if (ext === '.json') {
+      res.status(404).type('application/json').json({ error: 'File not found' });
+    } else {
+      res.status(404).end();
+    }
+    return;
   }
+  
+  // For API routes, return JSON
+  if (req.path.startsWith('/api/')) {
+    res.status(404).json({ error: 'API route not found' });
+    return;
+  }
+  
+  // For other routes, try to serve 404.html
+  const notFoundPaths = [
+    path.join(staticRoot, '404.html'),
+    path.join(projectRoot, 'public', '404.html'),
+    path.join(projectRoot, '404.html'),
+  ];
+  
+  for (const notFoundPage of notFoundPaths) {
+    if (fs.existsSync(notFoundPage)) {
+      res.status(404).type('text/html').sendFile(notFoundPage);
+      return;
+    }
+  }
+  
+  // Fallback: return HTML 404 page
+  res.status(404).type('text/html').send(`
+    <!DOCTYPE html>
+    <html>
+    <head><title>404 Not Found</title></head>
+    <body><h1>404 - Page Not Found</h1><p>The requested resource could not be found.</p></body>
+    </html>
+  `);
 });
 
 // Helper function to start server on a given port
