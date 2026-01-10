@@ -251,7 +251,7 @@ app.use('/api/consent', consentRoutes);
 app.get('/', (req, res, next) => {
   try {
     // Use path.resolve to get absolute path and prevent any path manipulation
-    const indexPath = path.resolve(projectRoot, 'index.html');
+    let indexPath = path.resolve(projectRoot, 'index.html');
     
     logger.info('Root route handler', { indexPath, projectRoot, vercel: !!process.env.VERCEL, cwd: process.cwd() });
     
