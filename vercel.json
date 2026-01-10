@@ -1,54 +1,36 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "backend/src/server.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": [
-          "backend/**",
-          "node_modules/.prisma/**",
-          "node_modules/@prisma/**",
-          "admin-dashboard/dist/**",
-          "**/*.html",
-          "css/**",
-          "js/**",
-          "images/**",
-          "fonts/**",
-          "videos/**",
-          "documents/**",
-          "dashboard/**"
-        ],
-        "maxLambdaSize": "50mb"
-      }
-    },
-    {
-      "src": "admin-dashboard/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "admin-dashboard/dist"
-      }
-    }
-  ],
+  "buildCommand": "cd admin-dashboard && npm install && npm run build",
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/backend/src/server.js"
+      "dest": "/api/index.mjs"
     },
     {
       "src": "/admin/(.*)",
-      "dest": "/admin-dashboard/dist/$1"
+      "dest": "/admin-dashboard/dist/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=0, must-revalidate"
+      }
+    },
+    {
+      "src": "/(.*\\.(html|css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|webp|mp4|webm|pdf|docx|json))",
+      "dest": "/api/index.mjs",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
     },
     {
       "src": "/(.*)",
-      "dest": "/backend/src/server.js"
+      "dest": "/api/index.mjs"
     }
   ],
   "env": {
     "NODE_ENV": "production"
   },
   "functions": {
-    "backend/src/server.js": {
+    "api/index.mjs": {
+      "memory": 1024,
       "maxDuration": 30
     }
   }
