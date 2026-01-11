@@ -1646,7 +1646,10 @@ section.hero-redesign > .scroll-indicator {
   min-width: fit-content !important;
 }
 
-.login-button {
+.login-button,
+.user-log-in-log-out.login-button,
+.top-nav-link.login-button,
+.user-log-in-log-out.top-nav-link.login-button {
   background: var(--ychs-gold, #d4af37) !important;
   color: var(--ychs-black, #0a0a0a) !important;
   border: none !important;
@@ -1658,8 +1661,12 @@ section.hero-redesign > .scroll-indicator {
   white-space: nowrap !important;
 }
 
-.login-button:hover {
+.login-button:hover,
+.user-log-in-log-out.login-button:hover,
+.top-nav-link.login-button:hover,
+.user-log-in-log-out.top-nav-link.login-button:hover {
   background: var(--ychs-gold-dark, #b8941f) !important;
+  color: var(--ychs-black, #0a0a0a) !important;
 }
 
 /* Top navbar responsive design */
