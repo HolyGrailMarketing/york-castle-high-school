@@ -1609,6 +1609,34 @@ section.hero-redesign > .scroll-indicator {
   overflow: hidden !important;
 }
 
+.top-navbar .top-nav-link {
+  color: var(--ychs-white, #ffffff) !important;
+  text-decoration: none !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  transition: color 0.2s ease !important;
+}
+
+.top-navbar .top-nav-link:hover,
+.top-navbar .top-nav-link:focus {
+  color: var(--ychs-gold, #d4af37) !important;
+  text-decoration: none !important;
+}
+
+.top-navbar .top-nav-link:visited {
+  color: var(--ychs-white, #ffffff) !important;
+}
+
+.top-navbar .top-nav-link:active {
+  color: var(--ychs-gold-dark, #b8941f) !important;
+}
+
+.top-navbar .top-nav-title {
+  color: inherit !important;
+  margin: 0 !important;
+}
+
 .top-navbar .login-section {
   margin-left: auto !important;
   flex-shrink: 0 !important;
@@ -1816,12 +1844,12 @@ section.hero-redesign > .scroll-indicator {
     box-shadow: none;
     background: rgba(0, 0, 0, 0.2);
   }
-
+  
   .navbar .dropdown:hover .dropdown-list,
   .navbar .dropdown.open .dropdown-list {
     max-height: 500px;
   }
-
+  
   .navbar .dropdown-link-2 {
     padding: 12px 30px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
