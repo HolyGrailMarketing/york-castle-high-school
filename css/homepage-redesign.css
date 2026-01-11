@@ -3,6 +3,17 @@
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 
+/* Prevent horizontal overflow globally */
+html, body {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box !important;
+}
+
 :root {
   --ychs-gold: #d4af37;
   --ychs-gold-light: #f4e4a6;
@@ -1551,9 +1562,12 @@ section.hero-redesign > .scroll-indicator {
 /* Top navbar base styles - ensure full width stretching */
 .top-navbar {
   width: 100% !important;
+  max-width: 100% !important;
   background: var(--ychs-charcoal, #1a1a1a) !important;
   position: relative !important;
   z-index: 100 !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
 }
 
 .top-navbar .w-container {
@@ -1562,6 +1576,8 @@ section.hero-redesign > .scroll-indicator {
   padding: 8px 20px !important;
   margin: 0 auto !important;
   position: relative !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
 }
 
 .top-navbar .top-nav-menu {
@@ -1571,12 +1587,15 @@ section.hero-redesign > .scroll-indicator {
   justify-content: space-between !important;
   align-items: center !important;
   width: 100% !important;
+  max-width: 100% !important;
   position: static !important;
   background: transparent !important;
   padding: 0 !important;
   margin: 0 !important;
   transform: none !important;
   height: auto !important;
+  box-sizing: border-box !important;
+  gap: 10px !important;
 }
 
 .top-navbar .contact-info-section {
@@ -1584,14 +1603,19 @@ section.hero-redesign > .scroll-indicator {
   align-items: center !important;
   gap: 15px !important;
   flex-wrap: wrap !important;
-  flex: 1 !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
 }
 
 .top-navbar .login-section {
   margin-left: auto !important;
   flex-shrink: 0 !important;
+  flex-grow: 0 !important;
   display: flex !important;
   align-items: center !important;
+  min-width: fit-content !important;
 }
 
 .login-button {
@@ -1612,10 +1636,18 @@ section.hero-redesign > .scroll-indicator {
 
 /* Top navbar responsive design */
 @media (max-width: 768px) {
-  .top-navbar .w-container {
-    padding: 8px 15px !important;
+  .top-navbar {
+    overflow-x: hidden !important;
   }
 
+  .top-navbar .w-container {
+    padding: 8px 12px !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  .top-navbar .top-nav-menu,
   .top-navbar .top-nav-menu.w-nav-menu {
     display: flex !important;
     flex-direction: row !important;
@@ -1623,30 +1655,35 @@ section.hero-redesign > .scroll-indicator {
     justify-content: space-between !important;
     align-items: center !important;
     width: 100% !important;
-    gap: 10px !important;
+    max-width: 100% !important;
+    gap: 8px !important;
+    box-sizing: border-box !important;
   }
 
   .top-navbar .contact-info-section {
     display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 2px !important;
-    flex: 1 !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex: 1 1 auto !important;
     min-width: 0 !important;
+    max-width: calc(100% - 80px) !important;
+    overflow: hidden !important;
   }
 
   .top-navbar .contact-info-section .top-nav-link {
-    font-size: 0.65rem !important;
+    font-size: 0.6rem !important;
     display: flex !important;
     align-items: center !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     max-width: 100% !important;
+    flex-shrink: 1 !important;
   }
 
   .top-navbar .top-nav-title {
-    font-size: 0.65rem !important;
+    font-size: 0.6rem !important;
   }
 
   .top-navbar .contact-divider {
@@ -1654,32 +1691,57 @@ section.hero-redesign > .scroll-indicator {
   }
 
   .top-navbar .login-section {
-    margin-left: auto !important;
+    margin-left: 8px !important;
     flex-shrink: 0 !important;
-  }
-
-  .top-navbar .login-button {
-    padding: 5px 10px !important;
-    font-size: 0.65rem !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .top-navbar .w-container {
-    padding: 6px 10px !important;
-  }
-
-  .top-navbar .contact-info-section .top-nav-link {
-    font-size: 0.55rem !important;
-  }
-
-  .top-navbar .top-nav-title {
-    font-size: 0.55rem !important;
+    flex-grow: 0 !important;
+    min-width: fit-content !important;
   }
 
   .top-navbar .login-button {
     padding: 4px 8px !important;
-    font-size: 0.55rem !important;
+    font-size: 0.6rem !important;
+    white-space: nowrap !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .top-navbar {
+    overflow-x: hidden !important;
+  }
+
+  .top-navbar .w-container {
+    padding: 6px 8px !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  .top-navbar .top-nav-menu {
+    gap: 6px !important;
+  }
+
+  .top-navbar .contact-info-section {
+    gap: 6px !important;
+    max-width: calc(100% - 70px) !important;
+  }
+
+  .top-navbar .contact-info-section .top-nav-link {
+    font-size: 0.5rem !important;
+    padding: 2px 0 !important;
+  }
+
+  .top-navbar .top-nav-title {
+    font-size: 0.5rem !important;
+  }
+
+  .top-navbar .login-section {
+    margin-left: 6px !important;
+  }
+
+  .top-navbar .login-button {
+    padding: 3px 6px !important;
+    font-size: 0.5rem !important;
+    min-width: 50px !important;
   }
 }
 
