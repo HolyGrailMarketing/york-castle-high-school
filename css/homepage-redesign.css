@@ -1633,6 +1633,14 @@ section.hero-redesign > .scroll-indicator {
   color: var(--ychs-gold-dark, #b8941f) !important;
 }
 
+/* Override top-nav-link white color for login button */
+.top-navbar .top-nav-link.login-button,
+.top-navbar button.top-nav-link.login-button,
+.top-navbar .user-log-in-log-out.top-nav-link.login-button,
+.top-navbar button.user-log-in-log-out.top-nav-link.login-button {
+  color: var(--ychs-black, #0a0a0a) !important;
+}
+
 .top-navbar .top-nav-title {
   color: inherit !important;
   margin: 0 !important;
