@@ -1568,8 +1568,9 @@ section.hero-redesign > .scroll-indicator {
 }
 
 .navbar .dropdown-link-2:hover {
-  background: rgba(212, 175, 55, 0.1);
-  color: var(--ychs-gold, #d4af37);
+  background: rgba(212, 175, 55, 0.1) !important;
+  color: var(--ychs-gold, #d4af37) !important;
+  text-decoration: none !important;
 }
 
 .navbar .grid-3 {
