@@ -1402,14 +1402,15 @@ section.hero-redesign > .scroll-indicator {
    HEADER WRAPPER STYLES
    ============================================ */
 .header-wrapper {
-  z-index: 1000;
-  background-color: transparent;
-  display: block;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  box-shadow: 0 0 33px rgba(0, 0, 0, 0.1);
+  z-index: 1000 !important;
+  background-color: transparent !important;
+  display: block !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  box-shadow: 0 0 33px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* ============================================
