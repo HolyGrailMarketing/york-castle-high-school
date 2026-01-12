@@ -1417,64 +1417,77 @@ section.hero-redesign > .scroll-indicator {
    MAIN NAVBAR STYLES
    ============================================ */
 .navbar {
-  background-color: transparent;
-  position: relative;
-  z-index: 999;
+  background-color: transparent !important;
+  position: relative !important;
+  z-index: 999 !important;
 }
 
 .navbar.principal-navbar {
-  background-color: var(--ychs-charcoal, #1a1a1a);
-  padding: 0;
-  margin: 0;
-  width: 100%;
+  background-color: var(--ychs-charcoal, #1a1a1a) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
 }
 
 .container-23 {
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 0 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
+  max-width: 1200px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 20px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  position: relative !important;
 }
 
 .navbar .nav-menu {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 0;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  position: relative;
-  float: right;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 0 !important;
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  position: relative !important;
+  float: right !important;
+  flex-wrap: nowrap !important;
 }
 
 .navbar .nav-link {
-  color: #fff;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  text-decoration: none;
-  border-bottom: 3px solid #fff;
-  margin-left: 20px;
-  margin-right: 0;
-  padding: 36px 0 33px;
-  font-size: 14px;
-  font-weight: 400;
-  transition: border 0.2s, color 0.2s;
-  display: inline-block;
+  color: #fff !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+  text-decoration: none !important;
+  border-bottom: 3px solid #fff !important;
+  margin-left: 20px !important;
+  margin-right: 0 !important;
+  padding: 36px 0 33px !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  transition: border 0.2s, color 0.2s !important;
+  display: inline-block !important;
 }
 
 .navbar .nav-link:hover {
-  border-bottom-color: var(--ychs-gold, #d4af37);
-  color: var(--ychs-gold, #d4af37);
+  border-bottom-color: var(--ychs-gold, #d4af37) !important;
+  color: var(--ychs-gold, #d4af37) !important;
+  text-decoration: none !important;
 }
 
 .navbar .nav-link[aria-current="page"] {
-  border-bottom-color: var(--ychs-gold, #d4af37);
-  color: #fff;
+  border-bottom-color: var(--ychs-gold, #d4af37) !important;
+  color: #fff !important;
+}
+
+.navbar .nav-link:visited {
+  color: #fff !important;
+  text-decoration: none !important;
+}
+
+.navbar .nav-link:link {
+  color: #fff !important;
+  text-decoration: none !important;
 }
 
 .navbar .logo-block {
@@ -1499,13 +1512,13 @@ section.hero-redesign > .scroll-indicator {
 
 /* Dropdown styles */
 .navbar .dropdown {
-  position: relative;
-  display: inline-block;
+  position: relative !important;
+  display: inline-block !important;
 }
 
 .navbar .dropdown-toggle {
-  padding-right: 20px;
-  cursor: pointer;
+  padding-right: 20px !important;
+  cursor: pointer !important;
 }
 
 .navbar .dropdown-icon {
