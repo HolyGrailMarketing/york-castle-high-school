@@ -23,38 +23,28 @@ export const trackEvent = async (req, res, next) => {
 
 export const getDashboardStats = async (req, res, next) => {
   try {
-    const [
-      totalUsers,
-      totalApplications,
-      totalSixthFormApplications,
-      pendingApplications,
-      approvedApplications,
-      totalBlogPosts,
-      totalEvents,
-      totalDocuments,
-      recentApplications,
-    ] = await Promise.all([
-      prisma.user.count(),
-      prisma.application.count(),
-      prisma.sixthFormApplication.count(),
-      prisma.application.count({ where: { status: 'PENDING' } }),
-      prisma.application.count({ where: { status: 'APPROVED' } }),
-      prisma.blogPost.count({ where: { published: true } }),
-      prisma.event.count({ where: { isPublic: true } }),
-      prisma.document.count({ where: { isPublic: true } }),
-      prisma.application.findMany({
-        take: 5,
-        orderBy: { submittedAt: 'desc' },
-        include: {
-          user: {
-            select: {
-              name: true,
-              email: true,
-            },
+    // Execute queries sequentially to avoid connection pool exhaustion
+    // This is safer for Supabase Session mode, but Transaction mode is recommended
+    const totalUsers = await prisma.user.count().catch(() => 0);
+    const totalApplications = await prisma.application.count().catch(() => 0);
+    const totalSixthFormApplications = await prisma.sixthFormApplication.count().catch(() => 0);
+    const pendingApplications = await prisma.application.count({ where: { status: 'PENDING' } }).catch(() => 0);
+    const approvedApplications = await prisma.application.count({ where: { status: 'APPROVED' } }).catch(() => 0);
+    const totalBlogPosts = await prisma.blogPost.count({ where: { published: true } }).catch(() => 0);
+    const totalEvents = await prisma.event.count({ where: { isPublic: true } }).catch(() => 0);
+    const totalDocuments = await prisma.document.count({ where: { isPublic: true } }).catch(() => 0);
+    const recentApplications = await prisma.application.findMany({
+      take: 5,
+      orderBy: { submittedAt: 'desc' },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
           },
         },
-      }),
-    ]);
+      },
+    }).catch(() => []);
 
     res.json({
       stats: {
@@ -70,7 +60,13 @@ export const getDashboardStats = async (req, res, next) => {
       recentApplications,
     });
   } catch (error) {
-    next(error);
+    // Log the error but return a graceful response
+    console.error('Error fetching dashboard stats:', error);
+    res.status(500).json({
+      error: 'Failed to fetch dashboard statistics',
+      message: error.message,
+      hint: 'If you see "Session mode max clients" error, ensure DATABASE_URL uses Transaction mode pooler (port 6543) instead of Session mode (port 5432)'
+    });
   }
 };
 
