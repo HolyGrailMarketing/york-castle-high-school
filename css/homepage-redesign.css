@@ -1916,7 +1916,7 @@ section.hero-redesign > .scroll-indicator {
    ============================================ */
 @media (max-width: 767px) {
   .header-wrapper {
-    position: relative;
+    position: relative !important;
   }
 
   .navbar.principal-navbar {
