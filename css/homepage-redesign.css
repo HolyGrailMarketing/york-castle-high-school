@@ -1650,7 +1650,13 @@ section.hero-redesign > .scroll-indicator {
 .login-button,
 .user-log-in-log-out.login-button,
 .top-nav-link.login-button,
-.user-log-in-log-out.top-nav-link.login-button {
+.user-log-in-log-out.top-nav-link.login-button,
+button.login-button,
+button.user-log-in-log-out.login-button,
+.top-navbar .login-button,
+.top-navbar .user-log-in-log-out.login-button,
+.top-navbar button.login-button,
+.top-navbar .top-nav-link.login-button {
   background: var(--ychs-gold, #d4af37) !important;
   color: var(--ychs-black, #0a0a0a) !important;
   border: none !important;
@@ -1665,9 +1671,30 @@ section.hero-redesign > .scroll-indicator {
 .login-button:hover,
 .user-log-in-log-out.login-button:hover,
 .top-nav-link.login-button:hover,
-.user-log-in-log-out.top-nav-link.login-button:hover {
+.user-log-in-log-out.top-nav-link.login-button:hover,
+button.login-button:hover,
+button.user-log-in-log-out.login-button:hover,
+.top-navbar .login-button:hover,
+.top-navbar .user-log-in-log-out.login-button:hover,
+.top-navbar button.login-button:hover,
+.top-navbar .top-nav-link.login-button:hover {
   background: var(--ychs-gold-dark, #b8941f) !important;
   color: var(--ychs-black, #0a0a0a) !important;
+}
+
+/* Force black text on login button - highest specificity */
+.top-navbar button.user-log-in-log-out.top-nav-link.login-button,
+.top-navbar .login-section button.login-button,
+.top-navbar .login-section .user-log-in-log-out.login-button {
+  color: #0a0a0a !important;
+  background-color: var(--ychs-gold, #d4af37) !important;
+}
+
+.top-navbar button.user-log-in-log-out.top-nav-link.login-button:hover,
+.top-navbar .login-section button.login-button:hover,
+.top-navbar .login-section .user-log-in-log-out.login-button:hover {
+  color: #0a0a0a !important;
+  background-color: var(--ychs-gold-dark, #b8941f) !important;
 }
 
 /* Top navbar responsive design */
