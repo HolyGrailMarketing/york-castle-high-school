@@ -1553,10 +1553,17 @@ section.hero-redesign > .scroll-indicator {
   border-right: 4px solid transparent !important;
   border-top: 4px solid currentColor !important;
   transition: transform 0.2s ease !important;
+  vertical-align: middle !important;
 }
 
 .navbar .dropdown:hover .dropdown-icon {
   transform: rotate(180deg) !important;
+}
+
+/* Ensure dropdown icon is visible */
+.navbar .dropdown-toggle .dropdown-icon {
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 /* Dropdown List */
