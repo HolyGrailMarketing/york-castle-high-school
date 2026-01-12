@@ -853,5 +853,43 @@
   
   <!-- Backend Authentication -->
   <script src="js/auth.js"></script>
+  <script>
+    // Mobile menu toggle
+    document.addEventListener('DOMContentLoaded', function() {
+      const menuToggle = document.querySelector('.mobile-menu-toggle');
+      const navMenu = document.querySelector('.nav-menu');
+      const dropdowns = document.querySelectorAll('.nav-dropdown');
+
+      if (menuToggle && navMenu) {
+        menuToggle.addEventListener('click', function() {
+          const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
+          menuToggle.setAttribute('aria-expanded', !isExpanded);
+          navMenu.setAttribute('aria-expanded', !isExpanded);
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+          if (!navMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+            menuToggle.setAttribute('aria-expanded', 'false');
+            navMenu.setAttribute('aria-expanded', 'false');
+          }
+        });
+      }
+
+      // Mobile dropdown toggle
+      dropdowns.forEach(dropdown => {
+        const btn = dropdown.querySelector('.dropdown-btn');
+        if (btn) {
+          btn.addEventListener('click', function(e) {
+            if (window.innerWidth <= 991) {
+              e.preventDefault();
+              const isExpanded = dropdown.getAttribute('aria-expanded') === 'true';
+              dropdown.setAttribute('aria-expanded', !isExpanded);
+            }
+          });
+        }
+      });
+    });
+  </script>
 </body>
 </html>
