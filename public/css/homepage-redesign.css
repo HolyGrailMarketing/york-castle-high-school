@@ -102,8 +102,10 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: visible;
   background: var(--ychs-black);
+  padding-bottom: 80px;
 }
 
 /* Ensure scroll indicator is positioned relative to hero section */
