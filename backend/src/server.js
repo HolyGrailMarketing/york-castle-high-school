@@ -375,6 +375,12 @@ const serveStaticWithFallback = (route, dirName) => {
 
 // Serve static files BEFORE API routes (critical for proper MIME types)
 // Use our custom middleware first, then fall back to Express static middleware
+app.use('/css', (req, res, next) => {
+  if (req.path.endsWith('.css')) {
+    res.setHeader('Content-Type', 'text/css; charset=utf-8');
+  }
+  next();
+});
 app.use('/css', serveStaticWithFallback('/css', 'css'));
 app.use('/js', serveStaticWithFallback('/js', 'js'));
 app.use('/images', serveStaticWithFallback('/images', 'images'));
@@ -988,4 +994,3 @@ process.on('SIGINT', async () => {
 });
 
 export default app;
-

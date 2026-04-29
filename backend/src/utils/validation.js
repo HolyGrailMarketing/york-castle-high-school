@@ -111,7 +111,7 @@ export const applicationValidation = [
     .withMessage('Valid email is required and must be less than 254 characters'),
   body('phone')
     .trim()
-    .isMobilePhone()
+    .isLength({ min: 7, max: 30 })
     .withMessage('Valid phone number is required'),
   body('dateOfBirth')
     .isISO8601()
@@ -130,22 +130,47 @@ export const applicationValidation = [
     .trim()
     .isLength({ max: 500 })
     .withMessage('Address must be less than 500 characters'),
+  body('gender')
+    .optional()
+    .trim()
+    .isIn(['Male', 'Female', 'Other', 'Prefer not to say'])
+    .withMessage('Invalid gender value'),
+  body('religion')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('Religion must be less than 100 characters'),
+  body('nationality')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('Nationality must be less than 100 characters'),
+  body('yearsOfResidence')
+    .optional()
+    .isInt({ min: 0, max: 100 })
+    .withMessage('Years of residence must be a number between 0 and 100'),
   body('previousSchool')
     .optional()
     .trim()
     .isLength({ max: 200 })
     .withMessage('Previous school name must be less than 200 characters'),
   body('gradeApplying')
+    .optional()
     .isInt({ min: 1, max: 13 })
     .withMessage('Grade applying must be between 1 and 13'),
 ];
 
 export const sixthFormValidation = [
   ...applicationValidation, // Include all application validations
+  body('positionsHeld').optional().trim().isLength({ max: 1000 }).withMessage('Positions held must be less than 1000 characters'),
+  body('guardianInfo').optional().isObject().withMessage('Guardian info must be a valid object'),
+  body('careerGoals').optional().trim().isLength({ max: 2000 }).withMessage('Career goals must be less than 2000 characters'),
+  body('strengthsWeaknesses').optional().trim().isLength({ max: 2000 }).withMessage('Strengths and weaknesses must be less than 2000 characters'),
+  body('reasonForAttending').optional().trim().isLength({ max: 2000 }).withMessage('Reason for attending must be less than 2000 characters'),
   body('csecResults')
     .optional()
-    .isObject()
-    .withMessage('CSEC results must be a valid object'),
+    .custom(val => Array.isArray(val) || (typeof val === 'object' && val !== null))
+    .withMessage('CSEC results must be a valid array or object'),
   body('subjectChoices')
     .isObject()
     .withMessage('Subject choices are required'),
