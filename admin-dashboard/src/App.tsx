@@ -1,8 +1,20 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Analytics as VercelAnalytics } from '@vercel/analytics/react';
-import { AuthProvider } from './contexts/AuthContext';
+
+const isVercel = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import Layout from './components/Layout';
+
+// Redirects to /dashboard if the current user's role isn't in the allowed list
+const RoleRoute = ({ children, roles }: { children: React.ReactNode; roles: string[] }) => {
+  const { user } = useAuth();
+  if (user && !roles.includes(user.role)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <>{children}</>;
+};
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Applications from './pages/Applications';
@@ -48,21 +60,21 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="applications" element={<Applications />} />
             <Route path="sixth-form" element={<SixthFormApplications />} />
-            <Route path="users" element={<Users />} />
+            <Route path="users" element={<RoleRoute roles={['ADMIN', 'STAFF']}><Users /></RoleRoute>} />
             <Route path="blog" element={<BlogPosts />} />
             <Route path="events" element={<Events />} />
             <Route path="courses" element={<Courses />} />
             <Route path="documents" element={<Documents />} />
-            <Route path="requests" element={<Requests />} />
-            <Route path="data-subject-requests" element={<DataSubjectRequests />} />
-            <Route path="audit-logs" element={<AuditLogs />} />
-            <Route path="analytics" element={<Analytics />} />
+            <Route path="requests" element={<RoleRoute roles={['ADMIN', 'STAFF']}><Requests /></RoleRoute>} />
+            <Route path="data-subject-requests" element={<RoleRoute roles={['ADMIN']}><DataSubjectRequests /></RoleRoute>} />
+            <Route path="audit-logs" element={<RoleRoute roles={['ADMIN']}><AuditLogs /></RoleRoute>} />
+            <Route path="analytics" element={<RoleRoute roles={['ADMIN', 'STAFF']}><Analytics /></RoleRoute>} />
           </Route>
           
           {/* Catch-all route for unmatched paths */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-        <VercelAnalytics />
+        {isVercel && <VercelAnalytics />}
       </Router>
     </AuthProvider>
   );

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { User, Application, SixthFormApplication, Course, BlogPost, Event, Document, Request } from '../types';
+import type { User, Application, SixthFormApplication, SixthFormInterview, Course, BlogPost, Event, Document, Request } from '../types';
 
 // Use relative path since everything is served from the same server
 // This works in both development and production when served from backend
@@ -44,7 +44,8 @@ class ApiService {
   }
 
   async getMe() {
-    return this.request<User>('GET', '/auth/me');
+    const response = await this.request<{ user: User }>('GET', '/auth/me');
+    return response.user;
   }
 
   // Users
@@ -99,6 +100,14 @@ class ApiService {
 
   async updateSixthFormStatus(id: string, status: string, notes?: string) {
     return this.request<{ application: SixthFormApplication }>('PUT', `/sixth-form/${id}/status`, { status, notes });
+  }
+
+  async getInterview(applicationId: string) {
+    return this.request<{ interview: SixthFormInterview | null }>('GET', `/sixth-form/${applicationId}/interview`);
+  }
+
+  async saveInterview(applicationId: string, data: Partial<SixthFormInterview>) {
+    return this.request<{ interview: SixthFormInterview }>('POST', `/sixth-form/${applicationId}/interview`, data);
   }
 
   // Courses

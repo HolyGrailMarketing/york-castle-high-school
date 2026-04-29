@@ -14,6 +14,7 @@ datasource db {
 enum UserRole {
   ADMIN
   STAFF
+  TEACHER
   STUDENT
   PARENT
 }
@@ -108,7 +109,16 @@ model SixthFormApplication {
   phone           String
   dateOfBirth     DateTime
   address         String?
+  gender          String?
+  religion        String?
+  nationality     String?
+  yearsOfResidence Int?
   previousSchool  String?
+  positionsHeld      String?  @db.Text
+  guardianInfo       Json?
+  careerGoals        String?  @db.Text
+  strengthsWeaknesses String? @db.Text
+  reasonForAttending String?  @db.Text
   csecResults     Json?            // Store CSEC results as JSON
   subjectChoices  Json             // Store subject pool selections
   status          ApplicationStatus @default(PENDING)
@@ -118,10 +128,30 @@ model SixthFormApplication {
   reviewedBy      String?
   userId          String?
   user            User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  interview       SixthFormInterview?
 
   @@index([status])
   @@index([submittedAt])
   @@index([userId])
+}
+
+model SixthFormInterview {
+  id                    String               @id @default(uuid())
+  applicationId         String               @unique
+  application           SixthFormApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  studentName           String
+  fullyMatriculated     Boolean              @default(false)
+  awarenessMotivation   Int?                 // 1–5 rating
+  knowledgeOfSchool     Int?                 // 1–5 rating
+  appearance            Int?                 // 1–5 rating
+  generalSuitability    Int?                 // 1–5 rating
+  comments              String?              @db.Text
+  decision              String               // RECOMMEND | DO_NOT_RECOMMEND | DEFER
+  createdByName         String
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  @@index([applicationId])
 }
 
 model Course {

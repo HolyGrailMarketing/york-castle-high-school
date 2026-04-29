@@ -17,8 +17,8 @@ router.post('/track', trackEvent);
 // All other routes require authentication
 router.use(authenticate);
 
-// Dashboard stats (admin/staff only)
-router.get('/dashboard', authorize('ADMIN', 'STAFF'), getDashboardStats);
+// Dashboard stats (admin/staff/teacher)
+router.get('/dashboard', authorize('ADMIN', 'STAFF', 'TEACHER'), getDashboardStats);
 
 // Application analytics (admin/staff only)
 router.get('/applications', authorize('ADMIN', 'STAFF'), getApplicationAnalytics);

@@ -20,8 +20,11 @@ const Layout = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
 
-  // Fetch pending requests
+  const canSeeRequests = user?.role === 'ADMIN' || user?.role === 'STAFF';
+
+  // Fetch pending requests — only for roles that have access
   const fetchPendingRequests = async () => {
+    if (!canSeeRequests) return;
     try {
       const data = await apiService.getRequests({ status: 'PENDING' });
       setPendingRequests(data.requests || []);
@@ -35,7 +38,7 @@ const Layout = () => {
     fetchPendingRequests();
     const interval = setInterval(fetchPendingRequests, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [canSeeRequests]);
 
   // Close notification dropdown when clicking outside
   useEffect(() => {
@@ -96,20 +99,24 @@ const Layout = () => {
     return `${days}d ago`;
   };
 
-  const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/applications', label: 'Applications', icon: '📋' },
-    { path: '/sixth-form', label: 'Sixth Form', icon: '🎓' },
-    { path: '/users', label: 'Users', icon: '👥' },
-    { path: '/blog', label: 'Blog Posts', icon: '📰' },
-    { path: '/events', label: 'Events', icon: '📅' },
-    { path: '/courses', label: 'Courses', icon: '📚' },
-    { path: '/documents', label: 'Documents', icon: '📄' },
-    { path: '/requests', label: 'Requests', icon: '📬' },
-    { path: '/data-subject-requests', label: 'Data Subject Rights', icon: '🔒' },
-    { path: '/audit-logs', label: 'Audit Logs', icon: '📋' },
-    { path: '/analytics', label: 'Analytics', icon: '📈' },
+  const role = user?.role;
+
+  const allNavItems = [
+    { path: '/dashboard',             label: 'Dashboard',          icon: '📊', roles: ['ADMIN', 'STAFF', 'TEACHER'] },
+    { path: '/applications',          label: 'Applications',       icon: '📋', roles: ['ADMIN', 'STAFF', 'TEACHER'] },
+    { path: '/sixth-form',            label: 'Sixth Form',         icon: '🎓', roles: ['ADMIN', 'STAFF', 'TEACHER'] },
+    { path: '/users',                 label: 'Users',              icon: '👥', roles: ['ADMIN', 'STAFF'] },
+    { path: '/blog',                  label: 'Blog Posts',         icon: '📰', roles: ['ADMIN', 'STAFF', 'TEACHER'] },
+    { path: '/events',                label: 'Events',             icon: '📅', roles: ['ADMIN', 'STAFF', 'TEACHER'] },
+    { path: '/courses',               label: 'Courses',            icon: '📚', roles: ['ADMIN', 'STAFF', 'TEACHER'] },
+    { path: '/documents',             label: 'Documents',          icon: '📄', roles: ['ADMIN', 'STAFF', 'TEACHER'] },
+    { path: '/requests',              label: 'Requests',           icon: '📬', roles: ['ADMIN', 'STAFF'] },
+    { path: '/data-subject-requests', label: 'Data Subject Rights',icon: '🔒', roles: ['ADMIN'] },
+    { path: '/audit-logs',            label: 'Audit Logs',         icon: '📋', roles: ['ADMIN'] },
+    { path: '/analytics',             label: 'Analytics',          icon: '📈', roles: ['ADMIN', 'STAFF'] },
   ];
+
+  const navItems = role ? allNavItems.filter((item) => item.roles.includes(role)) : [];
 
   return (
     <div className="layout">
@@ -155,8 +162,8 @@ const Layout = () => {
               <h1>Admin Dashboard</h1>
             </div>
             <div className="header-actions">
-              {/* Notification Bell */}
-              <div className="notification-wrapper" ref={notificationRef}>
+              {/* Notification Bell — only for roles with Requests access */}
+              {canSeeRequests && <div className="notification-wrapper" ref={notificationRef}>
                 <button 
                   className={`notification-btn ${pendingRequests.length > 0 ? 'has-notifications' : ''}`}
                   title="Pending Requests"
@@ -211,7 +218,7 @@ const Layout = () => {
                     )}
                   </div>
                 )}
-              </div>
+              </div>}
               <div className="header-divider"></div>
               <span className="user-greeting">Welcome, {user?.name?.split(' ')[0] || 'Admin'}</span>
               <button onClick={handleLogout} className="logout-btn">

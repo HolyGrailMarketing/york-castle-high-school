@@ -20,9 +20,9 @@ router.get('/:id/download', downloadDocument);
 // Protected routes
 router.use(authenticate);
 
-router.post('/', authorize('ADMIN', 'STAFF'), upload.single('file'), uploadDocument);
-router.put('/:id', authorize('ADMIN', 'STAFF'), updateDocument);
-router.delete('/:id', authorize('ADMIN', 'STAFF'), deleteDocument);
+router.post('/', authorize('ADMIN', 'STAFF', 'TEACHER'), upload.single('file'), uploadDocument);
+router.put('/:id', authorize('ADMIN', 'STAFF', 'TEACHER'), updateDocument);
+router.delete('/:id', authorize('ADMIN', 'STAFF', 'TEACHER'), deleteDocument);
 
 export default router;
 

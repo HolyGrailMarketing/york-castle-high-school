@@ -1,4 +1,4 @@
-export type UserRole = 'ADMIN' | 'STAFF' | 'STUDENT' | 'PARENT';
+export type UserRole = 'ADMIN' | 'STAFF' | 'TEACHER' | 'STUDENT' | 'PARENT';
 
 export type ApplicationStatus = 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'WAITLISTED';
 
@@ -37,6 +37,22 @@ export interface Application {
   user?: User;
 }
 
+export interface SixthFormInterview {
+  id: string;
+  applicationId: string;
+  studentName: string;
+  fullyMatriculated: boolean;
+  awarenessMotivation?: number;
+  knowledgeOfSchool?: number;
+  appearance?: number;
+  generalSuitability?: number;
+  comments?: string;
+  decision: 'RECOMMEND' | 'DO_NOT_RECOMMEND' | 'DEFER';
+  createdByName: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface SixthFormApplication {
   id: string;
   firstName: string;
@@ -46,7 +62,26 @@ export interface SixthFormApplication {
   phone: string;
   dateOfBirth: string;
   address?: string;
+  gender?: string;
+  religion?: string;
+  nationality?: string;
+  yearsOfResidence?: number;
   previousSchool?: string;
+  positionsHeld?: string;
+  guardianInfo?: {
+    firstName?: string;
+    lastName?: string;
+    relationship?: string;
+    address?: string;
+    town?: string;
+    parish?: string;
+    workPhone?: string;
+    homePhone?: string;
+    cellPhone?: string;
+  };
+  careerGoals?: string;
+  strengthsWeaknesses?: string;
+  reasonForAttending?: string;
   csecResults?: any;
   subjectChoices: any;
   status: ApplicationStatus;

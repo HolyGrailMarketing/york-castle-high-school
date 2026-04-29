@@ -28,14 +28,14 @@ router.get('/:id', responseCache({
 // Protected routes
 router.use(authenticate);
 
-router.post('/', authorize('ADMIN', 'STAFF'), createCourse);
-router.put('/:id', authorize('ADMIN', 'STAFF'), updateCourse);
-router.delete('/:id', authorize('ADMIN', 'STAFF'), deleteCourse);
+router.post('/', authorize('ADMIN', 'STAFF', 'TEACHER'), createCourse);
+router.put('/:id', authorize('ADMIN', 'STAFF', 'TEACHER'), updateCourse);
+router.delete('/:id', authorize('ADMIN', 'STAFF', 'TEACHER'), deleteCourse);
 
 // Enrollment routes
-router.get('/:id/enrollments', authorize('ADMIN', 'STAFF'), getEnrollments);
+router.get('/:id/enrollments', authorize('ADMIN', 'STAFF', 'TEACHER'), getEnrollments);
 router.post('/:id/enroll', enrollStudent);
-router.delete('/:id/enroll/:userId', authorize('ADMIN', 'STAFF'), unenrollStudent);
+router.delete('/:id/enroll/:userId', authorize('ADMIN', 'STAFF', 'TEACHER'), unenrollStudent);
 
 export default router;
 

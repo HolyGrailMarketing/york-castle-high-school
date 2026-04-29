@@ -188,6 +188,7 @@ const Users = () => {
     switch (role) {
       case 'ADMIN': return '#dc2626';
       case 'STAFF': return '#0891b2';
+      case 'TEACHER': return '#7c3aed';
       case 'STUDENT': return '#16a34a';
       case 'PARENT': return '#ca8a04';
       default: return '#6b7280';
@@ -235,6 +236,7 @@ const Users = () => {
             <option value="">All Roles</option>
             <option value="ADMIN">Admin</option>
             <option value="STAFF">Staff</option>
+            <option value="TEACHER">Teacher</option>
             <option value="STUDENT">Student</option>
             <option value="PARENT">Parent</option>
           </select>
@@ -376,6 +378,7 @@ const Users = () => {
               <select name="role" value={formData.role} onChange={handleInputChange}>
                 <option value="STUDENT">Student</option>
                 <option value="PARENT">Parent</option>
+                <option value="TEACHER">Teacher</option>
                 <option value="STAFF">Staff</option>
                 <option value="ADMIN">Admin</option>
               </select>
@@ -439,6 +442,7 @@ const Users = () => {
               <select name="role" value={formData.role} onChange={handleInputChange}>
                 <option value="STUDENT">Student</option>
                 <option value="PARENT">Parent</option>
+                <option value="TEACHER">Teacher</option>
                 <option value="STAFF">Staff</option>
                 <option value="ADMIN">Admin</option>
               </select>

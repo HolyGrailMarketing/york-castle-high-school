@@ -174,7 +174,7 @@ export const createUser = async (req, res, next) => {
       return res.status(400).json({ error: 'Password is required for email authentication' });
     }
 
-    if (role && !['ADMIN', 'STAFF', 'STUDENT', 'PARENT'].includes(role)) {
+    if (role && !['ADMIN', 'STAFF', 'TEACHER', 'STUDENT', 'PARENT'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
     }
 
@@ -290,7 +290,7 @@ export const updateUserRole = async (req, res, next) => {
     const { id } = req.params;
     const { role } = req.body;
 
-    if (!['ADMIN', 'STAFF', 'STUDENT', 'PARENT'].includes(role)) {
+    if (!['ADMIN', 'STAFF', 'TEACHER', 'STUDENT', 'PARENT'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
     }
 

@@ -25,9 +25,9 @@ router.get('/:id', responseCache({
 // Protected routes
 router.use(authenticate);
 
-router.post('/', authorize('ADMIN', 'STAFF'), createEvent);
-router.put('/:id', authorize('ADMIN', 'STAFF'), updateEvent);
-router.delete('/:id', authorize('ADMIN', 'STAFF'), deleteEvent);
+router.post('/', authorize('ADMIN', 'STAFF', 'TEACHER'), createEvent);
+router.put('/:id', authorize('ADMIN', 'STAFF', 'TEACHER'), updateEvent);
+router.delete('/:id', authorize('ADMIN', 'STAFF', 'TEACHER'), deleteEvent);
 
 export default router;
 

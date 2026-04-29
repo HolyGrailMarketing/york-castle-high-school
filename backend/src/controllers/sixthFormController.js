@@ -93,7 +93,16 @@ export const createSixthFormApplication = async (req, res, next) => {
       phone,
       dateOfBirth,
       address,
+      gender,
+      religion,
+      nationality,
+      yearsOfResidence,
       previousSchool,
+      positionsHeld,
+      guardianInfo,
+      careerGoals,
+      strengthsWeaknesses,
+      reasonForAttending,
       csecResults,
       subjectChoices,
     } = req.body;
@@ -109,7 +118,16 @@ export const createSixthFormApplication = async (req, res, next) => {
         phone,
         dateOfBirth: new Date(dateOfBirth),
         address,
+        gender: gender || null,
+        religion: religion || null,
+        nationality: nationality || null,
+        yearsOfResidence: yearsOfResidence ? parseInt(yearsOfResidence) : null,
         previousSchool,
+        positionsHeld: positionsHeld || null,
+        guardianInfo: guardianInfo || null,
+        careerGoals: careerGoals || null,
+        strengthsWeaknesses: strengthsWeaknesses || null,
+        reasonForAttending: reasonForAttending || null,
         csecResults: csecResults || null,
         subjectChoices: subjectChoices || {},
         userId,
@@ -132,6 +150,13 @@ export const updateSixthFormStatus = async (req, res, next) => {
 
     if (!['PENDING', 'UNDER_REVIEW', 'APPROVED', 'REJECTED', 'WAITLISTED'].includes(status)) {
       return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    if (status === 'APPROVED') {
+      const interview = await prisma.sixthFormInterview.findUnique({ where: { applicationId: id } });
+      if (!interview) {
+        return res.status(400).json({ error: 'An interview must be completed before approving this application.' });
+      }
     }
 
     const application = await prisma.sixthFormApplication.update({

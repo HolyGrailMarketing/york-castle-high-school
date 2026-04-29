@@ -26,10 +26,10 @@ router.get('/:id', responseCache({
 // Protected routes
 router.use(authenticate);
 
-router.post('/', authorize('ADMIN', 'STAFF'), createBlogPost);
-router.put('/:id', authorize('ADMIN', 'STAFF'), updateBlogPost);
-router.delete('/:id', authorize('ADMIN', 'STAFF'), deleteBlogPost);
-router.put('/:id/publish', authorize('ADMIN', 'STAFF'), publishBlogPost);
+router.post('/', authorize('ADMIN', 'STAFF', 'TEACHER'), createBlogPost);
+router.put('/:id', authorize('ADMIN', 'STAFF', 'TEACHER'), updateBlogPost);
+router.delete('/:id', authorize('ADMIN', 'STAFF', 'TEACHER'), deleteBlogPost);
+router.put('/:id/publish', authorize('ADMIN', 'STAFF', 'TEACHER'), publishBlogPost);
 
 export default router;
 
