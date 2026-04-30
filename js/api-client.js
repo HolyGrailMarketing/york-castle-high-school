@@ -3,7 +3,7 @@
  * Handles form submissions to the backend API
  */
 
-const API_BASE_URL = 'http://localhost:3000/api';
+window.API_BASE_URL = window.API_BASE_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3000/api' : '/api');
 
 class ApiClient {
   async request(method, endpoint, data = null) {
@@ -25,7 +25,7 @@ class ApiClient {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+      const response = await fetch(`${window.API_BASE_URL}${endpoint}`, options);
       const result = await response.json();
 
       if (!response.ok) {
