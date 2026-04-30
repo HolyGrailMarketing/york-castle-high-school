@@ -1359,13 +1359,24 @@ function S_Review({ data, onSubmit, onBack, submitting, submitError }) {
 }
 
 /* ─── SCREEN 10: Status ──────────────────────────────────────── */
-function S_Status({ data }) {
+function S_Status({ data, credentials }) {
   const isDesktop = useIsDesktop();
+  const [copied, setCopied] = React.useState(false);
   const prog = PROGRAMMES.find(p => p.id === data.programmeId);
+
+  function copyCredentials() {
+    const text = `Email: ${credentials.email}\nPassword: ${credentials.password}`;
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
   const next = [
-    { icon:'clock',    text:'Application reviewed within 5–7 business days' },
-    { icon:'doc',      text:'Offer letter sent to your email if successful' },
-    { icon:'calendar', text:'Orientation begins early September 2026' },
+    { icon:'doc',      text:'Application reviewed by admissions team' },
+    { icon:'calendar', text:'Interview date sent to your email' },
+    { icon:'check-circle', text:'Offer letter sent by email if successful' },
+    { icon:'clock',    text:'Orientation begins early September 2026' },
   ];
   return (
     <Shell>
@@ -1381,12 +1392,53 @@ function S_Status({ data }) {
         </div>
 
         <div style={{ font:`700 ${isDesktop?32:24}px/1.2 Fraunces, serif`, marginBottom:12 }}>Application Submitted!</div>
-        <div style={{ font:'400 15px/1.6 Inter', color:'var(--ink-2)', maxWidth:420, marginBottom:40 }}>
+        <div style={{ font:'400 15px/1.6 Inter', color:'var(--ink-2)', maxWidth:420, marginBottom: credentials ? 24 : 40 }}>
           Thank you, {data.firstName}. We've received your application
           {prog ? <> for the <strong>{prog.name}</strong> programme</> : ''}.
         </div>
 
-        <div style={{ display:'grid', gridTemplateColumns: isDesktop ? '1fr 1fr 1fr' : '1fr', gap:12, width:'100%', maxWidth: isDesktop ? 640 : 380, marginBottom:40, textAlign:'left' }}>
+        {credentials ? (
+          <div style={{
+            width:'100%', maxWidth:460, marginBottom:32, textAlign:'left',
+            background:'#fffbeb', border:'2px solid #f59e0b', borderRadius:14, padding:'20px 22px',
+          }}>
+            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
+              <Icon name="lock" size={18} color="#b45309"/>
+              <span style={{ font:'700 14px/1 Inter', color:'#92400e' }}>Your account has been created — save these login details</span>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'auto 1fr', gap:'6px 14px', font:'400 14px/1.6 Inter', color:'#1a1a1a', marginBottom:14 }}>
+              <span style={{ color:'#6b7280', fontWeight:600 }}>Email</span>
+              <span>{credentials.email}</span>
+              <span style={{ color:'#6b7280', fontWeight:600 }}>Password</span>
+              <span style={{ fontFamily:'monospace', letterSpacing:1 }}>{credentials.password}</span>
+            </div>
+            <button onClick={copyCredentials} style={{
+              background: copied ? 'var(--green)' : '#f59e0b', color:'#fff', border:'none',
+              borderRadius:8, padding:'8px 16px', font:'600 13px/1 Inter', cursor:'pointer',
+            }}>
+              {copied ? '✓ Copied!' : 'Copy to clipboard'}
+            </button>
+            <p style={{ font:'400 12px/1.5 Inter', color:'#92400e', margin:'10px 0 0' }}>
+              Use these to log in at <a href="application-status.html" style={{ color:'#b45309', fontWeight:600 }}>Check Application Status</a> to track your application.
+            </p>
+          </div>
+        ) : (
+          <div style={{
+            width:'100%', maxWidth:460, marginBottom:32, textAlign:'left',
+            background:'#f0f9ff', border:'2px solid #38bdf8', borderRadius:14, padding:'20px 22px',
+          }}>
+            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
+              <Icon name="check-circle" size={18} color="#0369a1"/>
+              <span style={{ font:'700 14px/1 Inter', color:'#0c4a6e' }}>Track your application status</span>
+            </div>
+            <p style={{ font:'400 13px/1.6 Inter', color:'#0369a1', margin:0 }}>
+              Sign in with your email <strong>{data.email}</strong> and your existing password at{' '}
+              <a href="application-status.html" style={{ color:'#0c4a6e', fontWeight:600 }}>Check Application Status</a>.
+            </p>
+          </div>
+        )}
+
+        <div style={{ display:'grid', gridTemplateColumns: isDesktop ? '1fr 1fr 1fr 1fr' : '1fr 1fr', gap:12, width:'100%', maxWidth: isDesktop ? 800 : 380, marginBottom:32, textAlign:'left' }}>
           {next.map((s, i) => (
             <Card key={i}>
               <div style={{ padding:'18px 16px', display:'flex', flexDirection: isDesktop ? 'column' : 'row', gap:12, alignItems: isDesktop ? 'flex-start' : 'center' }}>
@@ -1399,9 +1451,17 @@ function S_Status({ data }) {
           ))}
         </div>
 
-        <a href="/" style={{ font:'600 14px/1 Inter', color:'var(--primary)', textDecoration:'none' }}>
-          ← Return to YCHS Website
-        </a>
+        <div style={{ display:'flex', gap:16, flexWrap:'wrap', justifyContent:'center' }}>
+          <a href="application-status.html" style={{
+            font:'600 14px/1 Inter', color:'#fff', textDecoration:'none',
+            background:'var(--primary)', borderRadius:10, padding:'12px 24px',
+          }}>
+            Check Application Status →
+          </a>
+          <a href="/" style={{ font:'600 14px/1 Inter', color:'var(--primary)', textDecoration:'none', padding:'12px 0' }}>
+            ← Return to YCHS Website
+          </a>
+        </div>
       </div>
     </Shell>
   );
@@ -1445,6 +1505,7 @@ function App() {
   const [errors, setErrors]         = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+  const [credentials, setCredentials] = useState(null);
 
   useEffect(() => { saveDraft(data); }, [data]);
 
@@ -1511,12 +1572,13 @@ function App() {
         headers:{ 'Content-Type':'application/json' },
         body: JSON.stringify(payload),
       });
+      const body = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
         const detail = body.details?.map(e => e.msg).join(', ') || body.error || body.message || `Server error ${res.status}`;
         throw new Error(detail);
       }
       localStorage.removeItem(STORAGE_KEY);
+      if (body.credentials) setCredentials(body.credentials);
       go('status');
     } catch (err) {
       setSubmitError(err.message || 'Submission failed. Please try again.');
@@ -1548,7 +1610,7 @@ function App() {
       case 'statement':  return <S_Statement data={data} onChange={change} onNext={() => go('docs')} onBack={() => go('refs')}/>;
       case 'docs':       return <S_Docs data={data} onChange={change} onNext={() => go('review')} onBack={() => go('statement')}/>;
       case 'review':     return <S_Review data={data} onSubmit={handleSubmit} onBack={() => go('docs')} submitting={submitting} submitError={submitError}/>;
-      case 'status':    return <S_Status data={data}/>;
+      case 'status':    return <S_Status data={data} credentials={credentials}/>;
       default:          return null;
     }
   }

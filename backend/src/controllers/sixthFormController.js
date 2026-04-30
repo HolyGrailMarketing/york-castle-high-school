@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs';
 import prisma from '../utils/prisma.js';
 
 export const getSixthFormApplications = async (req, res, next) => {
@@ -107,7 +108,32 @@ export const createSixthFormApplication = async (req, res, next) => {
       subjectChoices,
     } = req.body;
 
-    const userId = req.user?.id || null;
+    // Resolve userId: prefer logged-in user, else look up by email
+    let userId = req.user?.id || null;
+    let generatedPassword = null;
+
+    if (!userId) {
+      const existingUser = await prisma.user.findUnique({ where: { email } });
+      if (existingUser) {
+        userId = existingUser.id;
+      } else {
+        // Auto-create a STUDENT account for this applicant
+        const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+        generatedPassword = Array.from({ length: 10 }, () =>
+          chars[Math.floor(Math.random() * chars.length)]
+        ).join('');
+        const hashed = await bcrypt.hash(generatedPassword, 10);
+        const newUser = await prisma.user.create({
+          data: {
+            email,
+            password: hashed,
+            name: [firstName, lastName].filter(Boolean).join(' '),
+            role: 'STUDENT',
+          },
+        });
+        userId = newUser.id;
+      }
+    }
 
     const application = await prisma.sixthFormApplication.create({
       data: {
@@ -137,6 +163,7 @@ export const createSixthFormApplication = async (req, res, next) => {
     res.status(201).json({
       message: 'Sixth form application submitted successfully',
       application,
+      ...(generatedPassword && { credentials: { email, password: generatedPassword } }),
     });
   } catch (error) {
     next(error);
@@ -186,6 +213,32 @@ export const updateSixthFormStatus = async (req, res, next) => {
     if (error.code === 'P2025') {
       return res.status(404).json({ error: 'Application not found' });
     }
+    next(error);
+  }
+};
+
+export const getMyApplication = async (req, res, next) => {
+  try {
+    const application = await prisma.sixthFormApplication.findFirst({
+      where: { userId: req.user.id },
+      orderBy: { submittedAt: 'desc' },
+      include: {
+        interview: {
+          select: {
+            decision: true,
+            comments: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    if (!application) {
+      return res.status(404).json({ error: 'No application found for this account.' });
+    }
+
+    res.json({ application });
+  } catch (error) {
     next(error);
   }
 };

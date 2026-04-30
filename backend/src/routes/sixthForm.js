@@ -2,6 +2,7 @@ import express from 'express';
 import {
   getSixthFormApplications,
   getSixthFormApplication,
+  getMyApplication,
   createSixthFormApplication,
   updateSixthFormStatus,
   deleteSixthFormApplication,
@@ -15,6 +16,9 @@ const router = express.Router();
 
 // Get all sixth form applications (admin/staff only)
 router.get('/', adminLimiter, authenticate, authorize('ADMIN', 'STAFF', 'TEACHER'), getSixthFormApplications);
+
+// Get current student's own application
+router.get('/my', generalLimiter, authenticate, getMyApplication);
 
 // Get single application
 router.get('/:id', generalLimiter, authenticate, getSixthFormApplication);
