@@ -55,13 +55,16 @@
 }
 
 .btn-view {
-  padding: 6px 12px;
+  padding: 5px 14px;
   background-color: #4a90e2;
   color: white;
-  border: none;
-  border-radius: 4px;
+  border: 1px solid #4a90e2;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  vertical-align: middle;
 }
 
 .btn-view:hover {
@@ -404,3 +407,134 @@
   }
 }
 
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.pagination-btn {
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #374151;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.no-results {
+  padding: 24px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* Keep action buttons side by side instead of wrapping/stacking */
+.data-table td:last-child {
+  white-space: nowrap;
+}
+
+/* Status badges — double-class selectors so these always beat the
+   single-class .status-badge / .status-* rules from other pages' CSS
+   (those collide and leave white text on a pale background). */
+.status-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.status-badge.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.status-approved {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.status-rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-badge.status-under-review {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status-badge.status-waitlisted {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+/* PDF export buttons */
+.btn-pdf {
+  margin-left: 10px;
+  padding: 5px 14px;
+  border: 1px solid #b91c1c;
+  background: #fff;
+  color: #b91c1c;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  vertical-align: middle;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-pdf:hover {
+  background: #b91c1c;
+  color: #fff;
+}
+
+.btn-pdf-lg {
+  padding: 10px 18px;
+  border: 1px solid #b91c1c;
+  background: #b91c1c;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.15s;
+}
+
+.btn-pdf-lg:hover {
+  background: #991b1b;
+}
+
+.modal-footer-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}

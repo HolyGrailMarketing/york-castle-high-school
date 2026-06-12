@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { apiService } from '../services/api';
 import type { SixthFormApplication, SixthFormInterview } from '../types';
+import { exportSixthFormApplicationToPDF } from '../utils/export';
 import './Applications.css';
 
 const RATINGS = [
@@ -33,10 +34,14 @@ const emptyForm = {
 };
 
 const SixthFormApplications = () => {
+  const PAGE_SIZE = 20;
   const [applications, setApplications] = useState<SixthFormApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedApp, setSelectedApp] = useState<SixthFormApplication | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [activeTab, setActiveTab] = useState<'application' | 'interview'>('application');
   const [statusError, setStatusError] = useState('');
 
@@ -48,17 +53,26 @@ const SixthFormApplications = () => {
   const [interviewSaving, setInterviewSaving] = useState(false);
   const [interviewError, setInterviewError] = useState('');
 
+  // Reset to first page whenever the filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter]);
+
   useEffect(() => {
     fetchApplications();
-  }, [statusFilter]);
+  }, [statusFilter, page]);
 
   const fetchApplications = async () => {
     setLoading(true);
     try {
-      const params: any = {};
+      const params: any = { page, limit: PAGE_SIZE };
       if (statusFilter) params.status = statusFilter;
       const data = await apiService.getSixthFormApplications(params);
       setApplications(data.applications);
+      if (data.pagination) {
+        setTotalPages(data.pagination.pages || 1);
+        setTotalCount(data.pagination.total || 0);
+      }
     } catch (error) {
       console.error('Failed to fetch applications:', error);
     } finally {
@@ -189,12 +203,38 @@ const SixthFormApplications = () => {
                 <td>{new Date(app.submittedAt).toLocaleDateString()}</td>
                 <td>
                   <button onClick={() => openModal(app)} className="btn-view">View</button>
+                  <button onClick={() => exportSixthFormApplicationToPDF(app)} className="btn-pdf">PDF</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+        {applications.length === 0 && (
+          <div className="no-results">No applications found.</div>
+        )}
       </div>
+
+      {totalCount > 0 && (
+        <div className="pagination">
+          <button
+            className="pagination-btn"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page <= 1}
+          >
+            Previous
+          </button>
+          <span className="pagination-info">
+            Page {page} of {totalPages} ({totalCount} total)
+          </span>
+          <button
+            className="pagination-btn"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page >= totalPages}
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       {selectedApp && (
         <div className="modal-overlay" onClick={closeModal}>
@@ -432,7 +472,15 @@ const SixthFormApplications = () => {
               </div>
             </div>
 
-            <button onClick={closeModal} className="btn-close">Close</button>
+            <div className="modal-footer-actions">
+              <button
+                onClick={() => exportSixthFormApplicationToPDF(selectedApp, interview)}
+                className="btn-pdf-lg"
+              >
+                Export as PDF{interview ? ' (with interview)' : ''}
+              </button>
+              <button onClick={closeModal} className="btn-close">Close</button>
+            </div>
           </div>
         </div>
       )}

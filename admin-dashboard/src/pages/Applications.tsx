@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { apiService } from '../services/api';
 import type { Application } from '../types';
-import { exportApplications } from '../utils/export';
+import { exportApplications, exportApplicationToPDF } from '../utils/export';
 import { useToast } from '../hooks/useToast';
 import Toast from '../components/Toast';
 import './Applications.css';
@@ -12,20 +12,33 @@ const Applications = () => {
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const { toasts, showToast, removeToast } = useToast();
+  const PAGE_SIZE = 20;
+
+  // Reset to first page whenever the filter or search changes
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter, searchTerm]);
 
   useEffect(() => {
     fetchApplications();
-  }, [statusFilter, searchTerm]);
+  }, [statusFilter, searchTerm, page]);
 
   const fetchApplications = async () => {
     setLoading(true);
     try {
-      const params: any = {};
+      const params: any = { page, limit: PAGE_SIZE };
       if (statusFilter) params.status = statusFilter;
       if (searchTerm) params.search = searchTerm;
       const data = await apiService.getApplications(params);
       setApplications(data.applications);
+      if (data.pagination) {
+        setTotalPages(data.pagination.pages || 1);
+        setTotalCount(data.pagination.total || 0);
+      }
     } catch (error) {
       console.error('Failed to fetch applications:', error);
     } finally {
@@ -45,13 +58,36 @@ const Applications = () => {
     }
   };
 
-  const handleExport = () => {
-    if (applications.length === 0) {
-      showToast('No applications to export', 'warning');
-      return;
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      // Fetch ALL applications matching the current filters, not just the current page.
+      const params: any = { page: 1, limit: 100000 };
+      if (statusFilter) params.status = statusFilter;
+      if (searchTerm) params.search = searchTerm;
+      const data = await apiService.getApplications(params);
+      const all = data.applications || [];
+      if (all.length === 0) {
+        showToast('No applications to export', 'warning');
+        return;
+      }
+      exportApplications(all);
+      showToast(`Exported ${all.length} application${all.length === 1 ? '' : 's'}!`, 'success');
+    } catch (error) {
+      console.error('Failed to export applications:', error);
+      showToast('Failed to export applications', 'error');
+    } finally {
+      setExporting(false);
     }
-    exportApplications(applications);
-    showToast('Applications exported successfully!', 'success');
+  };
+
+  const handleExportPDF = (app: Application) => {
+    const ok = exportApplicationToPDF(app);
+    if (!ok) {
+      showToast('Please allow pop-ups to export a PDF', 'warning');
+    }
   };
 
   if (loading) {
@@ -71,7 +107,9 @@ const Applications = () => {
       <div className="page-header">
         <h1>Applications</h1>
         <div className="header-actions">
-          <button onClick={handleExport} className="btn-export">Export CSV</button>
+          <button onClick={handleExport} className="btn-export" disabled={exporting}>
+            {exporting ? 'Exporting…' : 'Export CSV'}
+          </button>
         </div>
       </div>
       <div className="filters">
@@ -124,12 +162,38 @@ const Applications = () => {
                 <td>{new Date(app.submittedAt).toLocaleDateString()}</td>
                 <td>
                   <button onClick={() => setSelectedApp(app)} className="btn-view">View</button>
+                  <button onClick={() => handleExportPDF(app)} className="btn-pdf">PDF</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+        {applications.length === 0 && (
+          <div className="no-results">No applications found.</div>
+        )}
       </div>
+
+      {totalCount > 0 && (
+        <div className="pagination">
+          <button
+            className="pagination-btn"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page <= 1}
+          >
+            Previous
+          </button>
+          <span className="pagination-info">
+            Page {page} of {totalPages} ({totalCount} total)
+          </span>
+          <button
+            className="pagination-btn"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page >= totalPages}
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       {selectedApp && (
         <div className="modal-overlay" onClick={() => setSelectedApp(null)}>
@@ -155,7 +219,10 @@ const Applications = () => {
                 <button onClick={() => handleStatusUpdate(selectedApp.id, 'WAITLISTED')} className="btn-waitlist">Waitlist</button>
               </div>
             </div>
-            <button onClick={() => setSelectedApp(null)} className="btn-close">Close</button>
+            <div className="modal-footer-actions">
+              <button onClick={() => handleExportPDF(selectedApp)} className="btn-pdf-lg">Export as PDF</button>
+              <button onClick={() => setSelectedApp(null)} className="btn-close">Close</button>
+            </div>
           </div>
         </div>
       )}
