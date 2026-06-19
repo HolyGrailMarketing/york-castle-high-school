@@ -108,11 +108,6 @@ html, body {
   padding-bottom: 80px;
 }
 
-/* Ensure scroll indicator is positioned relative to hero section */
-.hero-redesign > .scroll-indicator {
-  position: absolute;
-}
-
 .hero-video-bg {
   position: absolute;
   top: 0;
@@ -263,108 +258,6 @@ html, body {
   border-color: var(--ychs-white);
   transform: translateY(-2px);
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
-}
-
-/* Scroll indicator */
-.scroll-indicator {
-  position: absolute !important;
-  bottom: 40px !important;
-  left: 50% !important;
-  top: unset !important;
-  right: auto !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-xs);
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  z-index: 10;
-  animation: bounce 2s infinite;
-  pointer-events: auto !important;
-  cursor: pointer;
-  width: auto;
-  height: auto;
-  transition: all 0.3s ease;
-  user-select: none;
-}
-
-.scroll-indicator:hover {
-  color: rgba(255, 255, 255, 0.9);
-  transform: translateX(-50%) translateY(-5px);
-}
-
-.scroll-indicator:active {
-  transform: translateX(-50%) translateY(-3px);
-}
-
-/* Ensure scroll indicator is positioned at bottom of hero section */
-section.hero-redesign > .scroll-indicator {
-  bottom: 40px !important;
-  top: auto !important;
-}
-
-/* Ensure scroll indicator stays at bottom on all breakpoints */
-@media (max-width: 1024px) {
-  .scroll-indicator {
-    bottom: 30px !important;
-    top: auto !important;
-  }
-}
-
-@media (max-width: 768px) {
-  .scroll-indicator {
-    bottom: 20px !important;
-    top: auto !important;
-    font-size: 0.7rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .scroll-indicator {
-    bottom: 15px !important;
-    top: auto !important;
-    font-size: 0.65rem;
-  }
-}
-
-.scroll-indicator .mouse {
-  width: 24px;
-  height: 40px;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-radius: 12px;
-  position: relative;
-}
-
-.scroll-indicator .mouse::before {
-  content: '';
-  position: absolute;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 8px;
-  background: var(--ychs-gold);
-  border-radius: 2px;
-  animation: scrollWheel 1.5s infinite;
-}
-
-@keyframes scrollWheel {
-  0% { opacity: 1; transform: translateX(-50%) translateY(0); }
-  100% { opacity: 0; transform: translateX(-50%) translateY(12px); }
-}
-
-@keyframes bounce {
-  0%, 100% { 
-    transform: translateX(-50%) translateY(0);
-  }
-  50% { 
-    transform: translateX(-50%) translateY(8px);
-  }
 }
 
 /* ============================================
@@ -1719,13 +1612,24 @@ section.hero-redesign > .scroll-indicator {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   background: transparent;
   border: none;
   cursor: pointer;
   padding: 0;
   gap: 5px;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s ease;
+}
+
+.mobile-menu-toggle:focus {
+  outline: 2px solid rgba(212, 175, 55, 0.5);
+  outline-offset: 2px;
+}
+
+.mobile-menu-toggle:active {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .mobile-menu-toggle span {
@@ -1734,6 +1638,7 @@ section.hero-redesign > .scroll-indicator {
   height: 2px;
   background: #ffffff;
   transition: all 0.3s ease;
+  border-radius: 1px;
 }
 
 .mobile-menu-toggle[aria-expanded="true"] span:nth-child(1) {
@@ -1748,26 +1653,37 @@ section.hero-redesign > .scroll-indicator {
   transform: rotate(-45deg) translate(7px, -7px);
 }
 
+/* Tablet optimization (between 769px and 991px) */
+@media (max-width: 990px) and (min-width: 769px) {
+  .nav-item,
+  .dropdown-btn {
+    padding: 30px 16px;
+  }
+}
+
 /* Responsive Styles */
 @media (max-width: 991px) {
   .nav-container {
-    padding: 0 15px;
+    padding: 0 12px;
+    gap: 12px;
   }
 
   .nav-menu {
     position: fixed;
     top: 0;
     right: -100%;
-    width: 300px;
+    width: 85vw;
+    max-width: 280px;
     height: 100vh;
     background: var(--ychs-charcoal, #1a1a1a);
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
-    padding: 80px 0 20px;
+    padding: 70px 0 20px;
     transition: right 0.3s ease;
     box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
     overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .nav-menu[aria-expanded="true"] {
@@ -1776,9 +1692,10 @@ section.hero-redesign > .scroll-indicator {
 
   .nav-item,
   .dropdown-btn {
-    padding: 15px 20px;
+    padding: 12px 16px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     text-align: left;
+    font-size: 13px;
   }
 
   .nav-item.active {
@@ -1797,30 +1714,61 @@ section.hero-redesign > .scroll-indicator {
     overflow: hidden;
     transition: max-height 0.3s ease;
   }
-  
+
   .nav-dropdown:hover .dropdown-menu,
   .nav-dropdown[aria-expanded="true"] .dropdown-menu {
     max-height: 500px;
   }
-  
+
   .dropdown-menu-wide {
     grid-template-columns: 1fr;
   }
 
+  .dropdown-item {
+    font-size: 12px !important;
+    padding: 11px 16px !important;
+    min-height: 40px;
+    display: flex !important;
+    align-items: center !important;
+  }
+
   .mobile-menu-toggle {
     display: flex;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Touch-friendly nav items on mobile */
+  .nav-item:focus,
+  .dropdown-btn:focus {
+    background: rgba(212, 175, 55, 0.1);
+  }
+
+  .nav-item:active,
+  .dropdown-btn:active {
+    background: rgba(212, 175, 55, 0.05);
   }
 }
 
 @media (max-width: 768px) {
+  .top-bar {
+    padding: 6px 0 !important;
+  }
+
   .top-bar-container {
-    padding: 0 12px;
-    gap: 10px;
+    padding: 0 10px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .top-bar-left {
+    gap: 8px;
+    flex-basis: 100%;
   }
 
   .top-bar-link {
-    font-size: 12px;
-    gap: 4px;
+    font-size: 11px;
+    gap: 3px;
   }
 
   .top-bar-divider {
@@ -1828,45 +1776,111 @@ section.hero-redesign > .scroll-indicator {
   }
 
   .btn-login {
-    padding: 4px 10px;
-    font-size: 12px;
+    padding: 5px 12px;
+    font-size: 11px;
   }
 
   .nav-container {
-    padding: 0 12px;
+    padding: 0 10px;
+    gap: 10px;
   }
 
   .logo-image {
-    width: 100px;
+    width: 90px;
+  }
+
+  .nav-menu {
+    width: 80vw;
+    max-width: 260px;
+  }
+
+  .nav-item,
+  .dropdown-btn {
+    padding: 10px 14px;
+    font-size: 12px;
+  }
+
+  .dropdown-item {
+    padding: 10px 14px !important;
+    font-size: 11px !important;
+    min-height: 38px;
+    display: flex !important;
+    align-items: center !important;
   }
 }
 
 @media (max-width: 480px) {
   .top-bar {
-    padding: 6px 0;
+    padding: 5px 0 !important;
   }
 
   .top-bar-container {
     padding: 0 8px;
-    flex-wrap: wrap;
+    gap: 6px;
   }
 
   .top-bar-left {
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 6px;
   }
 
   .top-bar-link {
-    font-size: 11px;
+    font-size: 10px;
+    gap: 2px;
+  }
+
+  .top-bar-right {
+    flex-shrink: 0;
   }
 
   .btn-login {
-    padding: 3px 8px;
-    font-size: 11px;
+    padding: 4px 10px;
+    font-size: 10px;
+  }
+
+  .nav-container {
+    padding: 0 8px;
+    gap: 8px;
   }
 
   .logo-image {
-    width: 80px;
+    width: 75px;
+  }
+
+  .mobile-menu-toggle {
+    width: 40px;
+    height: 40px;
+    gap: 4px;
+  }
+
+  .mobile-menu-toggle span {
+    width: 20px;
+    height: 2px;
+  }
+
+  .nav-menu {
+    width: 75vw;
+    max-width: 240px;
+    padding: 60px 0 15px;
+  }
+
+  .nav-item,
+  .dropdown-btn {
+    padding: 10px 12px;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+
+  .dropdown-item {
+    padding: 10px 12px !important;
+    font-size: 10px !important;
+    min-height: 36px;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .dropdown-arrow {
+    width: 10px;
+    height: 10px;
   }
 }
 

@@ -197,3 +197,66 @@ if (document.readyState === 'loading') {
 
 // Export for use in other scripts
 window.auth = auth;
+
+// ============================================
+// Mobile Navigation Toggle
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
+  const menuButton = document.querySelector('.menu-button');
+  const navMenu = document.querySelector('.navbar .nav-menu');
+  const dropdowns = document.querySelectorAll('.navbar .dropdown');
+
+  // Toggle mobile menu
+  if (menuButton && navMenu) {
+    menuButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      menuButton.classList.toggle('open');
+      navMenu.classList.toggle('nav-open');
+    });
+  }
+
+  // Toggle dropdowns on mobile
+  dropdowns.forEach(function(dropdown) {
+    const toggle = dropdown.querySelector('.dropdown-toggle');
+    if (toggle) {
+      toggle.addEventListener('click', function(e) {
+        // Only prevent default on mobile
+        if (window.innerWidth <= 991) {
+          e.preventDefault();
+          dropdown.classList.toggle('open');
+          
+          // Close other dropdowns
+          dropdowns.forEach(function(other) {
+            if (other !== dropdown) {
+              other.classList.remove('open');
+            }
+          });
+        }
+      });
+    }
+  });
+
+  // Close menu when clicking outside
+  document.addEventListener('click', function(e) {
+    if (window.innerWidth <= 991) {
+      if (!e.target.closest('.navbar')) {
+        if (menuButton) menuButton.classList.remove('open');
+        if (navMenu) navMenu.classList.remove('nav-open');
+        dropdowns.forEach(function(dropdown) {
+          dropdown.classList.remove('open');
+        });
+      }
+    }
+  });
+
+  // Handle window resize
+  window.addEventListener('resize', function() {
+    if (window.innerWidth > 991) {
+      if (menuButton) menuButton.classList.remove('open');
+      if (navMenu) navMenu.classList.remove('nav-open');
+      dropdowns.forEach(function(dropdown) {
+        dropdown.classList.remove('open');
+      });
+    }
+  });
+});
