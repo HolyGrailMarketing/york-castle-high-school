@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth, isAdminRole } from '../contexts/AuthContext';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -12,7 +12,9 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
     return <div>Loading...</div>;
   }
 
-  if (!user) {
+  // Require an authenticated user with an admin-portal role. Students/parents
+  // are blocked even if they somehow hold a valid token.
+  if (!user || !isAdminRole(user.role)) {
     return <Navigate to="/login" replace />;
   }
 

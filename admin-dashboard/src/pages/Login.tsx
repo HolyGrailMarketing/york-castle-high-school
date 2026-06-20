@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth, isAdminRole } from '../contexts/AuthContext';
 import { authService } from '../services/api';
 import GoogleSignIn from '../components/GoogleSignIn';
 import logo from '../assets/logo.png';
@@ -32,7 +32,15 @@ const Login = () => {
       
       // Verify token by fetching user data
       authService.getMe()
-        .then(() => {
+        .then((userData) => {
+          // Reject students/parents - the admin portal is for staff only.
+          if (!isAdminRole(userData.role)) {
+            localStorage.removeItem('token');
+            authService.setToken(null);
+            setError('This portal is for staff only. Please use the application status portal to view your application.');
+            setLoading(false);
+            return;
+          }
           // User fetched successfully - token is valid
           // Use full page reload to ensure AuthContext re-initializes with the token
           // This ensures the AuthContext picks up the token from localStorage on mount
