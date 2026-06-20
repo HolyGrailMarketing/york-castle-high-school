@@ -163,11 +163,15 @@ export const deleteUser = async (req, res, next) => {
 
 export const createUser = async (req, res, next) => {
   try {
-    const { email, password, name, role, phone, authMethod = 'EMAIL' } = req.body;
+    const { email: rawEmail, password, name, role, phone, authMethod = 'EMAIL' } = req.body;
 
-    if (!email || !name) {
+    if (!rawEmail || !name) {
       return res.status(400).json({ error: 'Email and name are required' });
     }
+
+    // Normalize email so it always matches the lowercased address Google
+    // returns at sign-in time (and to keep accounts unique by case).
+    const email = rawEmail.toLowerCase().trim();
 
     // Password required for EMAIL auth method
     if (authMethod === 'EMAIL' && !password) {
@@ -187,9 +191,9 @@ export const createUser = async (req, res, next) => {
       }
     }
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
+    // Check if user already exists (case-insensitive)
+    const existingUser = await prisma.user.findFirst({
+      where: { email: { equals: email, mode: 'insensitive' } },
     });
 
     if (existingUser) {

@@ -90,7 +90,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
             service: 'york-castle-api'
           });
 
-          const email = profile.emails?.[0]?.value;
+          const email = profile.emails?.[0]?.value?.toLowerCase().trim();
           const name = profile.displayName || profile.name?.givenName + ' ' + profile.name?.familyName;
           const picture = profile.photos?.[0]?.value;
           const providerId = profile.id;
@@ -120,11 +120,13 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
             service: 'york-castle-api'
           });
 
-          // Check if user exists (must be pre-created by admin)
+          // Check if user exists (must be pre-created by admin).
+          // Match case-insensitively so accounts invited with mixed-case
+          // emails still resolve against Google's lowercased address.
           let user;
           try {
-            user = await prisma.user.findUnique({
-              where: { email },
+            user = await prisma.user.findFirst({
+              where: { email: { equals: email, mode: 'insensitive' } },
             });
           } catch (dbError) {
             logger.error('Database error finding user in Google OAuth', {
@@ -248,11 +250,12 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
 export const register = async (req, res, next) => {
   try {
-    const { email, password, name, phone, role } = req.body;
+    const { email: rawEmail, password, name, phone, role } = req.body;
+    const email = rawEmail?.toLowerCase().trim();
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
+    // Check if user already exists (case-insensitive)
+    const existingUser = await prisma.user.findFirst({
+      where: { email: { equals: email, mode: 'insensitive' } },
     });
 
     if (existingUser) {
@@ -309,9 +312,9 @@ export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    // Find user
-    const user = await prisma.user.findUnique({
-      where: { email },
+    // Find user (case-insensitive so login isn't sensitive to email casing)
+    const user = await prisma.user.findFirst({
+      where: { email: { equals: email?.toLowerCase().trim(), mode: 'insensitive' } },
     });
 
     if (!user) {
