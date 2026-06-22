@@ -1,5 +1,44 @@
 import prisma from '../utils/prisma.js';
 import logger from '../utils/logger.js';
+import { getBaseUrl } from '../utils/helpers.js';
+import { sendAdminRequestNotification, isEmailConfigured } from '../services/emailService.js';
+
+// Pull a human-friendly requester name/contact out of a request's metadata or linked user.
+const extractRequester = (request) => {
+  const student = request.metadata?.studentInfo;
+  const name =
+    request.user?.name ||
+    [student?.firstName, student?.middleName, student?.lastName].filter(Boolean).join(' ') ||
+    'Unknown';
+  const email = request.user?.email || student?.email || null;
+  const phone = student?.phone || student?.phoneNumber || null;
+  return { name, email, phone };
+};
+
+// Notify staff that a new request was submitted. Failures are logged, never thrown,
+// so a notification problem can't break the submission itself.
+const notifyAdminOfNewRequest = async (req, request) => {
+  if (!isEmailConfigured()) {
+    logger.warn('Skipping new-request notification - email service not configured', { requestId: request.id });
+    return;
+  }
+  try {
+    const { name, email, phone } = extractRequester(request);
+    const requestUrl = `${getBaseUrl(req)}/admin/requests?view=${request.id}`;
+    await sendAdminRequestNotification({
+      requestType: request.metadata?.requestType || request.title || request.type,
+      requesterName: name,
+      requesterEmail: email,
+      requesterPhone: phone,
+      requestId: request.id,
+      requestUrl,
+      submittedAt: request.createdAt,
+    });
+    logger.info('New-request notification sent to staff', { requestId: request.id, requestUrl });
+  } catch (error) {
+    logger.error('Failed to send new-request notification', { requestId: request.id, error: error.message });
+  }
+};
 
 export const getRequests = async (req, res, next) => {
   try {
@@ -183,6 +222,8 @@ export const createRequest = async (req, res, next) => {
       },
     });
 
+    await notifyAdminOfNewRequest(req, request);
+
     res.status(201).json({
       message: 'Request submitted successfully',
       request,
@@ -290,6 +331,8 @@ export const createPublicRequest = async (req, res, next) => {
         metadata: metadata || {},
       },
     });
+
+    await notifyAdminOfNewRequest(req, request);
 
     res.status(201).json({
       message: 'Request submitted successfully',

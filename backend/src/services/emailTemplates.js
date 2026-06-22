@@ -237,6 +237,40 @@ export const templates = {
   },
 
   /**
+   * Admin notification email - sent to staff each time a new request is submitted
+   */
+  adminNewRequest: ({ requestType, requesterName, requesterEmail, requesterPhone, requestId, requestUrl, submittedAt }) => {
+    const submitted = submittedAt ? new Date(submittedAt) : new Date();
+    const submittedStr = submitted.toLocaleString('en-JM', { dateStyle: 'medium', timeStyle: 'short' });
+
+    const content = `
+      <h2 style="color: ${schoolColors.secondary}; margin-top: 0;">New Request Submitted</h2>
+      <p>A new request has just been submitted through the York Castle High School website and needs your attention.</p>
+      <div class="highlight">
+        <p style="margin-top: 0;"><strong>Request Type:</strong> ${requestType || 'Request'}</p>
+        <p><strong>Submitted By:</strong> ${requesterName || 'Unknown'}</p>
+        ${requesterEmail ? `<p><strong>Email:</strong> ${requesterEmail}</p>` : ''}
+        ${requesterPhone ? `<p><strong>Phone:</strong> ${requesterPhone}</p>` : ''}
+        <p><strong>Submitted On:</strong> ${submittedStr}</p>
+        <p style="margin-bottom: 0;"><strong>Request ID:</strong> <span style="font-family: monospace; background: ${schoolColors.lightGray}; padding: 4px 8px; border-radius: 4px;">${requestId}</span></p>
+      </div>
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="${requestUrl}" class="button" style="display: inline-block;">View Request</a>
+      </p>
+      <p style="color: ${schoolColors.textLight}; font-size: 14px;">If the button above doesn't work, copy and paste this link into your browser:<br>
+        <a href="${requestUrl}" style="color: ${schoolColors.goldDark}; word-break: break-all;">${requestUrl}</a>
+      </p>
+      <p>You will need to sign in to the administrative portal to view and process this request.</p>
+    `;
+
+    return {
+      subject: `New ${requestType || 'Request'} Submitted - York Castle High School`,
+      html: baseTemplate(content, 'New Request Submitted'),
+      text: `New Request Submitted\n\nA new request has been submitted through the website.\n\nRequest Type: ${requestType || 'Request'}\nSubmitted By: ${requesterName || 'Unknown'}\n${requesterEmail ? `Email: ${requesterEmail}\n` : ''}${requesterPhone ? `Phone: ${requesterPhone}\n` : ''}Submitted On: ${submittedStr}\nRequest ID: ${requestId}\n\nView the request here:\n${requestUrl}\n\nYork Castle High School`,
+    };
+  },
+
+  /**
    * Request confirmation email
    */
   requestConfirmation: (name, requestType, requestId) => {

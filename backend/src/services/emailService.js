@@ -75,6 +75,15 @@ export const sendApplicationStatusEmail = async (email, name, status, applicatio
   await sendEmail(email, template.subject, template.text, template.html);
 };
 
+// Default recipient for new-request notifications; overridable via env.
+export const REQUEST_NOTIFICATION_EMAIL =
+  process.env.REQUEST_NOTIFICATION_EMAIL || 'annallee.brown.ssr3@moeschools.edu.jm';
+
+export const sendAdminRequestNotification = async (details, to = REQUEST_NOTIFICATION_EMAIL) => {
+  const template = templates.adminNewRequest(details);
+  await sendEmail(to, template.subject, template.text, template.html);
+};
+
 export const sendRequestConfirmationEmail = async (email, name, requestType, requestId) => {
   const template = templates.requestConfirmation(name, requestType, requestId);
   await sendEmail(email, template.subject, template.text, template.html);
@@ -93,4 +102,38 @@ export const sendWelcomeEmail = async (email, name, role) => {
 export const sendInvitationEmail = async (email, name, role, authMethod, loginUrl) => {
   const template = templates.invitation(name, email, role, authMethod, loginUrl);
   await sendEmail(email, template.subject, template.text, template.html);
+};
+
+export const sendPasswordResetEmail = async (email, name, resetUrl) => {
+  const firstName = (name || '').trim().split(' ')[0] || 'there';
+  const subject = 'Reset your York Castle High School password';
+  const text =
+    `Hi ${firstName},\n\n` +
+    `We received a request to reset the password for your York Castle High School account.\n\n` +
+    `Reset your password using this link (valid for 1 hour):\n${resetUrl}\n\n` +
+    `If you didn't request this, you can safely ignore this email — your password won't change.\n\n` +
+    `York Castle High School`;
+  const html = `
+  <div style="background:#f6f7f9;padding:32px 0;font-family:-apple-system,Segoe UI,Roboto,sans-serif;">
+    <div style="max-width:520px;margin:0 auto;background:#fff;border:1px solid #e9ebf0;border-radius:14px;overflow:hidden;">
+      <div style="background:linear-gradient(135deg,#0e0e10,#17171b 55%,#241d06);padding:28px 32px;border-bottom:3px solid #d4af37;">
+        <div style="color:#f0d066;font:700 20px Georgia,serif;">York Castle High School</div>
+      </div>
+      <div style="padding:32px;">
+        <p style="font-size:15px;color:#1a1a2e;margin:0 0 16px;">Hi ${firstName},</p>
+        <p style="font-size:15px;color:#374151;line-height:1.6;margin:0 0 24px;">
+          We received a request to reset the password for your account. Click the button below to choose a new password. This link is valid for <strong>1 hour</strong>.
+        </p>
+        <a href="${resetUrl}" style="display:inline-block;background:#141417;color:#f0d066;text-decoration:none;font-weight:600;font-size:15px;padding:13px 28px;border-radius:10px;">Reset password</a>
+        <p style="font-size:13px;color:#9ca3af;line-height:1.6;margin:24px 0 0;">
+          If the button doesn't work, copy and paste this link into your browser:<br>
+          <a href="${resetUrl}" style="color:#b8902a;word-break:break-all;">${resetUrl}</a>
+        </p>
+        <p style="font-size:13px;color:#9ca3af;line-height:1.6;margin:20px 0 0;">
+          If you didn't request this, you can safely ignore this email — your password won't change.
+        </p>
+      </div>
+    </div>
+  </div>`;
+  await sendEmail(email, subject, text, html);
 };

@@ -80,6 +80,36 @@ const Requests = () => {
     fetchRequests();
   }, [fetchRequests]);
 
+  // Deep-link support: open a specific request when arriving via ?view=<id>
+  // (used by the "View Request" link in new-request notification emails).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const viewId = params.get('view');
+    if (!viewId) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await apiService.getRequest(viewId);
+        if (!cancelled && data.request) {
+          handleViewRequest(data.request);
+        }
+      } catch (error) {
+        console.error('Failed to load requested request:', error);
+      } finally {
+        // Clean the query param so a refresh doesn't reopen the modal
+        const url = new URL(window.location.href);
+        url.searchParams.delete('view');
+        window.history.replaceState({}, '', url.toString());
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleViewRequest = (request: Request) => {
     setSelectedRequest(request);
     setNewStatus(request.status);

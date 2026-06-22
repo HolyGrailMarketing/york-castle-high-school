@@ -10,6 +10,33 @@ export const slugify = (text) => {
     .replace(/-+$/, '');
 };
 
+// Build the public-facing base URL for the site (used in email links).
+// Prioritizes explicit env config, then derives from the sending email domain,
+// and finally falls back to the incoming request host (for local development).
+export const getBaseUrl = (req) => {
+  let baseUrl = process.env.FRONTEND_URL || process.env.APP_URL;
+
+  if (!baseUrl) {
+    const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.EMAIL_FROM;
+    if (fromEmail && fromEmail.includes('@')) {
+      const emailDomain = fromEmail.split('@')[1];
+      const protocol = (emailDomain.includes('localhost') || emailDomain.includes('127.0.0.1'))
+        ? 'http'
+        : 'https';
+      baseUrl = `${protocol}://${emailDomain}`;
+    } else if (req) {
+      const protocol = req.protocol || 'http';
+      const host = req.get('host') || 'localhost:3000';
+      baseUrl = `${protocol}://${host}`;
+    } else {
+      baseUrl = 'https://www.yorkcastlehighschool.org';
+    }
+  }
+
+  // Strip any trailing slash for consistent concatenation
+  return baseUrl.replace(/\/+$/, '');
+};
+
 export const paginate = (page, limit) => {
   const skip = (parseInt(page) - 1) * parseInt(limit);
   const take = parseInt(limit);
