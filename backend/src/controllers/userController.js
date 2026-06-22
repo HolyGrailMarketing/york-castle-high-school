@@ -163,32 +163,31 @@ export const deleteUser = async (req, res, next) => {
 
 export const createUser = async (req, res, next) => {
   try {
-    const { email: rawEmail, password, name, role, phone, authMethod = 'EMAIL' } = req.body;
+    const { email: rawEmail, name, role, phone, authMethod = 'GOOGLE' } = req.body;
 
     if (!rawEmail || !name) {
       return res.status(400).json({ error: 'Email and name are required' });
+    }
+
+    // New users must sign in with Google OAuth - email/password accounts are
+    // no longer created through this endpoint.
+    if (authMethod !== 'GOOGLE') {
+      return res.status(400).json({ error: 'New users must use Google OAuth as the authentication method' });
     }
 
     // Normalize email so it always matches the lowercased address Google
     // returns at sign-in time (and to keep accounts unique by case).
     const email = rawEmail.toLowerCase().trim();
 
-    // Password required for EMAIL auth method
-    if (authMethod === 'EMAIL' && !password) {
-      return res.status(400).json({ error: 'Password is required for email authentication' });
-    }
-
     if (role && !['ADMIN', 'STAFF', 'TEACHER', 'STUDENT', 'PARENT'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
     }
 
-    // Validate email domain for OAuth users
-    if (authMethod === 'GOOGLE') {
-      const { validateEmailDomain } = await import('../utils/domainValidator.js');
-      const validation = validateEmailDomain(email);
-      if (!validation.valid) {
-        return res.status(400).json({ error: validation.error });
-      }
+    // Validate email domain - all new users authenticate via Google OAuth
+    const { validateEmailDomain } = await import('../utils/domainValidator.js');
+    const validation = validateEmailDomain(email);
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error });
     }
 
     // Check if user already exists (case-insensitive)
@@ -200,17 +199,14 @@ export const createUser = async (req, res, next) => {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
 
-    // Hash password only for EMAIL auth method
-    const hashedPassword = authMethod === 'EMAIL' ? await bcrypt.hash(password, 10) : null;
-
     const user = await prisma.user.create({
       data: {
         email,
-        password: hashedPassword,
+        password: null, // Google OAuth users have no local password
         name,
         role: role || 'STUDENT',
         phone: phone || null,
-        provider: authMethod === 'GOOGLE' ? 'GOOGLE' : 'EMAIL',
+        provider: 'GOOGLE',
         providerId: null, // Will be set on first Google sign-in
         picture: null, // Will be set on first Google sign-in
       },

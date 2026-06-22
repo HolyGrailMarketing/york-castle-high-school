@@ -19,7 +19,7 @@ const initialFormData: UserFormData = {
   password: '',
   role: 'STUDENT',
   phone: '',
-  authMethod: 'EMAIL',
+  authMethod: 'GOOGLE',
 };
 
 const ALLOWED_DOMAINS = ['moeschools.edu.jm', 'yorkcastlehighschool.org'];
@@ -69,7 +69,7 @@ const Users = () => {
   };
 
   const handleAddUser = () => {
-    setFormData({ ...initialFormData, authMethod: 'EMAIL' });
+    setFormData({ ...initialFormData, authMethod: 'GOOGLE' });
     setError('');
     setShowAddModal(true);
   };
@@ -342,35 +342,16 @@ const Users = () => {
 
           <div className="form-group">
             <label>Authentication Method *</label>
-            <select 
-              name="authMethod" 
-              value={formData.authMethod} 
-              onChange={handleInputChange}
-            >
-              <option value="EMAIL">Email/Password</option>
-              <option value="GOOGLE">Google OAuth</option>
-            </select>
-            {formData.authMethod === 'GOOGLE' && (
-              <span className="field-hint">
-                Email must be from: @moeschools.edu.jm or @yorkcastlehighschool.org
-              </span>
-            )}
+            <input
+              type="text"
+              value="Google OAuth"
+              disabled
+              className="disabled-input"
+            />
+            <span className="field-hint">
+              All new users sign in with Google. Email must be from: @moeschools.edu.jm or @yorkcastlehighschool.org
+            </span>
           </div>
-
-          {formData.authMethod === 'EMAIL' && (
-            <div className="form-group">
-              <label>Password *</label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                placeholder="Enter password (min 6 characters)"
-                required
-                minLength={6}
-              />
-            </div>
-          )}
 
           <div className="form-row">
             <div className="form-group">
