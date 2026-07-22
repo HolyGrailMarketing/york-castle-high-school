@@ -729,6 +729,14 @@ const staticOptions = {
   maxAge: NODE_ENV === 'production' ? '1y' : '0',
   etag: true,
   lastModified: true,
+  setHeaders: (res, filePath) => {
+    // Content-hashed assets are immutable and can be cached for a year, but
+    // index.html must always revalidate so new deploys (which reference a new
+    // hashed bundle) are picked up instead of serving a stale cached page.
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    }
+  },
 };
 
 // Serve admin dashboard (built React app)
@@ -737,8 +745,10 @@ if (fs.existsSync(adminDistPath)) {
   // Serve static assets from admin dashboard
   app.use('/admin', express.static(adminDistPath, staticOptions));
   
-  // Serve admin dashboard index.html for all /admin/* routes (React Router)
+  // Serve admin dashboard index.html for all /admin/* routes (React Router).
+  // Never cache the HTML shell so a new deploy's hashed bundle is always loaded.
   app.get('/admin/*', (req, res) => {
+    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
     res.sendFile(path.join(adminDistPath, 'index.html'));
   });
   
