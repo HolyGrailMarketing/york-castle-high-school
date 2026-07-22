@@ -49,11 +49,12 @@ export const securityHeaders = helmet({
     },
   },
   crossOriginEmbedderPolicy: false, // Disable for compatibility
-  hsts: {
-    maxAge: 31536000, // 1 year
-    includeSubDomains: true,
-    preload: true,
-  },
+  // Only force HTTPS in production. On a plain-HTTP localhost dev server, sending
+  // Strict-Transport-Security makes the browser upgrade all requests to
+  // https://localhost, which then fail with a TLS error.
+  hsts: process.env.NODE_ENV === 'production'
+    ? { maxAge: 31536000, includeSubDomains: true, preload: true }
+    : false,
   frameguard: {
     action: 'sameorigin', // Allow same-origin iframes
   },
