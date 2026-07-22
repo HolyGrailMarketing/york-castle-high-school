@@ -49,6 +49,14 @@
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 3px; }
+    @keyframes ticketReveal {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .closed-ticket-anim { animation: ticketReveal .6s cubic-bezier(.16,1,.3,1) both; }
+    @media (prefers-reduced-motion: reduce) {
+      .closed-ticket-anim { animation: none; }
+    }
   </style>
 </head>
 <body>
@@ -65,6 +73,8 @@ const { useState, useEffect, useCallback, useRef } = React;
 const API_BASE   = window.location.hostname === 'localhost' ? 'http://localhost:3000/api' : '/api';
 const LOGO       = 'images/logo-badge.webp';
 const STORAGE_KEY = 'ychs_sf_draft_v2';
+// Jamaica does not observe DST, so a fixed -05:00 offset is always correct.
+const APPLICATION_DEADLINE = new Date('2026-07-20T23:59:59-05:00');
 
 const PARISHES = [
   'Clarendon','Hanover','Kingston','Manchester','Portland',
@@ -1467,6 +1477,138 @@ function S_Status({ data, credentials }) {
   );
 }
 
+/* ─── SCREEN: Applications Closed ────────────────────────────── */
+function S_Closed() {
+  const isDesktop = useIsDesktop();
+  const documents = [
+    'Copy of your birth certificate',
+    'Copy of your TRN',
+    'Copy of your SRN',
+    'Copy of your CSEC results',
+    'Two passport-sized photographs',
+    'Your last two school reports',
+    'Two recommendation letters (from a Principal, Teacher, Justice of the Peace, or Minister of Religion)',
+  ];
+
+  const notchStyle = {
+    position: 'absolute', width: 24, height: 24, borderRadius: '50%',
+    background: 'var(--cream)',
+  };
+
+  return (
+    <Shell>
+      <div style={{
+        flex:1, display:'flex', flexDirection:'column', alignItems:'center',
+        padding: isDesktop ? '72px 24px 96px' : '48px 20px 56px',
+      }}>
+        {/* Letterhead */}
+        <div style={{ display:'flex', flexDirection:'column', width:'100%', textAlign:'center', marginBottom: isDesktop ? 48 : 36 }}>
+          <img src={LOGO} alt="York Castle High School" style={{
+            width: isDesktop ? 96 : 80, height: isDesktop ? 96 : 80, borderRadius:20,
+            objectFit:'cover', marginBottom:20, alignSelf:'center',
+          }}/>
+          <div style={{ font:'600 11px/1.5 Inter', letterSpacing: isDesktop ? '0.18em' : '0.1em', textTransform:'uppercase', color:'var(--ink-3)', marginBottom:10 }}>
+            York Castle High School · Office of Admissions
+          </div>
+          <div style={{ font:`700 ${isDesktop?34:26}px/1.2 Fraunces, serif`, color:'var(--ink)' }}>
+            Applications Are Closed
+          </div>
+          <div style={{ font:'400 15px/1.6 Inter', color:'var(--ink-2)', maxWidth:480, marginTop:14, marginLeft:'auto', marginRight:'auto' }}>
+            Every Sixth Form applicant is invited to an interview for the 2026–2027 academic year. Your admission pass is below.
+          </div>
+        </div>
+
+        {/* Ticket: notice stub + interview pass */}
+        <div className="closed-ticket-anim" style={{ width:'100%', maxWidth:640, marginBottom:40 }}>
+          <div style={{
+            position:'relative', display:'flex', flexDirection: isDesktop ? 'row' : 'column',
+            background:'var(--paper)', border:'1px solid var(--line-2)', borderRadius:18,
+            boxShadow:'0 20px 44px -26px rgba(26,20,16,0.4)', overflow:'hidden',
+          }}>
+            {/* Notice half */}
+            <div style={{ flex: isDesktop ? '1 1 56%' : 'none', padding: isDesktop ? '32px 36px' : '26px 22px', textAlign:'left' }}>
+              <div style={{ font:'700 10px/1 Inter', letterSpacing:'0.16em', textTransform:'uppercase', color:'#8a6a1a', marginBottom:12 }}>
+                Notice
+              </div>
+              <div style={{ font:'500 14px/1.6 Inter', color:'var(--ink-2)' }}>
+                Applications for the Sixth Form Programme closed on <strong style={{ color:'var(--ink)' }}>July 20, 2026</strong>. Thank you to everyone who applied — we look forward to meeting you.
+              </div>
+            </div>
+
+            {/* Perforated divider */}
+            <div style={{
+              position:'relative', flexShrink:0,
+              ...(isDesktop
+                ? { width:0, borderLeft:'2px dashed var(--line-2)', margin:'20px 0' }
+                : { height:0, borderTop:'2px dashed var(--line-2)', margin:'0 20px' }),
+            }}>
+              <div style={{ ...notchStyle, ...(isDesktop ? { top:-12, left:-12 } : { top:-12, left:-12 }) }} />
+              <div style={{ ...notchStyle, ...(isDesktop ? { bottom:-12, left:-12 } : { top:-12, right:-12 }) }} />
+            </div>
+
+            {/* Interview pass half */}
+            <div style={{ flex: isDesktop ? '1 1 44%' : 'none', padding: isDesktop ? '32px 36px' : '26px 22px', textAlign:'left', background:'var(--primary)', color:'#fff' }}>
+              <div style={{ font:'700 10px/1 Inter', letterSpacing:'0.16em', textTransform:'uppercase', color:'var(--gold)', marginBottom:14 }}>
+                Admit · Interview
+              </div>
+              <div style={{ font:'700 30px/1.1 Fraunces, serif', marginBottom:6 }}>Tue, Aug 25</div>
+              <div style={{ font:'500 15px/1.4 Inter', opacity:0.75, marginBottom:18 }}>8:30 a.m. · Sixth Form Programme</div>
+              <div style={{ display:'flex', alignItems:'center', gap:8, font:'500 12px/1 Inter', opacity:0.55 }}>
+                <Icon name="school" size={14} color="rgba(255,255,255,0.55)"/> Brown's Town, St. Ann
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Checklist */}
+        <div style={{ width:'100%', maxWidth:640, marginBottom:28, textAlign:'left' }}>
+          <div style={{ font:'600 11px/1 Inter', letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--ink-3)', marginBottom:16 }}>
+            Please bring to your interview
+          </div>
+          <div style={{ display:'grid', gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr', columnGap:28, rowGap:12 }}>
+            {documents.map((d, i) => (
+              <div key={i} style={{ display:'flex', gap:12, alignItems:'flex-start', paddingBottom:12, borderBottom:'1px solid var(--line)' }}>
+                <div style={{ width:16, height:16, borderRadius:4, border:'1.5px solid var(--line-2)', flexShrink:0, marginTop:2 }}/>
+                <div style={{ font:'500 14px/1.5 Inter', color:'var(--ink-2)' }}>{d}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Fee note */}
+        <div style={{ width:'100%', maxWidth:640, marginBottom:36, textAlign:'left' }}>
+          <div style={{
+            display:'flex', alignItems:'center', gap:12, padding:'14px 18px',
+            border:'1px dashed var(--gold)', borderRadius:12, background:'var(--gold-soft)',
+          }}>
+            <Icon name="alert" size={16} color="#7a5a05"/>
+            <div style={{ font:'500 13px/1.5 Inter', color:'#7a5a05' }}>
+              A non-refundable processing fee of <strong>J$2,000</strong> is payable on the day of the interview.
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display:'flex', gap:16, flexWrap:'wrap', justifyContent:'center', marginBottom:24 }}>
+          <a href="application-status.html" style={{
+            font:'600 14px/1 Inter', color:'#fff', textDecoration:'none',
+            background:'var(--primary)', borderRadius:10, padding:'12px 24px',
+          }}>
+            Check Application Status →
+          </a>
+          <a href="contact-us.html" style={{ font:'600 14px/1 Inter', color:'var(--primary)', textDecoration:'none', padding:'12px 0' }}>
+            Contact Admissions
+          </a>
+        </div>
+
+        <div style={{ font:'400 12px/1.5 Inter', color:'var(--ink-3)', textAlign:'center' }}>
+          Questions? Call <a href="tel:+18769752217" style={{ color:'var(--primary)' }}>+1 876 975-2217</a> or email{' '}
+          <a href="mailto:yorkcastle.high.san@moey.gov.jm" style={{ color:'var(--primary)' }}>yorkcastle.high.san@moey.gov.jm</a>
+        </div>
+      </div>
+    </Shell>
+  );
+}
+
 /* ─── Validation ─────────────────────────────────────────────── */
 function validate(screen, data) {
   const errs = {};
@@ -1598,6 +1740,9 @@ function App() {
   };
 
   function renderScreen() {
+    if (Date.now() > APPLICATION_DEADLINE.getTime()) {
+      return <S_Closed/>;
+    }
     switch (screen) {
       case 'landing':   return <S_Landing onStart={() => go('overview')} draft={data}/>;
       case 'overview':   return <S_Overview onNext={() => go('personal')} onBack={() => go('landing')}/>;

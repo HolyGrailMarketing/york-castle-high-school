@@ -1,6 +1,11 @@
 import bcrypt from 'bcryptjs';
 import prisma from '../utils/prisma.js';
 
+// Sixth Form applications closed on this date. Jamaica does not observe DST,
+// so a fixed -05:00 offset is always correct. Kept in sync with the deadline
+// shown on sixth-form-application.html.
+const SIXTH_FORM_APPLICATION_DEADLINE = new Date('2026-07-20T23:59:59-05:00');
+
 export const getSixthFormApplications = async (req, res, next) => {
   try {
     const { status, search, page = 1, limit = 20 } = req.query;
@@ -86,6 +91,12 @@ export const getSixthFormApplication = async (req, res, next) => {
 
 export const createSixthFormApplication = async (req, res, next) => {
   try {
+    if (Date.now() > SIXTH_FORM_APPLICATION_DEADLINE.getTime()) {
+      return res.status(403).json({
+        error: 'Sixth Form applications closed on July 20, 2026 and are no longer being accepted.',
+      });
+    }
+
     const {
       firstName,
       middleName,
