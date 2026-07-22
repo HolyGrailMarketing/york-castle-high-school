@@ -1,7 +1,9 @@
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import prisma from '../utils/prisma.js';
 import { generateToken } from '../utils/jwt.js';
 import { validateEmailDomain, isAllowedDomain } from '../utils/domainValidator.js';
+import { sendPasswordResetEmail } from '../services/emailService.js';
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import logger from '../utils/logger.js';
@@ -104,25 +106,10 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
             return done(new Error('No email found in Google profile'), null);
           }
 
-          // Validate domain
-          if (!isAllowedDomain(email)) {
-            logger.warn('Google OAuth email domain not allowed', {
-              email,
-              profileId: profile.id,
-              service: 'york-castle-api'
-            });
-            return done(new Error('Email domain not allowed'), null);
-          }
-
-          logger.info('Google OAuth email validated', {
-            email,
-            domain: email.split('@')[1],
-            service: 'york-castle-api'
-          });
-
-          // Check if user exists (must be pre-created by admin).
-          // Match case-insensitively so accounts invited with mixed-case
-          // emails still resolve against Google's lowercased address.
+          // Look up the user first (accounts must be pre-created — students get
+          // one automatically when they submit an application). Match
+          // case-insensitively so mixed-case emails resolve against Google's
+          // lowercased address.
           let user;
           try {
             user = await prisma.user.findFirst({
@@ -144,8 +131,31 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
               profileId: profile.id,
               service: 'york-castle-api'
             });
-            return done(new Error('User account not found. Please contact your administrator.'), null);
+            // No auto-provisioning — surface a friendly "no account" outcome so
+            // the callback can redirect the applicant back with guidance.
+            return done(null, false, { message: 'NO_ACCOUNT' });
           }
+
+          // Staff accounts must use an approved school domain. Students/parents
+          // apply with personal emails (e.g. Gmail), so any domain is allowed
+          // for them.
+          const STAFF_ROLES = ['ADMIN', 'STAFF', 'TEACHER'];
+          if (STAFF_ROLES.includes(user.role) && !isAllowedDomain(email)) {
+            logger.warn('Google OAuth staff email domain not allowed', {
+              email,
+              role: user.role,
+              profileId: profile.id,
+              service: 'york-castle-api'
+            });
+            return done(null, false, { message: 'DOMAIN_NOT_ALLOWED' });
+          }
+
+          logger.info('Google OAuth user validated', {
+            email,
+            role: user.role,
+            domain: email.split('@')[1],
+            service: 'york-castle-api'
+          });
 
           logger.info('Google OAuth user found in database', {
             userId: user.id,
@@ -437,6 +447,86 @@ export const updateMe = async (req, res, next) => {
 };
 
 // Google OAuth handlers
+// --- Password reset ---
+// The reset token is a short-lived JWT signed with a per-user secret that
+// includes the current password hash. That makes it single-use (it stops
+// verifying once the password changes) without needing any DB columns.
+const resetSecret = (user) => `${process.env.JWT_SECRET}|pwreset|${user.password || 'nopw'}`;
+const signResetToken = (user) => jwt.sign({ userId: user.id, type: 'password_reset' }, resetSecret(user), { expiresIn: '1h' });
+
+const resolveBaseUrl = (req) => {
+  const proto = req.headers['x-forwarded-proto'] ||
+    (process.env.NODE_ENV === 'production' ? 'https' : req.protocol) || 'https';
+  const host = req.get('host') || req.headers.host || 'www.yorkcastlehighschool.org';
+  const finalProto = (process.env.NODE_ENV === 'production' || process.env.VERCEL) ? 'https' : proto;
+  return `${finalProto}://${host}`;
+};
+
+export const forgotPassword = async (req, res, next) => {
+  // Always return the same response so the endpoint can't be used to discover
+  // which emails have accounts.
+  const generic = { message: 'If an account exists for that email, we’ve sent a link to reset your password.' };
+  try {
+    const email = req.body.email?.toLowerCase().trim();
+    if (!email) return res.json(generic);
+
+    const user = await prisma.user.findFirst({
+      where: { email: { equals: email, mode: 'insensitive' } },
+    });
+
+    if (user) {
+      const token = signResetToken(user);
+      const resetUrl = `${resolveBaseUrl(req)}/reset-password.html?token=${encodeURIComponent(token)}`;
+      try {
+        await sendPasswordResetEmail(user.email, user.name, resetUrl);
+        logger.info('Password reset email sent', { userId: user.id });
+      } catch (mailError) {
+        // Don't leak failures to the client; log for ops.
+        logger.error('Failed to send password reset email', { userId: user.id, error: mailError.message });
+      }
+    }
+
+    return res.json(generic);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPassword = async (req, res, next) => {
+  try {
+    const { token, password } = req.body;
+    const invalid = { error: 'This reset link is invalid or has expired. Please request a new one.' };
+
+    if (!token) return res.status(400).json({ error: 'Reset token is required' });
+
+    // Read userId without verifying so we can fetch the per-user secret.
+    const decoded = jwt.decode(token);
+    if (!decoded || decoded.type !== 'password_reset' || !decoded.userId) {
+      return res.status(400).json(invalid);
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+    if (!user) return res.status(400).json(invalid);
+
+    try {
+      jwt.verify(token, resetSecret(user)); // throws if expired, tampered, or already used
+    } catch {
+      return res.status(400).json(invalid);
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword },
+    });
+
+    logger.info('Password reset completed', { userId: user.id });
+    return res.json({ message: 'Your password has been reset. You can now sign in with your new password.' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const googleAuth = (req, res, next) => {
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
     return res.status(503).json({
@@ -493,6 +583,9 @@ export const googleAuth = (req, res, next) => {
   
   return passport.authenticate('google', {
     scope: ['profile', 'email'],
+    // Remember whether sign-in began on the public portal so the callback can
+    // give a friendly redirect (instead of a JSON error) on failure.
+    state: ['signin', 'student'].includes(req.query.from) ? 'public' : undefined,
   })(req, res, next);
 };
 
@@ -528,6 +621,16 @@ export const googleCallback = async (req, res, next) => {
         path: req.path,
         service: 'york-castle-api'
       });
+      // Public-portal sign-ins get a friendly redirect with an error code;
+      // the admin flow keeps its existing JSON response.
+      if (req.query.state === 'public') {
+        const proto = req.headers['x-forwarded-proto'] ||
+          (process.env.NODE_ENV === 'production' ? 'https' : req.protocol) || 'https';
+        const h = req.get('host') || req.headers.host || 'www.yorkcastlehighschool.org';
+        const finalProto = (process.env.NODE_ENV === 'production' || process.env.VERCEL) ? 'https' : proto;
+        const code = info?.message || 'AUTH_FAILED';
+        return res.redirect(`${finalProto}://${h}/signin.html?error=${code}`);
+      }
       return res.status(401).json({
         error: 'Authentication failed',
         message: info?.message || 'Failed to authenticate with Google',
@@ -569,8 +672,13 @@ export const googleCallback = async (req, res, next) => {
         ? 'https' 
         : protocol;
 
-      // Construct redirect URL - use admin callback endpoint
-      const redirectUrl = `${finalProtocol}://${host}/admin/auth/callback?token=${token}`;
+      // Route to the right portal by role: students to the application status
+      // page, parents to the parent portal, staff to the admin dashboard.
+      let redirectPath;
+      if (user.role === 'STUDENT') redirectPath = '/application-status.html';
+      else if (user.role === 'PARENT') redirectPath = '/parent-portal.html';
+      else redirectPath = '/admin/auth/callback';
+      const redirectUrl = `${finalProtocol}://${host}${redirectPath}?token=${token}`;
       
       logger.info('Redirecting Google OAuth user to admin callback', {
         userId: user.id,

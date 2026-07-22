@@ -84,6 +84,24 @@ export const loginValidation = [
     .withMessage('Password is required'),
 ];
 
+export const forgotPasswordValidation = [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('A valid email is required'),
+];
+
+export const resetPasswordValidation = [
+  body('token')
+    .notEmpty()
+    .withMessage('Reset token is required'),
+  body('password')
+    .isLength({ min: 8, max: 128 })
+    .withMessage('Password must be between 8 and 128 characters')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one number'),
+];
+
 export const applicationValidation = [
   body('firstName')
     .trim()

@@ -2,77 +2,72 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Privacy Policy – York Castle High School</title>
-  <meta name="description" content="Privacy Policy for York Castle High School.">
+  <title>Parent Portal – York Castle High School</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="css/normalize.css" rel="stylesheet" type="text/css">
   <link href="css/homepage-redesign.css?v=3" rel="stylesheet" type="text/css">
   <link href="images/favicon.ico" rel="shortcut icon" type="image/x-icon">
   <link href="images/webclip.png" rel="apple-touch-icon">
   <style>
-    .policy-hero {
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-      padding: 100px 24px 60px;
-      text-align: center;
-      color: #fff;
+    * { box-sizing: border-box; }
+    .site-header { position: relative !important; background: #1a1a1a !important; }
+    @media (max-width: 991px) {
+      .nav-menu {
+        position: fixed !important; top: 0 !important; right: -100% !important;
+        height: 100vh !important; background: #1a1a1a !important;
+        flex-direction: column !important; justify-content: flex-start !important;
+        align-items: stretch !important; padding: 80px 0 20px !important; overflow-y: auto !important;
+      }
+      .nav-menu[aria-expanded="true"] { right: 0 !important; }
     }
-    .policy-hero h1 {
-      font-size: clamp(28px, 5vw, 48px);
-      font-weight: 700;
-      margin: 0 0 12px;
-      font-family: Georgia, serif;
+    .nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; }
+    .nav-backdrop.open { display: block; }
+
+    .status-hero {
+      background: linear-gradient(135deg, #0e0e10 0%, #17171b 55%, #241d06 100%);
+      border-bottom: 3px solid #d4af37;
+      padding: 40px 24px 50px; text-align: center; color: #fff;
     }
-    .policy-hero p {
-      color: rgba(255,255,255,0.7);
-      font-size: 15px;
-      margin: 0;
+    .status-hero h1 { font: 700 clamp(24px,4vw,40px)/1.15 Georgia, serif; margin: 0 0 10px; color: #f0d066; }
+    .status-hero p { color: rgba(255,255,255,0.7); font-size: 15px; margin: 0; }
+
+    .wrap { max-width: 680px; margin: 0 auto; padding: 48px 20px 90px; }
+    .card { background: #fff; border-radius: 16px; padding: 36px 30px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); border: 1px solid #f3f4f6; }
+
+    .greeting-row { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 26px; }
+    .greeting-row h2 { font: 700 22px/1.2 Georgia, serif; color: #1a1a2e; margin: 0 0 4px; }
+    .greeting-row p { font: 400 14px/1.4 -apple-system,sans-serif; color: #6b7280; margin: 0; }
+    .btn-signout {
+      font: 500 13px/1 -apple-system,sans-serif; color: #6b7280; background: none;
+      border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 8px 16px; cursor: pointer; white-space: nowrap;
     }
-    .policy-body {
-      max-width: 820px;
-      margin: 0 auto;
-      padding: 60px 24px 80px;
+
+    .soon-badge {
+      display: inline-block; font: 600 11px/1 -apple-system,sans-serif; letter-spacing: 1.5px; text-transform: uppercase;
+      color: #92740a; background: #fdfbf0; border: 1px solid #d4af37; border-radius: 999px; padding: 7px 12px; margin-bottom: 16px;
     }
-    .policy-body h2 {
-      font-size: 20px;
-      font-weight: 700;
-      color: #1a1a1a;
-      margin: 40px 0 10px;
-      padding-bottom: 8px;
-      border-bottom: 2px solid #d4af37;
-      display: inline-block;
+    .lede { font: 400 15px/1.65 -apple-system,sans-serif; color: #374151; margin: 0 0 22px; }
+
+    .next-list { list-style: none; margin: 0 0 26px; padding: 0; }
+    .next-list li {
+      display: flex; gap: 12px; align-items: flex-start;
+      font: 400 14px/1.5 -apple-system,sans-serif; color: #4b5563; padding: 12px 0; border-top: 1px solid #f3f4f6;
     }
-    .policy-body h2:first-child { margin-top: 0; }
-    .policy-body p, .policy-body li {
-      font-size: 15px;
-      line-height: 1.8;
-      color: #444;
-    }
-    .policy-body ul {
-      padding-left: 20px;
-      margin: 10px 0;
-    }
-    .policy-body li { margin-bottom: 6px; }
-    .policy-body a { color: #d4af37; }
-    .policy-contact-box {
-      background: #f8f6f0;
-      border: 1px solid #e8e0cc;
-      border-radius: 10px;
-      padding: 24px;
-      margin-top: 40px;
-    }
-    .policy-contact-box p { margin: 4px 0; }
-    .policy-updated {
-      font-size: 13px;
-      color: #888;
-      margin-bottom: 32px;
-    }
+    .next-list li:first-child { border-top: none; }
+    .next-list .tick { color: #d4af37; font-weight: 700; line-height: 1.5; }
+
+    .contact-prompt { font: 400 14px/1.6 -apple-system,sans-serif; color: #6b7280; padding-top: 20px; border-top: 1px solid #f3f4f6; }
+    .contact-prompt a { color: #b8902a; font-weight: 600; text-decoration: none; }
+    .hidden { display: none !important; }
+    .loading-msg { text-align: center; padding: 60px 24px; color: #6b7280; font: 400 15px/1 -apple-system,sans-serif; }
   </style>
 </head>
 <body class="body-2">
 
+  <div class="nav-backdrop" id="nav-backdrop"></div>
+
   <!-- Navigation -->
-  <div class="hero-section" style="min-height:auto;">
-    <header class="site-header">
+  <header class="site-header">
       <div class="top-bar">
         <div class="top-bar-container">
           <div class="top-bar-left">
@@ -87,7 +82,7 @@
             </a>
           </div>
           <div class="top-bar-right">
-            <a href="signin.html" class="btn-login">Log in</a>
+            <a href="#" class="btn-login" id="nav-signout">Sign out</a>
           </div>
         </div>
       </div>
@@ -141,90 +136,42 @@
         </div>
       </nav>
     </header>
-  </div>
 
   <!-- Hero -->
-  <div class="policy-hero">
-    <h1>Privacy Policy</h1>
-    <p>How York Castle High School collects, uses, and protects your information</p>
+  <div class="status-hero">
+    <h1>Parent Portal</h1>
+    <p>Your home for keeping up with your child's journey at York Castle</p>
   </div>
 
-  <!-- Content -->
-  <div class="policy-body">
-    <p class="policy-updated">Last updated: April 2026</p>
+  <div class="wrap">
+    <div id="loading" class="loading-msg">Loading your portal…</div>
 
-    <h2>1. Introduction</h2>
-    <p>York Castle High School ("we", "our", or "the School") is committed to protecting the privacy and personal information of our students, parents, guardians, staff, and website visitors. This Privacy Policy explains how we collect, use, store, and protect personal data in accordance with Jamaica's Data Protection Act, 2020.</p>
+    <div id="portal" class="card hidden">
+      <div class="greeting-row">
+        <div>
+          <h2 id="greeting">Welcome</h2>
+          <p id="signed-as"></p>
+        </div>
+        <button class="btn-signout" id="signout-btn">Sign out</button>
+      </div>
 
-    <h2>2. Information We Collect</h2>
-    <p>We may collect the following categories of personal information:</p>
-    <ul>
-      <li><strong>Student information:</strong> Full name, date of birth, gender, address, parish, nationality, religion, years of residence, CSEC results, and academic records.</li>
-      <li><strong>Guardian information:</strong> Parent or guardian name, relationship to student, contact phone numbers, and address.</li>
-      <li><strong>Application data:</strong> Programme choices, personal statements, referee details, and supporting documents submitted as part of the Sixth Form application process.</li>
-      <li><strong>Contact information:</strong> Email addresses and phone numbers provided via contact forms or registration.</li>
-      <li><strong>Website usage data:</strong> Browser type, pages visited, and time spent on our website, collected via analytics tools.</li>
-    </ul>
+      <span class="soon-badge">Coming soon</span>
+      <p class="lede">
+        Your parent account is set up. We're building the tools to bring everything about your
+        child's time at York Castle into one place.
+      </p>
 
-    <h2>3. How We Use Your Information</h2>
-    <p>We use the personal information we collect for the following purposes:</p>
-    <ul>
-      <li>Processing and reviewing admission applications (including Sixth Form applications).</li>
-      <li>Communicating with students and parents regarding applications, enrolment, and school activities.</li>
-      <li>Maintaining academic records and fulfilling our educational obligations.</li>
-      <li>Responding to inquiries submitted through our website or contact forms.</li>
-      <li>Complying with legal and regulatory requirements.</li>
-      <li>Improving our website and services through anonymised analytics.</li>
-    </ul>
+      <ul class="next-list">
+        <li><span class="tick">›</span><span>Follow your child's application from submission to decision.</span></li>
+        <li><span class="tick">›</span><span>See fee notices, book lists, and important school dates.</span></li>
+        <li><span class="tick">›</span><span>Get announcements from the school as they happen.</span></li>
+      </ul>
 
-    <h2>4. Legal Basis for Processing</h2>
-    <p>We process personal data on the following legal bases:</p>
-    <ul>
-      <li><strong>Consent:</strong> Where you have given explicit consent (e.g., submitting an application or contact form).</li>
-      <li><strong>Contractual necessity:</strong> Where processing is necessary to fulfil our enrolment obligations.</li>
-      <li><strong>Legal obligation:</strong> Where we are required to process data to comply with Jamaican law.</li>
-      <li><strong>Legitimate interests:</strong> For school administration and communication purposes.</li>
-    </ul>
-
-    <h2>5. Data Sharing</h2>
-    <p>We do not sell or rent your personal information to third parties. We may share data with:</p>
-    <ul>
-      <li>The Ministry of Education and Youth (as required for government reporting).</li>
-      <li>Examination bodies such as CXC for registration and results purposes.</li>
-      <li>Trusted service providers who assist with school operations, under confidentiality agreements.</li>
-      <li>Law enforcement or regulatory authorities where required by law.</li>
-    </ul>
-
-    <h2>6. Data Retention</h2>
-    <p>We retain personal data for as long as necessary to fulfil the purposes outlined in this policy, or as required by law. Student academic records are retained in accordance with the Ministry of Education's guidelines. Application data for unsuccessful applicants is deleted after one academic year unless retention is required by law.</p>
-
-    <h2>7. Your Rights</h2>
-    <p>Under Jamaica's Data Protection Act, 2020, you have the right to:</p>
-    <ul>
-      <li>Access the personal data we hold about you.</li>
-      <li>Request correction of inaccurate or incomplete data.</li>
-      <li>Request deletion of your personal data (subject to legal obligations).</li>
-      <li>Withdraw consent at any time where processing is based on consent.</li>
-      <li>Lodge a complaint with the Office of the Information Commissioner.</li>
-    </ul>
-    <p>To exercise any of these rights, please contact us using the details below or submit a <a href="data-subject-request.html">Data Subject Request</a>.</p>
-
-    <h2>8. Cookies and Analytics</h2>
-    <p>Our website uses cookies and analytics tools (including Google Analytics) to understand how visitors use our site. These tools collect anonymised data such as page views and browser type. You may disable cookies through your browser settings; however, some features of our website may not function correctly as a result.</p>
-
-    <h2>9. Security</h2>
-    <p>We implement appropriate technical and organisational measures to protect personal data against unauthorised access, loss, or disclosure. All data submitted through our online forms is transmitted over encrypted connections (HTTPS). Access to personal data is restricted to authorised staff only.</p>
-
-    <h2>10. Changes to This Policy</h2>
-    <p>We may update this Privacy Policy from time to time. Any material changes will be posted on this page with an updated date. We encourage you to review this policy periodically.</p>
-
-    <div class="policy-contact-box">
-      <h2 style="border:none; margin-top:0; padding-bottom:0;">Contact Us</h2>
-      <p>If you have any questions about this Privacy Policy or how we handle your personal data, please contact us:</p>
-      <p><strong>York Castle High School</strong></p>
-      <p>📍 Brown's Town, St. Ann, Jamaica</p>
-      <p>📞 <a href="tel:+18769752217">+1 876 975-2217</a></p>
-      <p>✉ <a href="mailto:yorkcastle.high.san@moey.gov.jm">yorkcastle.high.san@moey.gov.jm</a></p>
+      <div class="contact-prompt">
+        Need something now? Email
+        <a href="mailto:yorkcastle.high.san@moey.gov.jm">yorkcastle.high.san@moey.gov.jm</a>
+        or call <a href="tel:+18769752217">+1 876 975-2217</a>.
+      </div>
     </div>
   </div>
 
@@ -294,31 +241,65 @@
     </div>
   </footer>
 
-  <script src="js/auth.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    const API = '/api';
+
+    // Accept a token handed over from the sign-in page, then clean the URL.
+    (function captureToken() {
+      const t = new URLSearchParams(window.location.search).get('token');
+      if (t) {
+        sessionStorage.setItem('sf_token', t);
+        history.replaceState({}, document.title, window.location.pathname);
+      }
+    })();
+
+    function goSignIn() { window.location.replace('signin.html'); }
+
+    async function init() {
+      const token = sessionStorage.getItem('sf_token');
+      if (!token) return goSignIn();
+      try {
+        const r = await fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+        if (!r.ok) { sessionStorage.removeItem('sf_token'); return goSignIn(); }
+        const { user } = await r.json();
+        const firstName = (user.name || '').trim().split(' ')[0] || 'there';
+        document.getElementById('greeting').textContent = `Hello, ${firstName}`;
+        document.getElementById('signed-as').textContent = `Signed in as ${user.email}`;
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('portal').classList.remove('hidden');
+      } catch {
+        goSignIn();
+      }
+    }
+
+    function signOut(e) {
+      if (e) e.preventDefault();
+      sessionStorage.removeItem('sf_token');
+      goSignIn();
+    }
+    document.getElementById('signout-btn').addEventListener('click', signOut);
+    document.getElementById('nav-signout').addEventListener('click', signOut);
+
+    init();
+
+    // Mobile nav
+    document.addEventListener('DOMContentLoaded', function () {
       const menuToggle = document.querySelector('.mobile-menu-toggle');
       const navMenu = document.querySelector('.nav-menu');
+      const backdrop = document.getElementById('nav-backdrop');
       const dropdowns = document.querySelectorAll('.nav-dropdown');
+      function openNav() { menuToggle.setAttribute('aria-expanded', 'true'); navMenu.setAttribute('aria-expanded', 'true'); backdrop.classList.add('open'); }
+      function closeNav() { menuToggle.setAttribute('aria-expanded', 'false'); navMenu.setAttribute('aria-expanded', 'false'); backdrop.classList.remove('open'); }
       if (menuToggle && navMenu) {
-        menuToggle.addEventListener('click', function() {
-          const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
-          menuToggle.setAttribute('aria-expanded', !isExpanded);
-          navMenu.setAttribute('aria-expanded', !isExpanded);
-        });
-        document.addEventListener('click', function(e) {
-          if (!navMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-            menuToggle.setAttribute('aria-expanded', 'false');
-            navMenu.setAttribute('aria-expanded', 'false');
-          }
-        });
+        menuToggle.addEventListener('click', function () { menuToggle.getAttribute('aria-expanded') === 'true' ? closeNav() : openNav(); });
+        backdrop.addEventListener('click', closeNav);
       }
-      dropdowns.forEach(dropdown => {
+      dropdowns.forEach(function (dropdown) {
         const btn = dropdown.querySelector('.dropdown-btn');
         if (btn) {
-          btn.addEventListener('click', function(e) {
+          btn.addEventListener('click', function (ev) {
             if (window.innerWidth <= 991) {
-              e.preventDefault();
+              ev.preventDefault();
               const isExpanded = dropdown.getAttribute('aria-expanded') === 'true';
               dropdown.setAttribute('aria-expanded', !isExpanded);
             }

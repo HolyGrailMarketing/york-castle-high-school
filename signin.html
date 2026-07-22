@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Sign In – York Castle High School</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="css/normalize.css" rel="stylesheet" type="text/css">
+  <link href="css/homepage-redesign.css?v=3" rel="stylesheet" type="text/css">
+  <link href="images/favicon.ico" rel="shortcut icon" type="image/x-icon">
+  <link href="images/webclip.png" rel="apple-touch-icon">
+  <style>
+    * { box-sizing: border-box; }
+
+    .site-header { position: relative !important; background: #1a1a1a !important; }
+
+    @media (max-width: 991px) {
+      .nav-menu {
+        position: fixed !important; top: 0 !important; right: -100% !important;
+        height: 100vh !important; background: #1a1a1a !important;
+        flex-direction: column !important; justify-content: flex-start !important;
+        align-items: stretch !important; padding: 80px 0 20px !important; overflow-y: auto !important;
+      }
+      .nav-menu[aria-expanded="true"] { right: 0 !important; }
+    }
+    .nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; }
+    .nav-backdrop.open { display: block; }
+
+    /* Page canvas — quiet, so the auth card carries the page */
+    .auth-page {
+      background:
+        radial-gradient(1100px 460px at 50% -120px, #eef1f7 0%, rgba(238,241,247,0) 70%),
+        #f6f7f9;
+      min-height: 70vh;
+    }
+    .auth-wrap { max-width: 940px; margin: 0 auto; padding: 64px 20px 96px; }
+
+    /* Signature: split auth card — branded navy panel beside the form */
+    .auth-card {
+      display: grid; grid-template-columns: 1.05fr 1fr;
+      background: #fff; border: 1px solid #e9ebf0; border-radius: 22px; overflow: hidden;
+      box-shadow: 0 24px 60px -28px rgba(16,24,40,0.45);
+    }
+
+    .auth-brand {
+      position: relative; color: #1a1a2e; padding: 44px 40px;
+      background: linear-gradient(158deg, #e6c453 0%, #d4af37 52%, #b8902a 100%);
+      display: flex; flex-direction: column;
+    }
+    /* navy hairline running down the seam */
+    .auth-brand::after {
+      content: ''; position: absolute; top: 36px; bottom: 36px; right: 0; width: 2px;
+      background: linear-gradient(#1a1a2e, rgba(26,26,46,0));
+    }
+    .auth-crest { width: 64px; height: auto; margin-bottom: 26px; }
+    .auth-eyebrow {
+      font: 600 11px/1 -apple-system,sans-serif; letter-spacing: 2.5px; text-transform: uppercase;
+      color: #6b4e00; margin: 0 0 14px;
+    }
+    .auth-brand h1 {
+      font: 700 30px/1.18 Georgia, serif; margin: 0 0 14px; letter-spacing: -0.2px;
+    }
+    .auth-brand p { font: 400 15px/1.6 -apple-system,sans-serif; color: rgba(26,26,46,0.78); margin: 0; max-width: 34ch; }
+    .auth-estd {
+      margin-top: auto; padding-top: 28px;
+      font: 500 12px/1.5 -apple-system,sans-serif; letter-spacing: .3px; color: rgba(26,26,46,0.72);
+    }
+    .auth-estd strong { color: #1a1a2e; font-weight: 700; }
+
+    .auth-panel { padding: 44px 40px; }
+    .auth-panel h2 { font: 700 22px/1.2 Georgia, serif; color: #1a1a2e; margin: 0 0 6px; }
+    .auth-sub { font: 400 14px/1.5 -apple-system,sans-serif; color: #6b7280; margin: 0 0 26px; }
+
+    .field { margin-bottom: 18px; }
+    .field label { display: block; font: 600 13px/1 -apple-system,sans-serif; color: #374151; margin-bottom: 7px; }
+    .field input {
+      width: 100%; padding: 12px 14px; border: 1.5px solid #e5e7eb; border-radius: 10px;
+      font: 400 15px/1.2 -apple-system,sans-serif; outline: none; transition: border-color .15s, box-shadow .15s;
+    }
+    .field input:focus { border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212,175,55,0.18); }
+    .forgot-row { margin: 8px 0 0; text-align: right; }
+    .forgot-row a { font: 500 13px/1 -apple-system,sans-serif; color: #b8902a; text-decoration: none; }
+    .forgot-row a:hover { text-decoration: underline; }
+
+    .btn-primary {
+      width: 100%; padding: 14px; background: #141417; color: #f0d066;
+      border: 1px solid #141417; border-radius: 10px;
+      font: 600 15px/1 -apple-system,sans-serif; letter-spacing: .2px;
+      cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+    }
+    .btn-primary:hover { background: #d4af37; color: #141417; border-color: #d4af37; }
+    .btn-primary:disabled { background: #9ca3af; color: #fff; border-color: #9ca3af; cursor: not-allowed; }
+
+    .oauth-divider {
+      display: flex; align-items: center; text-align: center; margin: 22px 0 18px;
+      color: #9ca3af; font: 500 12px/1 -apple-system,sans-serif; text-transform: uppercase; letter-spacing: .5px;
+    }
+    .oauth-divider::before, .oauth-divider::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
+    .oauth-divider span { padding: 0 12px; }
+
+    .btn-google {
+      display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 13px;
+      background: #fff; color: #374151; border: 1.5px solid #e5e7eb; border-radius: 10px;
+      font: 600 15px/1 -apple-system,sans-serif; cursor: pointer; text-decoration: none;
+      transition: background .15s, border-color .15s;
+    }
+    .btn-google:hover { background: #f9fafb; border-color: #d1d5db; }
+
+    .auth-foot { margin-top: 24px; font: 400 13px/1.6 -apple-system,sans-serif; color: #9ca3af; }
+    .auth-foot a { color: #b8902a; font-weight: 600; text-decoration: none; }
+    .auth-foot a:hover { text-decoration: underline; }
+    .auth-staff-note { margin-top: 10px; font: 400 12px/1.5 -apple-system,sans-serif; color: #b6bcc6; }
+
+    .alert {
+      padding: 12px 14px; border-radius: 10px; font: 400 14px/1.5 -apple-system,sans-serif; margin-bottom: 20px;
+    }
+    .alert-error { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+    .hidden { display: none !important; }
+
+    @media (max-width: 760px) {
+      .auth-wrap { padding: 36px 16px 64px; }
+      .auth-card { grid-template-columns: 1fr; border-radius: 18px; }
+      .auth-brand { padding: 30px 26px; }
+      .auth-brand::after { display: none; }
+      .auth-brand h1 { font-size: 24px; }
+      .auth-estd { padding-top: 20px; }
+      .auth-panel { padding: 30px 26px; }
+    }
+  </style>
+</head>
+<body class="body-2">
+
+  <div class="nav-backdrop" id="nav-backdrop"></div>
+
+  <!-- Navigation -->
+  <header class="site-header">
+      <div class="top-bar">
+        <div class="top-bar-container">
+          <div class="top-bar-left">
+            <a href="tel:+1876975-2217" class="top-bar-link">
+              <span class="top-bar-icon">📞</span>
+              <span>+1 876 975-2217</span>
+            </a>
+            <span class="top-bar-divider">|</span>
+            <a href="mailto:yorkcastle.high.san@moey.gov.jm" class="top-bar-link">
+              <span class="top-bar-icon">✉</span>
+              <span>yorkcastle.high.san@moey.gov.jm</span>
+            </a>
+          </div>
+          <div class="top-bar-right">
+            <a href="index.html" class="btn-login">Back to site</a>
+          </div>
+        </div>
+      </div>
+      <nav class="main-nav">
+        <div class="nav-container">
+          <a href="index.html" class="nav-logo">
+            <img src="images/logo-badge.webp" width="125" alt="York Castle High School Logo" class="logo-image">
+          </a>
+          <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+            <span></span><span></span><span></span>
+          </button>
+          <ul class="nav-menu">
+            <li><a href="index.html" class="nav-item">Home</a></li>
+            <li class="nav-dropdown">
+              <button class="nav-item dropdown-btn" aria-expanded="false">About YC
+                <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </button>
+              <ul class="dropdown-menu">
+                <li><a href="principals-message.html" class="dropdown-item">Meet The Principal</a></li>
+                <li><a href="history.html" class="dropdown-item">History</a></li>
+                <li><a href="mission-and-vision.html" class="dropdown-item">Vision and Mission</a></li>
+                <li><a href="school-song.html" class="dropdown-item">School Song</a></li>
+              </ul>
+            </li>
+            <li class="nav-dropdown">
+              <button class="nav-item dropdown-btn" aria-expanded="false">Resources
+                <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-wide">
+                <li><a href="doc-request.html" class="dropdown-item">General Request Form</a></li>
+                <li><a href="application-form.html" class="dropdown-item">General Admission Form</a></li>
+                <li><a href="sixth-form-application.html" class="dropdown-item">Sixth Form Application</a></li><li><a href="application-status.html" class="dropdown-item">Check Application Status</a></li>
+                <li><a href="info-on-colleges.html" class="dropdown-item">Information on Colleges</a></li>
+                <li><a href="teachers.html" class="dropdown-item">Staff Directory</a></li>
+              </ul>
+            </li>
+            <li class="nav-dropdown">
+              <button class="nav-item dropdown-btn" aria-expanded="false">Campus Life
+                <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </button>
+              <ul class="dropdown-menu">
+                <li><a href="clubs.html" class="dropdown-item">Clubs and Societies</a></li>
+                <li><a href="sports-and-extra-curricular-activities.html" class="dropdown-item">Sports and Extra Curricular</a></li>
+                <li><a href="student-highlights.html" class="dropdown-item">Student Highlights</a></li>
+                <li><a href="houses.html" class="dropdown-item">Houses</a></li>
+                <li><a href="gallery.html" class="dropdown-item">Gallery</a></li>
+              </ul>
+            </li>
+            <li><a href="contact-us.html" class="nav-item">Contact us</a></li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+
+  <!-- Sign-in -->
+  <main class="auth-page">
+    <div class="auth-wrap">
+      <div class="auth-card">
+
+        <!-- Brand panel (signature) -->
+        <div class="auth-brand">
+          <img src="images/logo-badge.webp" alt="" class="auth-crest" aria-hidden="true">
+          <p class="auth-eyebrow">Student &amp; Parent Portal</p>
+          <h1>Welcome back to York Castle</h1>
+          <p>Sign in to track your application, update your details, and stay connected with the school.</p>
+          <p class="auth-estd">Methodist co-educational secondary · <strong>Established 1914</strong><br>Brown's Town, St. Ann, Jamaica</p>
+        </div>
+
+        <!-- Form panel -->
+        <div class="auth-panel">
+          <h2>Sign in</h2>
+          <p class="auth-sub">Use the email and password from your application, or continue with Google.</p>
+
+          <div id="login-error" class="alert alert-error hidden"></div>
+
+          <form id="login-form">
+            <div class="field">
+              <label for="email">Email address</label>
+              <input type="email" id="email" name="email" required placeholder="you@email.com" autocomplete="email">
+            </div>
+            <div class="field">
+              <label for="password">Password</label>
+              <input type="password" id="password" name="password" required placeholder="••••••••••" autocomplete="current-password">
+              <p class="forgot-row"><a href="forgot-password.html">Forgot password?</a></p>
+            </div>
+            <button type="submit" class="btn-primary" id="login-btn">Sign in</button>
+          </form>
+
+          <div class="oauth-divider"><span>or</span></div>
+
+          <a href="/api/auth/google?from=signin" class="btn-google" id="google-btn">
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+              <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
+              <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+              <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.997 8.997 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
+              <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+            </svg>
+            Continue with Google
+          </a>
+
+          <p class="auth-foot">
+            Haven't applied yet? <a href="sixth-form-application.html">Start your application</a>
+          </p>
+          <p class="auth-staff-note">School staff are taken to the admin dashboard after signing in.</p>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer-redesign redesign">
+    <div class="footer-container">
+      <div class="footer-main">
+        <div class="footer-brand">
+          <div class="footer-logo">
+            <img src="images/logo-badge.webp" alt="York Castle High School Logo">
+            <span>York Castle<br>High School</span>
+          </div>
+          <p>A seven year grant-aided Methodist co-educational secondary school serving students from across Jamaica since 1914.</p>
+          <div class="footer-social">
+            <a href="https://m.facebook.com/YORK-CASTLE-HIGH-SCHOOL-JAMAICA-380111685446/" target="_blank" class="social-link">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </a>
+            <a href="https://www.instagram.com/york_castle_high/" target="_blank" class="social-link">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+            </a>
+          </div>
+        </div>
+        <div class="footer-column">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="history.html">About Us</a></li>
+            <li><a href="teachers.html">Staff Directory</a></li>
+            <li><a href="calendar.html">Calendar</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="blog.html">News</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4>Resources</h4>
+          <ul>
+            <li><a href="booklist.html">Book Lists</a></li>
+            <li><a href="doc-request.html">Request Transcript</a></li>
+            <li><a href="info-on-colleges.html">College Info</a></li>
+            <li><a href="privacy-policy.html">Privacy Policy</a></li>
+            <li><a href="terms-of-service.html">Terms of Service</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4>Contact</h4>
+          <div class="footer-contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            <span>+1 876 975-2217</span>
+          </div>
+          <div class="footer-contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            <span>yorkcastle.high.san@moey.gov.jm</span>
+          </div>
+          <div class="footer-contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            <span>Brown's Town, St. Ann, Jamaica</span>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 York Castle High School. All rights reserved.</p>
+        <div class="footer-bottom-links">
+          <a href="privacy-policy.html">Privacy Policy</a>
+          <a href="terms-of-service.html">Terms of Service</a>
+          <a href="contact-us.html">Contact</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const API = '/api';
+
+    // Route each role to the right place after authentication.
+    function redirectForRole(role, token) {
+      if (role === 'STUDENT')      window.location.replace('application-status.html?token=' + encodeURIComponent(token));
+      else if (role === 'PARENT')  window.location.replace('parent-portal.html?token=' + encodeURIComponent(token));
+      else                         window.location.replace('/admin/auth/callback?token=' + encodeURIComponent(token)); // staff
+    }
+
+    // Show a Google sign-in error passed back via ?error=
+    (function handleOAuthError() {
+      const code = new URLSearchParams(window.location.search).get('error');
+      if (!code) return;
+      const messages = {
+        NO_ACCOUNT: "We couldn't find an account for that Google address. Apply first, or sign in with the email you used on your application.",
+        DOMAIN_NOT_ALLOWED: 'Staff accounts must sign in with a York Castle school email.',
+      };
+      const el = document.getElementById('login-error');
+      el.textContent = messages[code] || 'Google sign-in didn’t work. Please try again.';
+      el.classList.remove('hidden');
+      history.replaceState({}, document.title, window.location.pathname);
+    })();
+
+    document.getElementById('login-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const btn = document.getElementById('login-btn');
+      const errEl = document.getElementById('login-error');
+      btn.disabled = true;
+      btn.textContent = 'Signing in…';
+      errEl.classList.add('hidden');
+      try {
+        const r = await fetch(`${API}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('email').value.trim(),
+            password: document.getElementById('password').value,
+          }),
+        });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.message || data.error || 'Sign in failed');
+        sessionStorage.setItem('sf_token', data.token);
+        redirectForRole(data.user.role, data.token);
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Sign in';
+      }
+    });
+
+    // Mobile nav
+    document.addEventListener('DOMContentLoaded', function () {
+      const menuToggle = document.querySelector('.mobile-menu-toggle');
+      const navMenu = document.querySelector('.nav-menu');
+      const backdrop = document.getElementById('nav-backdrop');
+      const dropdowns = document.querySelectorAll('.nav-dropdown');
+      function openNav() { menuToggle.setAttribute('aria-expanded', 'true'); navMenu.setAttribute('aria-expanded', 'true'); backdrop.classList.add('open'); }
+      function closeNav() { menuToggle.setAttribute('aria-expanded', 'false'); navMenu.setAttribute('aria-expanded', 'false'); backdrop.classList.remove('open'); }
+      if (menuToggle && navMenu) {
+        menuToggle.addEventListener('click', function () { menuToggle.getAttribute('aria-expanded') === 'true' ? closeNav() : openNav(); });
+        backdrop.addEventListener('click', closeNav);
+      }
+      dropdowns.forEach(function (dropdown) {
+        const btn = dropdown.querySelector('.dropdown-btn');
+        if (btn) {
+          btn.addEventListener('click', function (ev) {
+            if (window.innerWidth <= 991) {
+              ev.preventDefault();
+              const isExpanded = dropdown.getAttribute('aria-expanded') === 'true';
+              dropdown.setAttribute('aria-expanded', !isExpanded);
+            }
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

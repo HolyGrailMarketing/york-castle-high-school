@@ -1,7 +1,7 @@
 import express from 'express';
-import { register, login, logout, getMe, updateMe, googleAuth, googleCallback } from '../controllers/authController.js';
+import { register, login, logout, getMe, updateMe, googleAuth, googleCallback, forgotPassword, resetPassword } from '../controllers/authController.js';
 import { authenticate } from '../middleware/auth.js';
-import { registerValidation, loginValidation, handleValidationErrors, sanitizeBody } from '../utils/validation.js';
+import { registerValidation, loginValidation, forgotPasswordValidation, resetPasswordValidation, handleValidationErrors, sanitizeBody } from '../utils/validation.js';
 import { authLimiter, generalLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
@@ -64,6 +64,10 @@ router.post('/register', authLimiter, sanitizeBody, registerValidation, handleVa
  *         description: Invalid credentials
  */
 router.post('/login', authLimiter, sanitizeBody, loginValidation, handleValidationErrors, login);
+
+// Password reset
+router.post('/forgot-password', authLimiter, sanitizeBody, forgotPasswordValidation, handleValidationErrors, forgotPassword);
+router.post('/reset-password', authLimiter, sanitizeBody, resetPasswordValidation, handleValidationErrors, resetPassword);
 
 router.post('/logout', generalLimiter, logout);
 router.get('/me', generalLimiter, authenticate, getMe);
