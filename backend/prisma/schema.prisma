@@ -56,6 +56,12 @@ model User {
   provider      AuthProvider @default(EMAIL)
   providerId    String?      // Google user ID
   picture       String?      // Profile picture URL
+
+  // Submission notification routing - which inbound submissions this user is emailed about
+  notifyGeneralRequests Boolean @default(false)
+  notifySixthFormApps   Boolean @default(false)
+  notifyAdmissions      Boolean @default(false)
+
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 

@@ -1,6 +1,32 @@
 import prisma from '../utils/prisma.js';
-import { sendApplicationStatusEmail } from '../services/emailService.js';
+import { sendApplicationStatusEmail, sendAdminApplicationNotification, getNotificationRecipients, isEmailConfigured } from '../services/emailService.js';
 import logger from '../utils/logger.js';
+import { getBaseUrl } from '../utils/helpers.js';
+
+// Notify staff that a new admission application was submitted. Failures are
+// logged, never thrown, so a notification problem can't break the submission.
+const notifyAdminOfNewApplication = async (req, application) => {
+  if (!isEmailConfigured()) {
+    logger.warn('Skipping admission notification - email service not configured', { applicationId: application.id });
+    return;
+  }
+  try {
+    const applicationUrl = `${getBaseUrl(req)}/admin/applications?view=${application.id}`;
+    const to = await getNotificationRecipients('notifyAdmissions');
+    await sendAdminApplicationNotification({
+      applicantName: [application.firstName, application.lastName].filter(Boolean).join(' ') || 'Unknown',
+      applicantEmail: application.email,
+      applicantPhone: application.phone,
+      gradeApplying: application.gradeApplying,
+      applicationId: application.id,
+      applicationUrl,
+      submittedAt: application.createdAt,
+    }, to);
+    logger.info('New admission application notification sent to staff', { applicationId: application.id });
+  } catch (error) {
+    logger.error('Failed to send admission notification', { applicationId: application.id, error: error.message });
+  }
+};
 
 export const getApplications = async (req, res, next) => {
   try {
@@ -128,6 +154,8 @@ export const createApplication = async (req, res, next) => {
         userId,
       },
     });
+
+    await notifyAdminOfNewApplication(req, application);
 
     res.status(201).json({
       message: 'Application submitted successfully',

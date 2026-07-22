@@ -1,7 +1,7 @@
 import prisma from '../utils/prisma.js';
 import logger from '../utils/logger.js';
 import { getBaseUrl } from '../utils/helpers.js';
-import { sendAdminRequestNotification, isEmailConfigured } from '../services/emailService.js';
+import { sendAdminRequestNotification, getNotificationRecipients, isEmailConfigured } from '../services/emailService.js';
 
 // Pull a human-friendly requester name/contact out of a request's metadata or linked user.
 const extractRequester = (request) => {
@@ -25,6 +25,7 @@ const notifyAdminOfNewRequest = async (req, request) => {
   try {
     const { name, email, phone } = extractRequester(request);
     const requestUrl = `${getBaseUrl(req)}/admin/requests?view=${request.id}`;
+    const to = await getNotificationRecipients('notifyGeneralRequests');
     await sendAdminRequestNotification({
       requestType: request.metadata?.requestType || request.title || request.type,
       requesterName: name,
@@ -33,7 +34,7 @@ const notifyAdminOfNewRequest = async (req, request) => {
       requestId: request.id,
       requestUrl,
       submittedAt: request.createdAt,
-    });
+    }, to);
     logger.info('New-request notification sent to staff', { requestId: request.id, requestUrl });
   } catch (error) {
     logger.error('Failed to send new-request notification', { requestId: request.id, error: error.message });

@@ -194,6 +194,67 @@ export const sixthFormValidation = [
     .withMessage('Subject choices are required'),
 ];
 
+// Validation for a student editing their own sixth form application.
+// All fields are optional (PUT may send a partial record) and `email` is
+// intentionally omitted — it stays tied to the login account and is never editable.
+export const sixthFormUpdateValidation = [
+  body('firstName')
+    .optional()
+    .trim()
+    .isLength({ min: 1, max: 50 })
+    .withMessage('First name must be less than 50 characters')
+    .matches(/^[a-zA-Z\s'-]+$/)
+    .withMessage('First name can only contain letters, spaces, hyphens, and apostrophes'),
+  body('middleName')
+    .optional()
+    .trim()
+    .isLength({ max: 50 })
+    .withMessage('Middle name must be less than 50 characters')
+    .matches(/^[a-zA-Z\s'-]*$/)
+    .withMessage('Middle name can only contain letters, spaces, hyphens, and apostrophes'),
+  body('lastName')
+    .optional()
+    .trim()
+    .isLength({ min: 1, max: 50 })
+    .withMessage('Last name must be less than 50 characters')
+    .matches(/^[a-zA-Z\s'-]+$/)
+    .withMessage('Last name can only contain letters, spaces, hyphens, and apostrophes'),
+  body('phone')
+    .optional()
+    .trim()
+    .isLength({ min: 7, max: 30 })
+    .withMessage('Valid phone number is required'),
+  body('dateOfBirth')
+    .optional()
+    .isISO8601()
+    .withMessage('Valid date of birth is required')
+    .custom((value) => {
+      const birthDate = new Date(value);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      if (age < 5 || age > 25) {
+        throw new Error('Age must be between 5 and 25 years');
+      }
+      return true;
+    }),
+  body('address').optional().trim().isLength({ max: 500 }).withMessage('Address must be less than 500 characters'),
+  body('gender').optional().trim().isIn(['Male', 'Female', 'Other', 'Prefer not to say']).withMessage('Invalid gender value'),
+  body('religion').optional().trim().isLength({ max: 100 }).withMessage('Religion must be less than 100 characters'),
+  body('nationality').optional().trim().isLength({ max: 100 }).withMessage('Nationality must be less than 100 characters'),
+  body('yearsOfResidence').optional().isInt({ min: 0, max: 100 }).withMessage('Years of residence must be a number between 0 and 100'),
+  body('previousSchool').optional().trim().isLength({ max: 200 }).withMessage('Previous school name must be less than 200 characters'),
+  body('positionsHeld').optional().trim().isLength({ max: 1000 }).withMessage('Positions held must be less than 1000 characters'),
+  body('guardianInfo').optional().isObject().withMessage('Guardian info must be a valid object'),
+  body('careerGoals').optional().trim().isLength({ max: 2000 }).withMessage('Career goals must be less than 2000 characters'),
+  body('strengthsWeaknesses').optional().trim().isLength({ max: 2000 }).withMessage('Strengths and weaknesses must be less than 2000 characters'),
+  body('reasonForAttending').optional().trim().isLength({ max: 2000 }).withMessage('Reason for attending must be less than 2000 characters'),
+  body('csecResults')
+    .optional()
+    .custom(val => Array.isArray(val) || (typeof val === 'object' && val !== null))
+    .withMessage('CSEC results must be a valid array or object'),
+  body('subjectChoices').optional().isObject().withMessage('Subject choices must be a valid object'),
+];
+
 export const userUpdateValidation = [
   body('name')
     .optional()

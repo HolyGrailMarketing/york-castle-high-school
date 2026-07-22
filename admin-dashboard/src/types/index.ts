@@ -13,6 +13,9 @@ export interface User {
   provider?: 'EMAIL' | 'GOOGLE';
   providerId?: string | null;
   picture?: string | null;
+  notifyGeneralRequests?: boolean;
+  notifySixthFormApps?: boolean;
+  notifyAdmissions?: boolean;
   createdAt: string;
   updatedAt?: string;
 }

@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import logger from '../utils/logger.js';
+import prisma from '../utils/prisma.js';
 import { templates } from './emailTemplates.js';
 
 let resend = null;
@@ -75,13 +76,56 @@ export const sendApplicationStatusEmail = async (email, name, status, applicatio
   await sendEmail(email, template.subject, template.text, template.html);
 };
 
-// Default recipient for new-request notifications; overridable via env.
-export const REQUEST_NOTIFICATION_EMAIL =
-  process.env.REQUEST_NOTIFICATION_EMAIL || 'annallee.brown.ssr3@moeschools.edu.jm';
+// Default recipients for new-request notifications; overridable via env
+// (comma-separated for multiple addresses). Used as a fallback when no other
+// recipient can be resolved.
+export const REQUEST_NOTIFICATION_EMAIL = process.env.REQUEST_NOTIFICATION_EMAIL
+  ? process.env.REQUEST_NOTIFICATION_EMAIL.split(',').map((e) => e.trim()).filter(Boolean)
+  : ['annallee.brown.ssr3@moeschools.edu.jm', 'Yorkcastlehigh@yahoo.com'];
+
+// Mailboxes that always receive submission notifications regardless of per-user
+// flags - e.g. a shared inbox with no login account to hold a flag. Overridable
+// via env (comma-separated).
+export const ALWAYS_NOTIFY_EMAILS = process.env.ALWAYS_NOTIFY_EMAILS
+  ? process.env.ALWAYS_NOTIFY_EMAILS.split(',').map((e) => e.trim()).filter(Boolean)
+  : ['Yorkcastlehigh@yahoo.com'];
 
 export const sendAdminRequestNotification = async (details, to = REQUEST_NOTIFICATION_EMAIL) => {
   const template = templates.adminNewRequest(details);
   await sendEmail(to, template.subject, template.text, template.html);
+};
+
+export const sendAdminSixthFormNotification = async (details, to = REQUEST_NOTIFICATION_EMAIL) => {
+  const template = templates.adminNewSixthFormApplication(details);
+  await sendEmail(to, template.subject, template.text, template.html);
+};
+
+export const sendAdminApplicationNotification = async (details, to = REQUEST_NOTIFICATION_EMAIL) => {
+  const template = templates.adminNewApplication(details);
+  await sendEmail(to, template.subject, template.text, template.html);
+};
+
+// Resolve the recipients for a given submission category: the users flagged for
+// it, always unioned with ALWAYS_NOTIFY_EMAILS (deduped, case-insensitive).
+// Falls back to the default REQUEST_NOTIFICATION_EMAIL list only if that union
+// somehow yields nothing, so notifications are never silently dropped.
+export const getNotificationRecipients = async (flagField) => {
+  const users = await prisma.user.findMany({
+    where: { [flagField]: true },
+    select: { email: true },
+  });
+  const flagged = users.map((u) => u.email).filter(Boolean);
+
+  const seen = new Set();
+  const recipients = [];
+  for (const email of [...flagged, ...ALWAYS_NOTIFY_EMAILS]) {
+    const key = email.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      recipients.push(email);
+    }
+  }
+  return recipients.length ? recipients : REQUEST_NOTIFICATION_EMAIL;
 };
 
 export const sendRequestConfirmationEmail = async (email, name, requestType, requestId) => {

@@ -11,6 +11,9 @@ interface UserFormData {
   role: UserRole;
   phone: string;
   authMethod: 'EMAIL' | 'GOOGLE';
+  notifyGeneralRequests: boolean;
+  notifySixthFormApps: boolean;
+  notifyAdmissions: boolean;
 }
 
 const initialFormData: UserFormData = {
@@ -20,7 +23,13 @@ const initialFormData: UserFormData = {
   role: 'STUDENT',
   phone: '',
   authMethod: 'GOOGLE',
+  notifyGeneralRequests: false,
+  notifySixthFormApps: false,
+  notifyAdmissions: false,
 };
+
+// Roles eligible to be submission-notification recipients.
+const NOTIFY_ELIGIBLE_ROLES: UserRole[] = ['ADMIN', 'STAFF', 'TEACHER'];
 
 const ALLOWED_DOMAINS = ['moeschools.edu.jm', 'yorkcastlehighschool.org'];
 
@@ -68,6 +77,12 @@ const Users = () => {
     setError('');
   };
 
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: checked }));
+    setError('');
+  };
+
   const handleAddUser = () => {
     setFormData({ ...initialFormData, authMethod: 'GOOGLE' });
     setError('');
@@ -83,6 +98,9 @@ const Users = () => {
       role: user.role,
       phone: user.phone || '',
       authMethod: user.provider || 'EMAIL',
+      notifyGeneralRequests: user.notifyGeneralRequests ?? false,
+      notifySixthFormApps: user.notifySixthFormApps ?? false,
+      notifyAdmissions: user.notifyAdmissions ?? false,
     });
     setError('');
     setShowEditModal(true);
@@ -121,6 +139,7 @@ const Users = () => {
 
     setSubmitting(true);
     try {
+      const notifyEligible = NOTIFY_ELIGIBLE_ROLES.includes(formData.role);
       await apiService.createUser({
         name: formData.name,
         email: formData.email,
@@ -128,6 +147,9 @@ const Users = () => {
         role: formData.role,
         phone: formData.phone || undefined,
         authMethod: formData.authMethod,
+        notifyGeneralRequests: notifyEligible && formData.notifyGeneralRequests,
+        notifySixthFormApps: notifyEligible && formData.notifySixthFormApps,
+        notifyAdmissions: notifyEligible && formData.notifyAdmissions,
       });
       setShowAddModal(false);
       await fetchUsers();
@@ -150,9 +172,13 @@ const Users = () => {
     setSubmitting(true);
     try {
       // Update basic info
+      const notifyEligible = NOTIFY_ELIGIBLE_ROLES.includes(formData.role);
       await apiService.updateUser(selectedUser.id, {
         name: formData.name,
         phone: formData.phone || undefined,
+        notifyGeneralRequests: notifyEligible && formData.notifyGeneralRequests,
+        notifySixthFormApps: notifyEligible && formData.notifySixthFormApps,
+        notifyAdmissions: notifyEligible && formData.notifyAdmissions,
       });
 
       // Update role if changed
@@ -377,6 +403,27 @@ const Users = () => {
             </div>
           </div>
 
+          {NOTIFY_ELIGIBLE_ROLES.includes(formData.role) && (
+            <div className="form-group">
+              <label>Submission Notifications</label>
+              <span className="field-hint">Email this user when these are submitted through the website.</span>
+              <div className="checkbox-group">
+                <label className="checkbox-label">
+                  <input type="checkbox" name="notifyGeneralRequests" checked={formData.notifyGeneralRequests} onChange={handleCheckboxChange} />
+                  General requests
+                </label>
+                <label className="checkbox-label">
+                  <input type="checkbox" name="notifySixthFormApps" checked={formData.notifySixthFormApps} onChange={handleCheckboxChange} />
+                  Sixth-form applications
+                </label>
+                <label className="checkbox-label">
+                  <input type="checkbox" name="notifyAdmissions" checked={formData.notifyAdmissions} onChange={handleCheckboxChange} />
+                  General admission applications
+                </label>
+              </div>
+            </div>
+          )}
+
           <div className="form-actions">
             <button type="button" className="btn-secondary" onClick={() => setShowAddModal(false)}>
               Cancel
@@ -440,6 +487,27 @@ const Users = () => {
               />
             </div>
           </div>
+
+          {NOTIFY_ELIGIBLE_ROLES.includes(formData.role) && (
+            <div className="form-group">
+              <label>Submission Notifications</label>
+              <span className="field-hint">Email this user when these are submitted through the website.</span>
+              <div className="checkbox-group">
+                <label className="checkbox-label">
+                  <input type="checkbox" name="notifyGeneralRequests" checked={formData.notifyGeneralRequests} onChange={handleCheckboxChange} />
+                  General requests
+                </label>
+                <label className="checkbox-label">
+                  <input type="checkbox" name="notifySixthFormApps" checked={formData.notifySixthFormApps} onChange={handleCheckboxChange} />
+                  Sixth-form applications
+                </label>
+                <label className="checkbox-label">
+                  <input type="checkbox" name="notifyAdmissions" checked={formData.notifyAdmissions} onChange={handleCheckboxChange} />
+                  General admission applications
+                </label>
+              </div>
+            </div>
+          )}
 
           <div className="form-actions">
             <button type="button" className="btn-secondary" onClick={() => setShowEditModal(false)}>

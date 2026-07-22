@@ -58,7 +58,7 @@ class ApiService {
     return this.request<{ user: User }>('GET', `/users/${id}`);
   }
 
-  async createUser(data: { email: string; password?: string; name: string; role?: string; phone?: string; authMethod?: 'EMAIL' | 'GOOGLE' }) {
+  async createUser(data: { email: string; password?: string; name: string; role?: string; phone?: string; authMethod?: 'EMAIL' | 'GOOGLE'; notifyGeneralRequests?: boolean; notifySixthFormApps?: boolean; notifyAdmissions?: boolean }) {
     return this.request<{ user: User }>('POST', '/users', data);
   }
 

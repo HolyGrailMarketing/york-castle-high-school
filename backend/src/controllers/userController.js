@@ -29,6 +29,9 @@ export const getUsers = async (req, res, next) => {
           name: true,
           role: true,
           phone: true,
+          notifyGeneralRequests: true,
+          notifySixthFormApps: true,
+          notifyAdmissions: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -68,6 +71,9 @@ export const getUser = async (req, res, next) => {
         name: true,
         role: true,
         phone: true,
+        notifyGeneralRequests: true,
+        notifySixthFormApps: true,
+        notifyAdmissions: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -89,7 +95,7 @@ export const getUser = async (req, res, next) => {
 export const updateUser = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, phone, password } = req.body;
+    const { name, phone, password, notifyGeneralRequests, notifySixthFormApps, notifyAdmissions } = req.body;
 
     // Users can only update their own profile unless they're admin
     if (id !== req.user.id && req.user.role !== 'ADMIN') {
@@ -103,6 +109,14 @@ export const updateUser = async (req, res, next) => {
       updateData.password = await bcrypt.hash(password, 10);
     }
 
+    // Submission notification routing is admin-only - ignore these flags unless
+    // the requester is an admin, so a user can't self-assign notifications.
+    if (req.user.role === 'ADMIN') {
+      if (notifyGeneralRequests !== undefined) updateData.notifyGeneralRequests = Boolean(notifyGeneralRequests);
+      if (notifySixthFormApps !== undefined) updateData.notifySixthFormApps = Boolean(notifySixthFormApps);
+      if (notifyAdmissions !== undefined) updateData.notifyAdmissions = Boolean(notifyAdmissions);
+    }
+
     const user = await prisma.user.update({
       where: { id },
       data: updateData,
@@ -112,6 +126,9 @@ export const updateUser = async (req, res, next) => {
         name: true,
         role: true,
         phone: true,
+        notifyGeneralRequests: true,
+        notifySixthFormApps: true,
+        notifyAdmissions: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -163,7 +180,16 @@ export const deleteUser = async (req, res, next) => {
 
 export const createUser = async (req, res, next) => {
   try {
-    const { email: rawEmail, name, role, phone, authMethod = 'GOOGLE' } = req.body;
+    const {
+      email: rawEmail,
+      name,
+      role,
+      phone,
+      authMethod = 'GOOGLE',
+      notifyGeneralRequests = false,
+      notifySixthFormApps = false,
+      notifyAdmissions = false,
+    } = req.body;
 
     if (!rawEmail || !name) {
       return res.status(400).json({ error: 'Email and name are required' });
@@ -209,6 +235,9 @@ export const createUser = async (req, res, next) => {
         provider: 'GOOGLE',
         providerId: null, // Will be set on first Google sign-in
         picture: null, // Will be set on first Google sign-in
+        notifyGeneralRequests: Boolean(notifyGeneralRequests),
+        notifySixthFormApps: Boolean(notifySixthFormApps),
+        notifyAdmissions: Boolean(notifyAdmissions),
       },
       select: {
         id: true,
@@ -219,6 +248,9 @@ export const createUser = async (req, res, next) => {
         provider: true,
         providerId: true,
         picture: true,
+        notifyGeneralRequests: true,
+        notifySixthFormApps: true,
+        notifyAdmissions: true,
         createdAt: true,
         updatedAt: true,
       },

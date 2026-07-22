@@ -3,6 +3,7 @@ import {
   getSixthFormApplications,
   getSixthFormApplication,
   getMyApplication,
+  updateMyApplication,
   createSixthFormApplication,
   updateSixthFormStatus,
   deleteSixthFormApplication,
@@ -10,7 +11,7 @@ import {
 import { getInterview, saveInterview } from '../controllers/interviewController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { publicRequestLimiter, adminLimiter, generalLimiter } from '../middleware/rateLimiter.js';
-import { sixthFormValidation, handleValidationErrors, sanitizeBody } from '../utils/validation.js';
+import { sixthFormValidation, sixthFormUpdateValidation, handleValidationErrors, sanitizeBody } from '../utils/validation.js';
 
 const router = express.Router();
 
@@ -19,6 +20,9 @@ router.get('/', adminLimiter, authenticate, authorize('ADMIN', 'STAFF', 'TEACHER
 
 // Get current student's own application
 router.get('/my', generalLimiter, authenticate, getMyApplication);
+
+// Update current student's own application (resolved by user id, no IDOR surface)
+router.put('/my', generalLimiter, authenticate, sanitizeBody, sixthFormUpdateValidation, handleValidationErrors, updateMyApplication);
 
 // Get single application
 router.get('/:id', generalLimiter, authenticate, getSixthFormApplication);

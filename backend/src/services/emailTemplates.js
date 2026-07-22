@@ -271,6 +271,73 @@ export const templates = {
   },
 
   /**
+   * Admin notification email - sent to staff each time a new sixth-form application is submitted
+   */
+  adminNewSixthFormApplication: ({ applicantName, applicantEmail, applicantPhone, applicationId, applicationUrl, submittedAt }) => {
+    const submitted = submittedAt ? new Date(submittedAt) : new Date();
+    const submittedStr = submitted.toLocaleString('en-JM', { dateStyle: 'medium', timeStyle: 'short' });
+
+    const content = `
+      <h2 style="color: ${schoolColors.secondary}; margin-top: 0;">New Sixth-Form Application Submitted</h2>
+      <p>A new sixth-form application has just been submitted through the York Castle High School website and needs your attention.</p>
+      <div class="highlight">
+        <p style="margin-top: 0;"><strong>Applicant:</strong> ${applicantName || 'Unknown'}</p>
+        ${applicantEmail ? `<p><strong>Email:</strong> ${applicantEmail}</p>` : ''}
+        ${applicantPhone ? `<p><strong>Phone:</strong> ${applicantPhone}</p>` : ''}
+        <p><strong>Submitted On:</strong> ${submittedStr}</p>
+        <p style="margin-bottom: 0;"><strong>Application ID:</strong> <span style="font-family: monospace; background: ${schoolColors.lightGray}; padding: 4px 8px; border-radius: 4px;">${applicationId}</span></p>
+      </div>
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="${applicationUrl}" class="button" style="display: inline-block;">View Application</a>
+      </p>
+      <p style="color: ${schoolColors.textLight}; font-size: 14px;">If the button above doesn't work, copy and paste this link into your browser:<br>
+        <a href="${applicationUrl}" style="color: ${schoolColors.goldDark}; word-break: break-all;">${applicationUrl}</a>
+      </p>
+      <p>You will need to sign in to the administrative portal to view and process this application.</p>
+    `;
+
+    return {
+      subject: `New Sixth-Form Application Submitted - York Castle High School`,
+      html: baseTemplate(content, 'New Sixth-Form Application Submitted'),
+      text: `New Sixth-Form Application Submitted\n\nA new sixth-form application has been submitted through the website.\n\nApplicant: ${applicantName || 'Unknown'}\n${applicantEmail ? `Email: ${applicantEmail}\n` : ''}${applicantPhone ? `Phone: ${applicantPhone}\n` : ''}Submitted On: ${submittedStr}\nApplication ID: ${applicationId}\n\nView the application here:\n${applicationUrl}\n\nYork Castle High School`,
+    };
+  },
+
+  /**
+   * Admin notification email - sent to staff each time a new admission application is submitted
+   */
+  adminNewApplication: ({ applicantName, applicantEmail, applicantPhone, gradeApplying, applicationId, applicationUrl, submittedAt }) => {
+    const submitted = submittedAt ? new Date(submittedAt) : new Date();
+    const submittedStr = submitted.toLocaleString('en-JM', { dateStyle: 'medium', timeStyle: 'short' });
+
+    const content = `
+      <h2 style="color: ${schoolColors.secondary}; margin-top: 0;">New Admission Application Submitted</h2>
+      <p>A new admission application has just been submitted through the York Castle High School website and needs your attention.</p>
+      <div class="highlight">
+        <p style="margin-top: 0;"><strong>Applicant:</strong> ${applicantName || 'Unknown'}</p>
+        ${applicantEmail ? `<p><strong>Email:</strong> ${applicantEmail}</p>` : ''}
+        ${applicantPhone ? `<p><strong>Phone:</strong> ${applicantPhone}</p>` : ''}
+        ${gradeApplying ? `<p><strong>Grade Applying For:</strong> ${gradeApplying}</p>` : ''}
+        <p><strong>Submitted On:</strong> ${submittedStr}</p>
+        <p style="margin-bottom: 0;"><strong>Application ID:</strong> <span style="font-family: monospace; background: ${schoolColors.lightGray}; padding: 4px 8px; border-radius: 4px;">${applicationId}</span></p>
+      </div>
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="${applicationUrl}" class="button" style="display: inline-block;">View Application</a>
+      </p>
+      <p style="color: ${schoolColors.textLight}; font-size: 14px;">If the button above doesn't work, copy and paste this link into your browser:<br>
+        <a href="${applicationUrl}" style="color: ${schoolColors.goldDark}; word-break: break-all;">${applicationUrl}</a>
+      </p>
+      <p>You will need to sign in to the administrative portal to view and process this application.</p>
+    `;
+
+    return {
+      subject: `New Admission Application Submitted - York Castle High School`,
+      html: baseTemplate(content, 'New Admission Application Submitted'),
+      text: `New Admission Application Submitted\n\nA new admission application has been submitted through the website.\n\nApplicant: ${applicantName || 'Unknown'}\n${applicantEmail ? `Email: ${applicantEmail}\n` : ''}${applicantPhone ? `Phone: ${applicantPhone}\n` : ''}${gradeApplying ? `Grade Applying For: ${gradeApplying}\n` : ''}Submitted On: ${submittedStr}\nApplication ID: ${applicationId}\n\nView the application here:\n${applicationUrl}\n\nYork Castle High School`,
+    };
+  },
+
+  /**
    * Request confirmation email
    */
   requestConfirmation: (name, requestType, requestId) => {
