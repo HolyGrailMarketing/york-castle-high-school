@@ -132,6 +132,7 @@ model SixthFormApplication {
   submittedAt     DateTime         @default(now())
   reviewedAt      DateTime?
   reviewedBy      String?
+  interviewInvitedAt DateTime?     // set when a bulk interview-invitation email is sent; independent of `status`
   userId          String?
   user            User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
   interview       SixthFormInterview?

@@ -255,6 +255,15 @@ export const sixthFormUpdateValidation = [
   body('subjectChoices').optional().isObject().withMessage('Subject choices must be a valid object'),
 ];
 
+export const sixthFormBulkInviteValidation = [
+  body('applicationIds')
+    .isArray({ min: 1 })
+    .withMessage('applicationIds must be a non-empty array'),
+  body('applicationIds.*')
+    .isUUID()
+    .withMessage('Each applicationId must be a valid UUID'),
+];
+
 export const userUpdateValidation = [
   body('name')
     .optional()

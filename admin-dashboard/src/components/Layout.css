@@ -155,6 +155,7 @@
 /* Main Content */
 .main-content {
   flex: 1;
+  min-width: 0; /* allow the content column to shrink to the viewport instead of being forced wide by wide children (e.g. data tables) */
   margin-left: 280px;
   display: flex;
   flex-direction: column;

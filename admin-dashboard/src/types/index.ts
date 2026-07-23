@@ -92,6 +92,7 @@ export interface SixthFormApplication {
   submittedAt: string;
   reviewedAt?: string;
   reviewedBy?: string;
+  interviewInvitedAt?: string;
   userId?: string;
   user?: User;
 }

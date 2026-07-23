@@ -7,11 +7,12 @@ import {
   createSixthFormApplication,
   updateSixthFormStatus,
   deleteSixthFormApplication,
+  sendInterviewInvitations,
 } from '../controllers/sixthFormController.js';
 import { getInterview, saveInterview } from '../controllers/interviewController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { publicRequestLimiter, adminLimiter, generalLimiter } from '../middleware/rateLimiter.js';
-import { sixthFormValidation, sixthFormUpdateValidation, handleValidationErrors, sanitizeBody } from '../utils/validation.js';
+import { sixthFormValidation, sixthFormUpdateValidation, sixthFormBulkInviteValidation, handleValidationErrors, sanitizeBody } from '../utils/validation.js';
 
 const router = express.Router();
 
@@ -32,6 +33,9 @@ router.post('/', publicRequestLimiter, sanitizeBody, sixthFormValidation, handle
 
 // Update application status (admin/staff only)
 router.put('/:id/status', adminLimiter, authenticate, authorize('ADMIN', 'STAFF', 'TEACHER'), updateSixthFormStatus);
+
+// Bulk-send the fixed interview-session invitation email to selected applicants (admin/staff only)
+router.post('/interview-invitations', adminLimiter, authenticate, authorize('ADMIN', 'STAFF', 'TEACHER'), sanitizeBody, sixthFormBulkInviteValidation, handleValidationErrors, sendInterviewInvitations);
 
 // Delete application (admin only)
 router.delete('/:id', adminLimiter, authenticate, authorize('ADMIN'), deleteSixthFormApplication);

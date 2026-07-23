@@ -76,6 +76,11 @@ export const sendApplicationStatusEmail = async (email, name, status, applicatio
   await sendEmail(email, template.subject, template.text, template.html);
 };
 
+export const sendSixthFormInterviewInvitation = async (email, name) => {
+  const template = templates.sixthFormInterviewInvitation(name);
+  await sendEmail(email, template.subject, template.text, template.html);
+};
+
 // Default recipients for new-request notifications; overridable via env
 // (comma-separated for multiple addresses). Used as a fallback when no other
 // recipient can be resolved.

@@ -2,7 +2,13 @@ import bcrypt from 'bcryptjs';
 import prisma from '../utils/prisma.js';
 import logger from '../utils/logger.js';
 import { getBaseUrl } from '../utils/helpers.js';
-import { sendAdminSixthFormNotification, getNotificationRecipients, isEmailConfigured } from '../services/emailService.js';
+import {
+  sendAdminSixthFormNotification,
+  getNotificationRecipients,
+  isEmailConfigured,
+  sendSixthFormInterviewInvitation,
+} from '../services/emailService.js';
+import { auditLog } from '../middleware/auditLog.js';
 
 // Sixth Form applications closed on this date. Jamaica does not observe DST,
 // so a fixed -05:00 offset is always correct. Kept in sync with the deadline
@@ -275,6 +281,101 @@ export const updateSixthFormStatus = async (req, res, next) => {
     if (error.code === 'P2025') {
       return res.status(404).json({ error: 'Application not found' });
     }
+    next(error);
+  }
+};
+
+// How many interview-invitation emails to send concurrently per batch. Keeps
+// a large selection from hammering Resend or the request timeout, without the
+// overhead of a real job queue for what's expected to be at most a few dozen
+// recipients at a time.
+const INVITE_BATCH_SIZE = 5;
+
+// Send the fixed interview-session invitation email to a batch of selected
+// applicants. Unlike the best-effort admin-notification emails elsewhere in
+// this file, sending the email IS the point of this action, so a
+// misconfigured email service is a hard error rather than a silent no-op.
+export const sendInterviewInvitations = async (req, res, next) => {
+  try {
+    if (!isEmailConfigured()) {
+      return res.status(503).json({
+        error: 'Email service is not configured. Interview invitations cannot be sent right now.',
+      });
+    }
+
+    const { applicationIds } = req.body;
+
+    const applications = await prisma.sixthFormApplication.findMany({
+      where: { id: { in: applicationIds } },
+      select: { id: true, firstName: true, lastName: true, email: true },
+    });
+
+    const foundIds = new Set(applications.map((a) => a.id));
+    const failed = applicationIds
+      .filter((id) => !foundIds.has(id))
+      .map((id) => ({ id, email: null, reason: 'Application not found' }));
+
+    let invitedCount = 0;
+    const invitedIds = [];
+
+    for (let i = 0; i < applications.length; i += INVITE_BATCH_SIZE) {
+      const batch = applications.slice(i, i + INVITE_BATCH_SIZE);
+      const results = await Promise.allSettled(
+        batch.map((app) =>
+          sendSixthFormInterviewInvitation(
+            app.email,
+            [app.firstName, app.lastName].filter(Boolean).join(' ') || 'Applicant'
+          )
+        )
+      );
+      results.forEach((result, idx) => {
+        const app = batch[idx];
+        if (result.status === 'fulfilled') {
+          invitedCount += 1;
+          invitedIds.push(app.id);
+        } else {
+          logger.error('Failed to send sixth-form interview invitation', {
+            applicationId: app.id,
+            email: app.email,
+            error: result.reason?.message,
+          });
+          failed.push({ id: app.id, email: app.email, reason: result.reason?.message || 'Failed to send email' });
+        }
+      });
+    }
+
+    if (invitedIds.length > 0) {
+      await prisma.sixthFormApplication.updateMany({
+        where: { id: { in: invitedIds } },
+        data: { interviewInvitedAt: new Date() },
+      });
+
+      // One audit entry per invited application (real entityId), matching the
+      // AuditLog schema's required entityId and its [entityType, entityId]
+      // index — so each invitation is individually traceable for DPA compliance.
+      await Promise.all(
+        invitedIds.map((id) =>
+          auditLog('update', 'SixthFormApplication', id, req.user.id, req.user.email, {
+            action: 'bulk_interview_invitation',
+            batchRequestedCount: applicationIds.length,
+            batchInvitedCount: invitedCount,
+          })
+        )
+      );
+    }
+
+    logger.info('Sixth-form interview invitations sent', {
+      requestedCount: applicationIds.length,
+      invitedCount,
+      failedCount: failed.length,
+    });
+
+    res.json({
+      message: `Interview invitation sent to ${invitedCount} of ${applicationIds.length} selected applicant(s).`,
+      invitedCount,
+      failed,
+    });
+  } catch (error) {
     next(error);
   }
 };

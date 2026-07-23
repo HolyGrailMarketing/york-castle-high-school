@@ -538,3 +538,227 @@
   margin-top: 16px;
   flex-wrap: wrap;
 }
+
+/* Bulk interview-invitation action bar */
+.bulk-actions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+}
+
+.bulk-actions-count {
+  font-size: 14px;
+  color: #374151;
+}
+
+.btn-invite {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.btn-invite:hover:not(:disabled) {
+  background-color: #4338ca;
+}
+
+.btn-invite:disabled {
+  background-color: #c7c9f7;
+  cursor: not-allowed;
+}
+
+.data-table th input[type='checkbox'],
+.data-table td input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+}
+
+/* Invitation state — orthogonal to .status-badge (application status), so
+   deliberately a different hue from .status-badge.status-under-review's blue. */
+.invited-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #e0e7ff;
+  color: #3730a3;
+  white-space: nowrap;
+}
+
+.invited-badge.invited-badge--none {
+  background: #f3f4f6;
+  color: #9ca3af;
+}
+
+.invite-session-details {
+  background: #faf8f0;
+  border-left: 4px solid #d4af37;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.invite-session-details ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
+.invite-recipient-list {
+  list-style: none;
+  margin: 8px 0 16px;
+  padding: 0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.invite-recipient-list li {
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.invite-result-summary {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* ─── Sixth Form table: responsive layout ─────────────────────────────
+   The applicants table is wide (8 columns). Contain it in a horizontal
+   scroll box so its width never forces the whole page/content area wider
+   than the viewport, and reflow to stacked cards on small screens. */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Tighter cells + controlled wrapping so all 8 columns fit a desktop
+   viewport without horizontal scroll (scoped to this table only). */
+.data-table--stack th,
+.data-table--stack td {
+  padding: 12px 14px;
+}
+
+.data-table--stack .col-select {
+  width: 36px;
+  padding-right: 4px;
+}
+
+.data-table--stack .col-nowrap {
+  white-space: nowrap;
+}
+
+.data-table--stack .col-name {
+  min-width: 130px;
+}
+
+.data-table--stack .col-email {
+  min-width: 170px;
+  overflow-wrap: anywhere;
+}
+
+.data-table--stack .col-actions {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.data-table--stack tbody tr.row-selected {
+  background: #eef2ff;
+}
+
+@media (max-width: 768px) {
+  /* Cards reflow full-width; no sideways scrolling needed */
+  .table-scroll {
+    overflow-x: visible;
+  }
+
+  .applications-list {
+    padding: 12px;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .data-table--stack,
+  .data-table--stack tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .data-table--stack thead {
+    display: none;
+  }
+
+  .data-table--stack tr {
+    display: block;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    padding: 4px 14px;
+    margin-bottom: 12px;
+  }
+
+  .data-table--stack tbody tr.row-selected {
+    border-color: #4f46e5;
+    background: #f5f6ff;
+  }
+
+  .data-table--stack td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  .data-table--stack tr td:last-child {
+    border-bottom: none;
+  }
+
+  .data-table--stack td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-align: left;
+  }
+
+  .data-table--stack td.col-actions {
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  /* Bulk-action bar stacks and the button goes full width on phones */
+  .bulk-actions-bar {
+    flex-wrap: wrap;
+  }
+
+  .bulk-actions-bar .btn-invite {
+    width: 100%;
+  }
+}

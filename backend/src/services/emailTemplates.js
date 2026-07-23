@@ -493,6 +493,52 @@ export const templates = {
       text: textContent,
     };
   },
+
+  /**
+   * Sixth Form interview invitation - sent in bulk to selected applicants for
+   * the single fixed interview session. Content mirrors the notice shown on
+   * sixth-form-application.html's closed-applications screen.
+   */
+  sixthFormInterviewInvitation: (name) => {
+    const documents = [
+      'Copy of your birth certificate',
+      'Copy of your TRN',
+      'Copy of your SRN',
+      'Copy of your CSEC results',
+      'Two passport-sized photographs',
+      'Your last two school reports',
+      'Two recommendation letters (from a Principal, Teacher, Justice of the Peace, or Minister of Religion)',
+    ];
+
+    const content = `
+      <h2 style="color: ${schoolColors.secondary}; margin-top: 0;">You're Invited to Interview</h2>
+      <p>Dear ${name},</p>
+      <p>Congratulations — you have been invited to interview for the Sixth Form Programme at York Castle High School.</p>
+      <div class="highlight">
+        <p style="margin-top: 0;"><strong>Date:</strong> Tuesday, August 25, 2026</p>
+        <p><strong>Time:</strong> 8:30 a.m.</p>
+        <p style="margin-bottom: 0;"><strong>Location:</strong> York Castle High School, Brown's Town, St. Ann</p>
+      </div>
+      <p><strong>Please bring the following documents to your interview:</strong></p>
+      <ul style="margin-top: 8px;">
+        ${documents.map((d) => `<li>${d}</li>`).join('\n        ')}
+      </ul>
+      <div class="highlight" style="border-left-color: #f59e0b;">
+        <p style="margin: 0;">A non-refundable processing fee of <strong>J$2,000</strong> is payable on the day of the interview.</p>
+      </div>
+      <p>If you have any questions, please contact our admissions office at <a href="mailto:yorkcastle.high.san@moey.gov.jm" style="color: ${schoolColors.secondary}; text-decoration: none;">yorkcastle.high.san@moey.gov.jm</a> or call us at <a href="tel:+1876975-2217" style="color: ${schoolColors.secondary}; text-decoration: none;">+1 876 975-2217</a>.</p>
+      <p>We look forward to meeting you.</p>
+      <p>Best regards,<br><strong>York Castle High School</strong><br><span style="color: ${schoolColors.textLight}; font-size: 14px;">Admissions Office</span></p>
+    `;
+
+    const textDocs = documents.map((d) => `- ${d}`).join('\n');
+
+    return {
+      subject: 'Sixth Form Interview Invitation - York Castle High School',
+      html: baseTemplate(content, 'Interview Invitation'),
+      text: `You're Invited to Interview\n\nDear ${name},\n\nYou have been invited to interview for the Sixth Form Programme at York Castle High School.\n\nDate: Tuesday, August 25, 2026\nTime: 8:30 a.m.\nLocation: York Castle High School, Brown's Town, St. Ann\n\nPlease bring:\n${textDocs}\n\nA non-refundable processing fee of J$2,000 is payable on the day of the interview.\n\nWe look forward to meeting you.\n\nBest regards,\nYork Castle High School`,
+    };
+  },
 };
 
 

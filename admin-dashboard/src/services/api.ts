@@ -102,6 +102,14 @@ class ApiService {
     return this.request<{ application: SixthFormApplication }>('PUT', `/sixth-form/${id}/status`, { status, notes });
   }
 
+  async sendInterviewInvitations(applicationIds: string[]) {
+    return this.request<{
+      message: string;
+      invitedCount: number;
+      failed: { id: string; email: string | null; reason: string }[];
+    }>('POST', '/sixth-form/interview-invitations', { applicationIds });
+  }
+
   async getInterview(applicationId: string) {
     return this.request<{ interview: SixthFormInterview | null }>('GET', `/sixth-form/${applicationId}/interview`);
   }

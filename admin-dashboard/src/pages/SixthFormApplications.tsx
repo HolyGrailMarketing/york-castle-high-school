@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { apiService } from '../services/api';
 import type { SixthFormApplication, SixthFormInterview } from '../types';
 import { exportSixthFormApplicationToPDF } from '../utils/export';
+import Modal from '../components/Modal';
 import './Applications.css';
 
 const RATINGS = [
@@ -45,6 +46,18 @@ const SixthFormApplications = () => {
   const [activeTab, setActiveTab] = useState<'application' | 'interview'>('application');
   const [statusError, setStatusError] = useState('');
 
+  // Bulk interview-invitation state
+  const selectAllRef = useRef<HTMLInputElement>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [inviteSending, setInviteSending] = useState(false);
+  const [inviteError, setInviteError] = useState('');
+  const [inviteResult, setInviteResult] = useState<{
+    message: string;
+    invitedCount: number;
+    failed: { id: string; email: string | null; reason: string }[];
+  } | null>(null);
+
   // Interview state
   const [interview, setInterview] = useState<SixthFormInterview | null>(null);
   const [interviewLoading, setInterviewLoading] = useState(false);
@@ -69,6 +82,7 @@ const SixthFormApplications = () => {
       if (statusFilter) params.status = statusFilter;
       const data = await apiService.getSixthFormApplications(params);
       setApplications(data.applications);
+      setSelectedIds(new Set());
       if (data.pagination) {
         setTotalPages(data.pagination.pages || 1);
         setTotalCount(data.pagination.total || 0);
@@ -158,6 +172,45 @@ const SixthFormApplications = () => {
   const f = (field: string) => (e: any) =>
     setInterviewForm((prev) => ({ ...prev, [field]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
 
+  // Keep the header checkbox's indeterminate visual in sync with a partial selection
+  useEffect(() => {
+    if (selectAllRef.current) {
+      const allSelected = applications.length > 0 && selectedIds.size === applications.length;
+      selectAllRef.current.indeterminate = selectedIds.size > 0 && !allSelected;
+    }
+  }, [selectedIds, applications]);
+
+  const toggleSelectAll = () => {
+    const allSelected = applications.length > 0 && selectedIds.size === applications.length;
+    setSelectedIds(allSelected ? new Set() : new Set(applications.map((a) => a.id)));
+  };
+
+  const toggleSelectOne = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleSendInvitations = async () => {
+    setInviteError('');
+    setInviteSending(true);
+    try {
+      const result = await apiService.sendInterviewInvitations(Array.from(selectedIds));
+      setInviteResult(result);
+      fetchApplications();
+    } catch (error: any) {
+      setInviteError(error?.error || error?.message || 'Failed to send interview invitations.');
+    } finally {
+      setInviteSending(false);
+    }
+  };
+
   if (loading) {
     return <div className="loading">Loading applications...</div>;
   }
@@ -177,38 +230,80 @@ const SixthFormApplications = () => {
         </div>
       </div>
 
+      <div className="bulk-actions-bar">
+        <span className="bulk-actions-count">
+          {selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Select applicants to send a bulk interview invitation'}
+        </span>
+        <button
+          className="btn-invite"
+          disabled={selectedIds.size === 0}
+          onClick={() => { setInviteResult(null); setInviteError(''); setInviteModalOpen(true); }}
+        >
+          Send Interview Invitation{selectedIds.size > 1 ? 's' : ''}
+        </button>
+      </div>
+
       <div className="applications-list">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Status</th>
-              <th>Submitted</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {applications.map((app) => (
-              <tr key={app.id}>
-                <td>{app.firstName} {app.middleName} {app.lastName}</td>
-                <td>{app.email}</td>
-                <td>{app.phone}</td>
-                <td>
-                  <span className={`status-badge status-${app.status.toLowerCase().replace('_', '-')}`}>
-                    {app.status.replace('_', ' ')}
-                  </span>
-                </td>
-                <td>{new Date(app.submittedAt).toLocaleDateString()}</td>
-                <td>
-                  <button onClick={() => openModal(app)} className="btn-view">View</button>
-                  <button onClick={() => exportSixthFormApplicationToPDF(app)} className="btn-pdf">PDF</button>
-                </td>
+        <div className="table-scroll">
+          <table className="data-table data-table--stack">
+            <thead>
+              <tr>
+                <th className="col-select">
+                  <input
+                    ref={selectAllRef}
+                    type="checkbox"
+                    checked={applications.length > 0 && selectedIds.size === applications.length}
+                    onChange={toggleSelectAll}
+                    aria-label="Select all applicants on this page"
+                  />
+                </th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Invitation</th>
+                <th>Submitted</th>
+                <th className="col-actions">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {applications.map((app) => (
+                <tr key={app.id} className={selectedIds.has(app.id) ? 'row-selected' : ''}>
+                  <td className="col-select" data-label="Select">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(app.id)}
+                      onChange={() => toggleSelectOne(app.id)}
+                      aria-label={`Select ${app.firstName} ${app.lastName}`}
+                    />
+                  </td>
+                  <td data-label="Name" className="col-name">{[app.firstName, app.middleName, app.lastName].filter(Boolean).join(' ')}</td>
+                  <td data-label="Email" className="col-email">{app.email}</td>
+                  <td data-label="Phone" className="col-nowrap">{app.phone}</td>
+                  <td data-label="Status" className="col-nowrap">
+                    <span className={`status-badge status-${app.status.toLowerCase().replace('_', '-')}`}>
+                      {app.status.replace('_', ' ')}
+                    </span>
+                  </td>
+                  <td data-label="Invitation" className="col-nowrap">
+                    {app.interviewInvitedAt ? (
+                      <span className="invited-badge" title={new Date(app.interviewInvitedAt).toLocaleString()}>
+                        Invited {new Date(app.interviewInvitedAt).toLocaleDateString()}
+                      </span>
+                    ) : (
+                      <span className="invited-badge invited-badge--none">Not invited</span>
+                    )}
+                  </td>
+                  <td data-label="Submitted" className="col-nowrap">{new Date(app.submittedAt).toLocaleDateString()}</td>
+                  <td data-label="Actions" className="col-actions">
+                    <button onClick={() => openModal(app)} className="btn-view">View</button>
+                    <button onClick={() => exportSixthFormApplicationToPDF(app)} className="btn-pdf">PDF</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         {applications.length === 0 && (
           <div className="no-results">No applications found.</div>
         )}
@@ -484,6 +579,90 @@ const SixthFormApplications = () => {
           </div>
         </div>
       )}
+
+      {inviteModalOpen && (() => {
+        const selectedApps = applications.filter((a) => selectedIds.has(a.id));
+        const alreadyInvited = selectedApps.filter((a) => a.interviewInvitedAt);
+        return (
+          <Modal
+            isOpen={inviteModalOpen}
+            onClose={() => !inviteSending && setInviteModalOpen(false)}
+            title="Send Interview Invitation"
+            size="medium"
+          >
+            {!inviteResult ? (
+              <>
+                <div className="invite-session-details">
+                  <h4 className="detail-section-heading">Fixed Interview Session</h4>
+                  <div><strong>Date:</strong> Tuesday, August 25, 2026</div>
+                  <div><strong>Time:</strong> 8:30 a.m.</div>
+                  <div><strong>Location:</strong> York Castle High School, Brown's Town, St. Ann</div>
+                  <div><strong>Processing Fee:</strong> J$2,000 (non-refundable, payable on the day)</div>
+                  <div style={{ marginTop: 8 }}>
+                    <strong>Documents to bring:</strong>
+                    <ul>
+                      <li>Copy of birth certificate</li>
+                      <li>Copy of TRN</li>
+                      <li>Copy of SRN</li>
+                      <li>Copy of CSEC results</li>
+                      <li>Two passport-sized photographs</li>
+                      <li>Last two school reports</li>
+                      <li>Two recommendation letters (Principal, Teacher, JP, or Minister of Religion)</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <h4 className="detail-section-heading">Recipients ({selectedApps.length})</h4>
+                <ul className="invite-recipient-list">
+                  {selectedApps.map((a) => (
+                    <li key={a.id}>
+                      <span>{a.firstName} {a.lastName} — {a.email}</span>
+                      {a.interviewInvitedAt && (
+                        <span className="invited-badge">Already invited {new Date(a.interviewInvitedAt).toLocaleDateString()}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                {alreadyInvited.length > 0 && (
+                  <div className="interview-warning">
+                    {alreadyInvited.length} of these applicants were already invited. Sending again will re-send the invitation email.
+                  </div>
+                )}
+                {inviteError && <div className="interview-error">{inviteError}</div>}
+
+                <div className="modal-footer-actions">
+                  <button className="btn-close" onClick={() => setInviteModalOpen(false)} disabled={inviteSending}>Cancel</button>
+                  <button className="btn-approve" onClick={handleSendInvitations} disabled={inviteSending}>
+                    {inviteSending ? 'Sending…' : `Send to ${selectedApps.length}`}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="invite-result-summary">
+                  {inviteResult.message}
+                </div>
+                {inviteResult.failed.length > 0 && (
+                  <>
+                    <h4 className="detail-section-heading">Failed ({inviteResult.failed.length})</h4>
+                    <ul className="invite-recipient-list">
+                      {inviteResult.failed.map((fail) => (
+                        <li key={fail.id}>
+                          <span>{fail.email || fail.id}</span>
+                          <span>{fail.reason}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+                <div className="modal-footer-actions">
+                  <button className="btn-close" onClick={() => setInviteModalOpen(false)}>Close</button>
+                </div>
+              </>
+            )}
+          </Modal>
+        );
+      })()}
     </div>
   );
 };
