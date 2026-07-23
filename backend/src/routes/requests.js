@@ -4,6 +4,7 @@ import {
   getRequest,
   createRequest,
   updateRequestStatus,
+  assignRequest,
   deleteRequest,
   createPublicRequest,
 } from '../controllers/requestController.js';
@@ -29,6 +30,9 @@ router.post('/', generalLimiter, createRequest);
 
 // Update request status (admin/staff only)
 router.put('/:id/status', adminLimiter, authorize('ADMIN', 'STAFF'), updateRequestStatus);
+
+// Assign request to a staff member (admin only)
+router.put('/:id/assign', adminLimiter, authorize('ADMIN'), assignRequest);
 
 // Delete request
 router.delete('/:id', adminLimiter, deleteRequest);

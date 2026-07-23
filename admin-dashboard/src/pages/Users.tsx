@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { apiService } from '../services/api';
 import Modal from '../components/Modal';
 import type { User, UserRole } from '../types';
@@ -42,8 +42,13 @@ const Users = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [roleFilter, setRoleFilter] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  
+  const [searchTerm, setSearchTerm] = useState(''); // What the user types
+  const [searchQuery, setSearchQuery] = useState(''); // Debounced value sent to the API
+  const [page, setPage] = useState(1);
+  const limit = 20;
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 0 });
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Modal states
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -53,17 +58,34 @@ const Users = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  // Debounce the search box - wait 400ms after the user stops typing.
+  useEffect(() => {
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => setSearchQuery(searchTerm), 400);
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, [searchTerm]);
+
+  // Reset to the first page whenever the filters change.
+  useEffect(() => {
+    setPage(1);
+  }, [roleFilter, searchQuery]);
+
   useEffect(() => {
     fetchUsers();
-  }, [roleFilter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roleFilter, searchQuery, page]);
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const params: any = {};
+      const params: any = { page, limit };
       if (roleFilter) params.role = roleFilter;
+      if (searchQuery.trim()) params.search = searchQuery.trim();
       const data = await apiService.getUsers(params);
       setUsers(data.users);
+      if (data.pagination) setPagination(data.pagination);
     } catch (error) {
       console.error('Failed to fetch users:', error);
     } finally {
@@ -221,16 +243,7 @@ const Users = () => {
     }
   };
 
-  const filteredUsers = users.filter(user => {
-    if (!searchTerm) return true;
-    const search = searchTerm.toLowerCase();
-    return (
-      user.name.toLowerCase().includes(search) ||
-      user.email.toLowerCase().includes(search)
-    );
-  });
-
-  if (loading) {
+  if (loading && users.length === 0) {
     return <div className="loading">Loading users...</div>;
   }
 
@@ -239,7 +252,7 @@ const Users = () => {
       <div className="page-header">
         <div className="header-left">
           <h1>Users</h1>
-          <span className="user-count">{users.length} total</span>
+          <span className="user-count">{pagination.total || users.length} total</span>
         </div>
         <div className="header-actions">
           <div className="search-box">
@@ -278,62 +291,114 @@ const Users = () => {
         </div>
       </div>
 
-      {filteredUsers.length === 0 ? (
+      {users.length === 0 ? (
         <div className="empty-state">
           <span className="empty-icon">👥</span>
           <h3>No users found</h3>
           <p>No users match your search criteria.</p>
         </div>
       ) : (
-        <div className="users-grid">
-          {filteredUsers.map((user) => (
-            <div key={user.id} className="user-card">
-              <div className="user-card-header">
-                <div className="user-avatar" style={{ background: getRoleColor(user.role) }}>
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-                <div className="user-card-actions">
-                  <button 
-                    className="action-btn edit" 
-                    title="Edit user"
-                    onClick={() => handleEditUser(user)}
-                  >
-                    ✏️
-                  </button>
-                  <button 
-                    className="action-btn delete" 
-                    title="Delete user"
-                    onClick={() => handleDeleteClick(user)}
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </div>
-              <h3 className="user-name">{user.name}</h3>
-              <p className="user-email">{user.email}</p>
-              <div className="user-meta">
-                <span 
-                  className="role-badge" 
-                  style={{ backgroundColor: getRoleColor(user.role) }}
-                >
-                  {user.role}
-                </span>
-                {user.provider === 'GOOGLE' && (
-                  <span className="provider-badge" title="Google OAuth User">
-                    🔐 Google
-                  </span>
-                )}
-                {user.phone && (
-                  <span className="user-phone">📞 {user.phone}</span>
-                )}
-              </div>
-              <div className="user-footer">
-                <span className="join-date">
-                  Joined {new Date(user.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-            </div>
-          ))}
+        <div className={`users-list-container ${loading ? 'is-loading' : ''}`}>
+          <table className="users-table">
+            <thead>
+              <tr>
+                <th className="col-user">User</th>
+                <th className="col-email">Email</th>
+                <th className="col-role">Role</th>
+                <th className="col-auth">Auth</th>
+                <th className="col-phone">Phone</th>
+                <th className="col-joined">Joined</th>
+                <th className="col-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td className="col-user">
+                    <div className="user-cell">
+                      <div className="user-avatar" style={{ background: getRoleColor(user.role) }}>
+                        {user.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="user-name">{user.name}</span>
+                    </div>
+                  </td>
+                  <td className="col-email">
+                    <span className="email-text">{user.email}</span>
+                  </td>
+                  <td className="col-role">
+                    <span
+                      className="role-badge"
+                      style={{ backgroundColor: getRoleColor(user.role) }}
+                    >
+                      {user.role}
+                    </span>
+                  </td>
+                  <td className="col-auth">
+                    {user.provider === 'GOOGLE' ? (
+                      <span className="provider-badge" title="Google OAuth User">
+                        🔐 Google
+                      </span>
+                    ) : (
+                      <span className="auth-email">Email</span>
+                    )}
+                  </td>
+                  <td className="col-phone">
+                    {user.phone ? (
+                      <span className="user-phone">{user.phone}</span>
+                    ) : (
+                      <span className="cell-empty">—</span>
+                    )}
+                  </td>
+                  <td className="col-joined">
+                    <span className="date-text">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </span>
+                  </td>
+                  <td className="col-actions">
+                    <div className="row-actions">
+                      <button
+                        className="action-btn edit"
+                        title="Edit user"
+                        onClick={() => handleEditUser(user)}
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className="action-btn delete"
+                        title="Delete user"
+                        onClick={() => handleDeleteClick(user)}
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {pagination.pages > 1 && (
+        <div className="pagination-controls">
+          <button
+            className="pagination-btn"
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1 || loading}
+          >
+            ← Previous
+          </button>
+          <div className="pagination-info">
+            Page {pagination.page} of {pagination.pages}
+          </div>
+          <button
+            className="pagination-btn"
+            onClick={() => setPage(p => Math.min(pagination.pages, p + 1))}
+            disabled={page === pagination.pages || loading}
+          >
+            Next →
+          </button>
         </div>
       )}
 

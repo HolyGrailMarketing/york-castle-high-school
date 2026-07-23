@@ -266,6 +266,22 @@
   white-space: nowrap;
 }
 
+.col-assignee {
+  width: 140px;
+}
+
+.assignee-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.assignee-unassigned {
+  font-size: 13px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
 .col-actions {
   width: 100px;
   text-align: center;
@@ -475,6 +491,40 @@
 }
 
 /* Update Section */
+.assign-section {
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.assign-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.assign-current {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.assign-controls {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.assign-controls .status-select {
+  flex: 1;
+  min-width: 200px;
+}
+
+.assign-controls .btn-primary {
+  white-space: nowrap;
+}
+
 .update-section {
   padding-top: 24px;
   border-top: 1px solid #e5e7eb;

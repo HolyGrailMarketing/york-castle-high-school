@@ -166,6 +166,9 @@ export interface Request {
   status: RequestStatus;
   userId?: string | null;
   user?: User | null;
+  assignedToId?: string | null;
+  assignedTo?: Pick<User, 'id' | 'name' | 'email'> | null;
+  assignedAt?: string | null;
   metadata?: any;
   response?: string;
   respondedAt?: string;

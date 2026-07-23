@@ -1,20 +1,28 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { apiService } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 import Modal from '../components/Modal';
-import type { Request } from '../types';
+import type { Request, User } from '../types';
 import './Requests.css';
 
 const Requests = () => {
+  const { user } = useAuth();
+  const canAssign = user?.role === 'ADMIN'; // only admins can assign requests
+  const canViewAssignees = user?.role === 'ADMIN' || user?.role === 'STAFF'; // staff can still filter by assignee
   const [requests, setRequests] = useState<Request[]>([]);
+  const [staffUsers, setStaffUsers] = useState<User[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+  const [assignedFilter, setAssignedFilter] = useState(''); // '', 'me', 'unassigned', or a staff user id
   const [searchInput, setSearchInput] = useState(''); // What user types
   const [searchQuery, setSearchQuery] = useState(''); // Debounced value for API
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [assigning, setAssigning] = useState(false);
+  const [assigneeId, setAssigneeId] = useState('');
   const [newStatus, setNewStatus] = useState('');
   const [responseText, setResponseText] = useState('');
   const [page, setPage] = useState(1);
@@ -47,7 +55,20 @@ const Requests = () => {
   // Reset to first page when filters change
   useEffect(() => {
     setPage(1);
-  }, [statusFilter, typeFilter, searchQuery]);
+  }, [statusFilter, typeFilter, assignedFilter, searchQuery]);
+
+  // Load the list of staff users once - used for the assignee dropdowns/filter.
+  useEffect(() => {
+    if (!canViewAssignees) return;
+    (async () => {
+      try {
+        const data = await apiService.getUsers({ role: 'STAFF', limit: 100 });
+        setStaffUsers(data.users);
+      } catch (error) {
+        console.error('Failed to fetch staff users:', error);
+      }
+    })();
+  }, [canViewAssignees]);
 
   // Fetch requests function
   const fetchRequests = useCallback(async () => {
@@ -61,6 +82,7 @@ const Requests = () => {
       };
       if (statusFilter) params.status = statusFilter;
       if (typeFilter) params.type = typeFilter;
+      if (assignedFilter) params.assignedTo = assignedFilter;
       if (searchQuery.trim()) params.search = searchQuery.trim();
       const data = await apiService.getRequests(params);
       setRequests(data.requests);
@@ -73,7 +95,7 @@ const Requests = () => {
       setInitialLoading(false);
       setSearching(false);
     }
-  }, [statusFilter, typeFilter, searchQuery, page, limit, initialLoading]);
+  }, [statusFilter, typeFilter, assignedFilter, searchQuery, page, limit, initialLoading]);
 
   // Fetch requests when filters or page changes
   useEffect(() => {
@@ -114,6 +136,7 @@ const Requests = () => {
     setSelectedRequest(request);
     setNewStatus(request.status);
     setResponseText(request.response || '');
+    setAssigneeId(request.assignedToId || '');
     setShowModal(true);
   };
 
@@ -122,6 +145,27 @@ const Requests = () => {
     setSelectedRequest(null);
     setNewStatus('');
     setResponseText('');
+    setAssigneeId('');
+  };
+
+  const handleAssign = async () => {
+    if (!selectedRequest) return;
+
+    setAssigning(true);
+    try {
+      const { request } = await apiService.assignRequest(
+        selectedRequest.id,
+        assigneeId || null
+      );
+      // Keep the open modal and the list in sync with the new assignee.
+      setSelectedRequest(request);
+      setRequests((prev) => prev.map((r) => (r.id === request.id ? request : r)));
+    } catch (error) {
+      console.error('Failed to assign request:', error);
+      alert('Failed to assign request');
+    } finally {
+      setAssigning(false);
+    }
   };
 
   const handleUpdateStatus = async () => {
@@ -276,6 +320,20 @@ const Requests = () => {
             <option value="COMPLETED">Completed</option>
             <option value="REJECTED">Rejected</option>
           </select>
+          {canViewAssignees && (
+            <select
+              value={assignedFilter}
+              onChange={(e) => setAssignedFilter(e.target.value)}
+              className="filter-select"
+            >
+              <option value="">All Assignees</option>
+              <option value="me">Assigned to me</option>
+              <option value="unassigned">Unassigned</option>
+              {staffUsers.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
 
@@ -315,7 +373,7 @@ const Requests = () => {
                 <th className="col-email">Email</th>
                 <th className="col-date">Date</th>
                 <th className="col-status">Status</th>
-                <th className="col-actions">Actions</th>
+                <th className="col-assignee">Assigned To</th>
               </tr>
             </thead>
             <tbody>
@@ -347,13 +405,12 @@ const Requests = () => {
                       {req.status.replace('_', ' ')}
                     </span>
                   </td>
-                  <td className="col-actions">
-                    <button 
-                      className="action-btn view-btn"
-                      onClick={(e) => { e.stopPropagation(); handleViewRequest(req); }}
-                    >
-                      View
-                    </button>
+                  <td className="col-assignee">
+                    {req.assignedTo ? (
+                      <span className="assignee-name">{req.assignedTo.name}</span>
+                    ) : (
+                      <span className="assignee-unassigned">Unassigned</span>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -448,6 +505,38 @@ const Requests = () => {
               <div className="previous-response">
                 <h4>Previous Response</h4>
                 <p>{selectedRequest.response}</p>
+              </div>
+            )}
+
+            {/* Assignment Section */}
+            {canAssign && (
+              <div className="assign-section">
+                <h4>Assign Request</h4>
+                <p className="assign-current">
+                  {selectedRequest.assignedTo
+                    ? <>Currently assigned to <strong>{selectedRequest.assignedTo.name}</strong></>
+                    : 'This request is not assigned to anyone.'}
+                </p>
+                <div className="assign-controls">
+                  <select
+                    value={assigneeId}
+                    onChange={(e) => setAssigneeId(e.target.value)}
+                    className="status-select"
+                    disabled={assigning}
+                  >
+                    <option value="">Unassigned</option>
+                    {staffUsers.map((s) => (
+                      <option key={s.id} value={s.id}>{s.name} ({s.email})</option>
+                    ))}
+                  </select>
+                  <button
+                    className="btn-primary"
+                    onClick={handleAssign}
+                    disabled={assigning || (assigneeId || '') === (selectedRequest.assignedToId || '')}
+                  >
+                    {assigning ? 'Saving...' : 'Save Assignment'}
+                  </button>
+                </div>
               </div>
             )}
 

@@ -133,6 +133,11 @@ export const getNotificationRecipients = async (flagField) => {
   return recipients.length ? recipients : REQUEST_NOTIFICATION_EMAIL;
 };
 
+export const sendRequestAssignmentNotification = async (email, details) => {
+  const template = templates.requestAssignment(details);
+  await sendEmail(email, template.subject, template.text, template.html);
+};
+
 export const sendRequestConfirmationEmail = async (email, name, requestType, requestId) => {
   const template = templates.requestConfirmation(name, requestType, requestId);
   await sendEmail(email, template.subject, template.text, template.html);

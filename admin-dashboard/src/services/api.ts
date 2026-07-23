@@ -225,6 +225,10 @@ class ApiService {
     return this.request<{ request: Request }>('PUT', `/requests/${id}/status`, { status, response });
   }
 
+  async assignRequest(id: string, assignedToId: string | null) {
+    return this.request<{ request: Request }>('PUT', `/requests/${id}/assign`, { assignedToId });
+  }
+
   async deleteRequest(id: string) {
     return this.request('DELETE', `/requests/${id}`);
   }

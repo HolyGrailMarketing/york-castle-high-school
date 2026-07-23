@@ -1,7 +1,39 @@
 import prisma from '../utils/prisma.js';
 import logger from '../utils/logger.js';
 import { getBaseUrl } from '../utils/helpers.js';
-import { sendAdminRequestNotification, getNotificationRecipients, isEmailConfigured } from '../services/emailService.js';
+import { sendAdminRequestNotification, sendRequestAssignmentNotification, getNotificationRecipients, isEmailConfigured } from '../services/emailService.js';
+
+// Field selection reused across request queries. Includes the assigned staff
+// member so the admin dashboard can show and filter by assignee.
+const requestSelect = {
+  id: true,
+  type: true,
+  title: true,
+  description: true,
+  status: true,
+  metadata: true,
+  response: true,
+  createdAt: true,
+  updatedAt: true,
+  respondedAt: true,
+  userId: true,
+  assignedToId: true,
+  assignedAt: true,
+  user: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+  },
+  assignedTo: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+  },
+};
 
 // Pull a human-friendly requester name/contact out of a request's metadata or linked user.
 const extractRequester = (request) => {
@@ -43,7 +75,7 @@ const notifyAdminOfNewRequest = async (req, request) => {
 
 export const getRequests = async (req, res, next) => {
   try {
-    const { type, status, page = 1, limit = 20, search } = req.query;
+    const { type, status, page = 1, limit = 20, search, assignedTo } = req.query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     let where = {};
@@ -54,16 +86,29 @@ export const getRequests = async (req, res, next) => {
       where.userId = req.user?.id;
     }
     // Admin/staff see all requests - no userId filter needed (can be null for public requests)
-    
-    logger.info('Fetching requests', { 
-      userRole: req.user?.role, 
+
+    logger.info('Fetching requests', {
+      userRole: req.user?.role,
       userId: req.user?.id,
-      filters: { type, status, search },
+      filters: { type, status, search, assignedTo },
       isAdmin: ['ADMIN', 'STAFF'].includes(req.user?.role)
     });
 
     if (type) where.type = type;
     if (status) where.status = status;
+
+    // Filter by assignee. 'me' resolves to the current user so staff can see the
+    // requests assigned to them; 'unassigned' finds requests with no assignee;
+    // otherwise treat the value as a specific staff user id.
+    if (assignedTo) {
+      if (assignedTo === 'me') {
+        where.assignedToId = req.user?.id;
+      } else if (assignedTo === 'unassigned') {
+        where.assignedToId = null;
+      } else {
+        where.assignedToId = assignedTo;
+      }
+    }
 
     // Add search functionality using PostgreSQL JSONB operators
     if (search && search.trim()) {
@@ -106,26 +151,7 @@ export const getRequests = async (req, res, next) => {
         where,
         skip,
         take: parseInt(limit),
-        select: {
-          id: true,
-          type: true,
-          title: true,
-          description: true,
-          status: true,
-          metadata: true, // Include metadata for frontend display
-          response: true, // Include response for display
-          createdAt: true,
-          updatedAt: true,
-          respondedAt: true,
-          userId: true,
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
+        select: requestSelect,
         orderBy: { createdAt: 'desc' },
       }),
       prisma.request.count({ where }),
@@ -159,26 +185,7 @@ export const getRequest = async (req, res, next) => {
 
     const request = await prisma.request.findUnique({
       where: { id },
-      select: {
-        id: true,
-        type: true,
-        title: true,
-        description: true,
-        status: true,
-        metadata: true,
-        response: true,
-        createdAt: true,
-        updatedAt: true,
-        respondedAt: true,
-        userId: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
+      select: requestSelect,
     });
 
     if (!request) {
@@ -250,30 +257,95 @@ export const updateRequestStatus = async (req, res, next) => {
         response,
         respondedAt: new Date(),
       },
-      select: {
-        id: true,
-        type: true,
-        title: true,
-        description: true,
-        status: true,
-        metadata: true,
-        response: true,
-        createdAt: true,
-        updatedAt: true,
-        respondedAt: true,
-        userId: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
+      select: requestSelect,
     });
 
     res.json({
       message: 'Request status updated successfully',
+      request,
+    });
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Request not found' });
+    }
+    next(error);
+  }
+};
+
+// Notify a staff member that a request has been assigned to them. Failures are
+// logged, never thrown, so an email problem can't fail the assignment itself.
+const notifyStaffOfAssignment = async (req, request, staff, assignedByName) => {
+  if (!staff?.email) return;
+  if (!isEmailConfigured()) {
+    logger.warn('Skipping assignment notification - email service not configured', { requestId: request.id });
+    return;
+  }
+  try {
+    const { name, email, phone } = extractRequester(request);
+    const requestUrl = `${getBaseUrl(req)}/admin/requests?view=${request.id}`;
+    await sendRequestAssignmentNotification(staff.email, {
+      staffName: staff.name,
+      requestType: request.metadata?.requestType || request.title || request.type,
+      requesterName: name,
+      requesterEmail: email,
+      requesterPhone: phone,
+      assignedByName,
+      requestId: request.id,
+      requestUrl,
+      submittedAt: request.createdAt,
+    });
+    logger.info('Assignment notification sent to staff', { requestId: request.id, staffEmail: staff.email });
+  } catch (error) {
+    logger.error('Failed to send assignment notification', { requestId: request.id, error: error.message });
+  }
+};
+
+// Assign (or unassign) a request to a staff member. Admin/staff only.
+export const assignRequest = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { assignedToId } = req.body;
+
+    const existing = await prisma.request.findUnique({
+      where: { id },
+      select: { id: true, assignedToId: true },
+    });
+    if (!existing) {
+      return res.status(404).json({ error: 'Request not found' });
+    }
+
+    // Validate the target user (when assigning) is a staff member.
+    let staff = null;
+    if (assignedToId) {
+      staff = await prisma.user.findUnique({
+        where: { id: assignedToId },
+        select: { id: true, name: true, email: true, role: true },
+      });
+      if (!staff) {
+        return res.status(404).json({ error: 'Assignee not found' });
+      }
+      if (staff.role !== 'STAFF') {
+        return res.status(400).json({ error: 'Requests can only be assigned to users with the staff role' });
+      }
+    }
+
+    const request = await prisma.request.update({
+      where: { id },
+      data: {
+        assignedToId: assignedToId || null,
+        assignedAt: assignedToId ? new Date() : null,
+      },
+      select: requestSelect,
+    });
+
+    // Only email when the assignee actually changed to a (new) staff member,
+    // so re-saving the same assignee or unassigning doesn't send a notice.
+    if (assignedToId && assignedToId !== existing.assignedToId) {
+      await notifyStaffOfAssignment(req, request, staff, req.user?.name);
+    }
+
+    res.json({
+      message: assignedToId ? 'Request assigned successfully' : 'Request unassigned successfully',
       request,
     });
   } catch (error) {
