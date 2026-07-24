@@ -145,6 +145,23 @@
     .field textarea:focus, .field select:focus { border-color: #d4af37; }
     .field input:disabled { background: #f9fafb; color: #9ca3af; cursor: not-allowed; }
     .field-hint { font: 400 12px/1.4 -apple-system,sans-serif; color: #9ca3af; margin: 6px 0 0; }
+    .csec-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+    .csec-row .field { margin-bottom: 0; }
+    .csec-subject { flex: 1; }
+    .csec-grade { flex: none; width: 108px; }
+    .csec-remove {
+      flex: none; width: 44px; height: 46px; border: 1.5px solid #e5e7eb; border-radius: 10px;
+      background: #fff; color: #9ca3af; font-size: 22px; line-height: 1; cursor: pointer;
+      transition: border-color .15s, color .15s, background .15s;
+    }
+    .csec-remove:hover { border-color: #fca5a5; color: #dc2626; background: #fef2f2; }
+    .csec-remove:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-add-subject {
+      font: 600 13px/1 -apple-system,sans-serif; color: #1a1a2e;
+      background: #f9fafb; border: 1.5px dashed #d1d5db; border-radius: 10px;
+      padding: 11px 16px; cursor: pointer; transition: border-color .15s, background .15s;
+    }
+    .btn-add-subject:hover { border-color: #d4af37; background: #fffdf5; }
     .field-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0 16px; }
     .section-heading { font: 700 13px/1 -apple-system,sans-serif; color: #1a1a2e; text-transform: uppercase; letter-spacing: .5px; margin: 28px 0 14px; padding-top: 18px; border-top: 1px solid #f3f4f6; }
     .section-heading:first-of-type { margin-top: 8px; padding-top: 0; border-top: none; }
@@ -205,6 +222,17 @@
       margin-bottom: 4px;
     }
     .detail-item-value { font: 400 14px/1.4 -apple-system,sans-serif; color: #1a1a1a; }
+
+    .csec-item {
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      padding: 10px 0; border-bottom: 1px solid #f3f4f6;
+      font: 400 14px/1.4 -apple-system,sans-serif; color: #1a1a1a;
+    }
+    .csec-item:last-child { border-bottom: none; }
+    .csec-item-grade {
+      font-weight: 700; color: #1a1a2e; background: #f9fafb;
+      border: 1px solid #e5e7eb; border-radius: 8px; padding: 3px 12px; white-space: nowrap;
+    }
 
     .notes-card {
       background: #f8fafc; border: 1px solid #e2e8f0;
@@ -344,6 +372,12 @@
         <div class="details-grid" id="details-grid"></div>
       </div>
 
+      <!-- CSEC results -->
+      <div class="card details-card hidden" id="csec-card">
+        <h3>CSEC Results</h3>
+        <div id="csec-body"></div>
+      </div>
+
       <!-- Notes from admissions -->
       <div class="notes-card hidden" id="notes-card">
         <h3>Message from Admissions</h3>
@@ -446,6 +480,13 @@
           <div class="field">
             <label for="e-positionsHeld">Positions held / achievements</label>
             <textarea id="e-positionsHeld" name="positionsHeld" rows="3"></textarea>
+          </div>
+          <div class="field">
+            <label>CSEC results</label>
+            <p class="field-hint" style="margin:0 0 10px;">Add every subject you have sat or are sitting, with its grade.</p>
+            <div id="csec-list"></div>
+            <button type="button" class="btn-add-subject" id="add-csec-btn">+ Add subject</button>
+            <datalist id="csec-subject-options"></datalist>
           </div>
           <div class="field-row">
             <div class="field">
@@ -575,6 +616,10 @@
       return new Date(iso).toLocaleDateString('en-JM', { day: 'numeric', month: 'long', year: 'numeric' });
     }
 
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+
     let currentApp = null;
     const EDITABLE_STATUSES = ['PENDING', 'UNDER_REVIEW'];
 
@@ -660,6 +705,18 @@
         </div>
       `).join('');
 
+      // CSEC results (own full-width block so the list can breathe)
+      const csec = Array.isArray(app.csecResults) ? app.csecResults.filter(r => r && r.subject) : [];
+      const csecCard = document.getElementById('csec-card');
+      if (csec.length) {
+        document.getElementById('csec-body').innerHTML = csec.map(r =>
+          `<div class="csec-item"><span>${esc(r.subject)}</span><span class="csec-item-grade">${r.grade ? esc(String(r.grade)) : '—'}</span></div>`
+        ).join('');
+        csecCard.classList.remove('hidden');
+      } else {
+        csecCard.classList.add('hidden');
+      }
+
       // Notes
       if (app.notes) {
         document.getElementById('notes-text').textContent = app.notes;
@@ -687,6 +744,90 @@
       document.getElementById(id).value = value == null ? '' : value;
     }
 
+    // --- CSEC results (dynamic list) ---
+    // Mirrors the subject / grade options offered by the sixth-form application form.
+    const CSEC_SUBJECT_OPTIONS = [
+      'English A','English B','Mathematics','Principles of Accounts',
+      'Principles of Business','Human & Social Biology','Biology','Chemistry',
+      'Physics','Agricultural Science','Geography','History','Social Studies',
+      'Information Technology','Office Administration','Visual Arts','Music',
+      'Physical Education','Spanish','French','Religious Education','Economics',
+      'Technical Drawing','Food & Nutrition','Home Economics',
+    ];
+    const CSEC_GRADE_OPTIONS = ['1','2','3','4','5','6','P','Sitting'];
+
+    const csecList = document.getElementById('csec-list');
+    const addCsecBtn = document.getElementById('add-csec-btn');
+
+    // Populate the shared subject datalist once
+    document.getElementById('csec-subject-options').innerHTML =
+      CSEC_SUBJECT_OPTIONS.map(s => `<option value="${esc(s)}"></option>`).join('');
+
+    function refreshCsecRows() {
+      const rows = csecList.querySelectorAll('.csec-row');
+      // Keep at least one row; disable the lone remove button
+      rows.forEach(row => { row.querySelector('.csec-remove').disabled = rows.length <= 1; });
+    }
+
+    function addCsecRow(subject, grade) {
+      const row = document.createElement('div');
+      row.className = 'csec-row';
+
+      const subjectField = document.createElement('div');
+      subjectField.className = 'field csec-subject';
+      const subInput = document.createElement('input');
+      subInput.type = 'text';
+      subInput.setAttribute('list', 'csec-subject-options');
+      subInput.placeholder = 'Subject';
+      subInput.value = subject || '';
+      subjectField.appendChild(subInput);
+
+      const gradeField = document.createElement('div');
+      gradeField.className = 'field csec-grade';
+      const gradeSelect = document.createElement('select');
+      gradeSelect.innerHTML = '<option value="">Grade</option>' +
+        CSEC_GRADE_OPTIONS.map(g => `<option value="${g}">${g}</option>`).join('');
+      gradeSelect.value = grade || '';
+      gradeField.appendChild(gradeSelect);
+
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'csec-remove';
+      remove.setAttribute('aria-label', 'Remove subject');
+      remove.textContent = '×';
+      remove.addEventListener('click', function() { row.remove(); refreshCsecRows(); });
+
+      row.appendChild(subjectField);
+      row.appendChild(gradeField);
+      row.appendChild(remove);
+      csecList.appendChild(row);
+      refreshCsecRows();
+      return subInput;
+    }
+
+    function renderCsecResults(results) {
+      csecList.innerHTML = '';
+      const list = Array.isArray(results) ? results : [];
+      if (list.length === 0) {
+        addCsecRow('', '');
+      } else {
+        list.forEach(r => addCsecRow(r && r.subject, r && r.grade));
+      }
+    }
+
+    // Only keep fully filled rows (both subject and grade), matching the app form
+    function collectCsecResults() {
+      return Array.from(csecList.querySelectorAll('.csec-row')).map(row => ({
+        subject: row.querySelector('input').value.trim(),
+        grade: row.querySelector('select').value,
+      })).filter(r => r.subject && r.grade);
+    }
+
+    addCsecBtn.addEventListener('click', function() {
+      const input = addCsecRow('', '');
+      if (input) input.focus();
+    });
+
     function renderEditForm(app) {
       const choices = app.subjectChoices || {};
       const guardian = app.guardianInfo || {};
@@ -707,6 +848,7 @@
       setVal('e-guardianPhone', guardian.phone);
       setVal('e-previousSchool', app.previousSchool);
       setVal('e-positionsHeld', app.positionsHeld);
+      renderCsecResults(app.csecResults);
       setVal('e-firstChoice', choices.firstChoice);
       setVal('e-secondChoice', choices.secondChoice);
       setVal('e-careerGoals', app.careerGoals);
@@ -763,6 +905,7 @@
         reasonForAttending: v('e-reasonForAttending'),
         subjectChoices,
         guardianInfo,
+        csecResults: collectCsecResults(),
       };
 
       try {
