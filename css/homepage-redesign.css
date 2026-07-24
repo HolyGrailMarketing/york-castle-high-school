@@ -1779,6 +1779,11 @@ html, body {
     max-width: 100%;
   }
 
+  /* Hide the email address on mobile — keep the phone number only */
+  .top-bar-link[href^="mailto"] {
+    display: none !important;
+  }
+
   .top-bar-link span:last-child {
     overflow: hidden;
     text-overflow: ellipsis;
