@@ -44,6 +44,7 @@ try {
       cache.clear();
       return true;
     },
+    keys: () => Array.from(cache.keys()),
     getStats: () => ({
       keys: cache.size,
       hits: 0,
@@ -132,6 +133,25 @@ export const deleteCache = (key) => {
 };
 
 /**
+ * Delete every cache entry whose key starts with one of the given prefixes.
+ * Needed because responseCache builds keys from query params, so a single
+ * resource maps to many keys.
+ */
+export const deleteCacheByPrefix = (...prefixes) => {
+  try {
+    const keys = memoryCache.keys().filter((key) =>
+      prefixes.some((prefix) => key.startsWith(prefix))
+    );
+    keys.forEach((key) => memoryCache.del(key));
+    logger.debug('Cache prefix invalidated', { prefixes, count: keys.length });
+    return keys.length;
+  } catch (error) {
+    logger.error('Cache prefix delete error', { error: error.message, prefixes });
+    return 0;
+  }
+};
+
+/**
  * Clear all cache
  */
 export const clearCache = () => {
@@ -187,7 +207,10 @@ export const setBlogPostsCache = (posts, published = true) => {
 };
 
 export const invalidateBlogPostsCache = () => {
-  return deleteCache(CACHE_KEYS.blogPosts(true)) && deleteCache(CACHE_KEYS.blogPosts(false));
+  deleteCache(CACHE_KEYS.blogPosts(true));
+  deleteCache(CACHE_KEYS.blogPosts(false));
+  // Also drop the cached HTTP responses served by routes/blog.js
+  return deleteCacheByPrefix('blog_posts_', 'blog_post_');
 };
 
 /**
@@ -202,7 +225,10 @@ export const setEventsCache = (events, publicOnly = true) => {
 };
 
 export const invalidateEventsCache = () => {
-  return deleteCache(CACHE_KEYS.events(true)) && deleteCache(CACHE_KEYS.events(false));
+  deleteCache(CACHE_KEYS.events(true));
+  deleteCache(CACHE_KEYS.events(false));
+  // Also drop the cached HTTP responses served by routes/events.js
+  return deleteCacheByPrefix('events_list_', 'event_');
 };
 
 /**
@@ -294,6 +320,7 @@ export default {
   get: getCache,
   set: setCache,
   delete: deleteCache,
+  deleteByPrefix: deleteCacheByPrefix,
   clear: clearCache,
   stats: getCacheStats,
   setCacheHeaders,

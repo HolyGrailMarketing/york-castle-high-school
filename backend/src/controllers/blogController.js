@@ -1,5 +1,6 @@
 import prisma from '../utils/prisma.js';
 import { slugify } from '../utils/helpers.js';
+import { invalidateBlogPostsCache } from '../services/cacheService.js';
 
 export const getBlogPosts = async (req, res, next) => {
   try {
@@ -101,7 +102,9 @@ export const getBlogPost = async (req, res, next) => {
 
 export const createBlogPost = async (req, res, next) => {
   try {
-    const { title, content, excerpt, featuredImage } = req.body;
+    const { title, content, excerpt, featuredImage, published } = req.body;
+
+    const isPublished = published === true || published === 'true';
 
     const slug = slugify(title);
 
@@ -121,6 +124,8 @@ export const createBlogPost = async (req, res, next) => {
         content,
         excerpt,
         featuredImage,
+        published: isPublished,
+        publishedAt: isPublished ? new Date() : null,
         authorId: req.user.id,
       },
       include: {
@@ -134,6 +139,8 @@ export const createBlogPost = async (req, res, next) => {
       },
     });
 
+    invalidateBlogPostsCache();
+
     res.status(201).json({
       message: 'Blog post created successfully',
       post,
@@ -146,16 +153,36 @@ export const createBlogPost = async (req, res, next) => {
 export const updateBlogPost = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { title, content, excerpt, featuredImage } = req.body;
+    const { title, content, excerpt, featuredImage, published } = req.body;
+
+    const existing = await prisma.blogPost.findUnique({
+      where: { id },
+      select: { published: true, publishedAt: true, slug: true },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Blog post not found' });
+    }
 
     const updateData = {};
     if (title) {
       updateData.title = title;
-      updateData.slug = slugify(title);
+      // Renaming a live post would break its public URL and any inbound
+      // links, so the slug is only regenerated while it is still a draft.
+      if (!existing.published) updateData.slug = slugify(title);
     }
     if (content !== undefined) updateData.content = content;
     if (excerpt !== undefined) updateData.excerpt = excerpt;
     if (featuredImage !== undefined) updateData.featuredImage = featuredImage;
+
+    if (published !== undefined) {
+      const isPublished = published === true || published === 'true';
+      updateData.published = isPublished;
+      // Keep the original publication date when re-saving a live post.
+      updateData.publishedAt = isPublished
+        ? (existing.publishedAt || new Date())
+        : null;
+    }
 
     const post = await prisma.blogPost.update({
       where: { id },
@@ -170,6 +197,8 @@ export const updateBlogPost = async (req, res, next) => {
         },
       },
     });
+
+    invalidateBlogPostsCache();
 
     res.json({
       message: 'Blog post updated successfully',
@@ -190,6 +219,8 @@ export const deleteBlogPost = async (req, res, next) => {
     await prisma.blogPost.delete({
       where: { id },
     });
+
+    invalidateBlogPostsCache();
 
     res.json({ message: 'Blog post deleted successfully' });
   } catch (error) {
@@ -221,6 +252,8 @@ export const publishBlogPost = async (req, res, next) => {
         },
       },
     });
+
+    invalidateBlogPostsCache();
 
     res.json({
       message: `Blog post ${published ? 'published' : 'unpublished'} successfully`,

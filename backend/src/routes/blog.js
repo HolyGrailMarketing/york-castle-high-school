@@ -7,19 +7,26 @@ import {
   deleteBlogPost,
   publishBlogPost,
 } from '../controllers/blogController.js';
-import { authenticate, authorize } from '../middleware/auth.js';
+import { authenticate, authorize, optionalAuth } from '../middleware/auth.js';
 import { responseCache } from '../middleware/cacheMiddleware.js';
 
 const router = express.Router();
 
+// Signed-in staff see unpublished drafts and expect their own edits back
+// immediately, so their responses are never cached.
+const isAnonymous = (req) => !req.user;
+
 // Public routes with caching
-router.get('/', responseCache({
-  ttl: 1800, // 30 minutes for blog posts list
-  keyGenerator: (req) => `blog_posts_${req.query.published !== 'false'}_${req.query.search || ''}_${req.query.page || 1}`
+router.get('/', optionalAuth, responseCache({
+  ttl: 300, // 5 minutes - also the browser max-age, so new posts appear promptly
+  condition: isAnonymous,
+  keyGenerator: (req) =>
+    `blog_posts_${req.query.published || ''}_${req.query.search || ''}_${req.query.page || 1}_${req.query.limit || 20}`
 }), getBlogPosts);
 
-router.get('/:id', responseCache({
-  ttl: 3600, // 1 hour for individual blog posts
+router.get('/:id', optionalAuth, responseCache({
+  ttl: 300, // 5 minutes for individual blog posts
+  condition: isAnonymous,
   keyGenerator: (req) => `blog_post_${req.params.id}`
 }), getBlogPost);
 

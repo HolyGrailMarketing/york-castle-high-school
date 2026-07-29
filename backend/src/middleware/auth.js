@@ -40,6 +40,37 @@ export const authenticate = async (req, res, next) => {
   }
 };
 
+// Populates req.user when a valid token is present, but never rejects the
+// request. Used on public routes that show extra data to admins/staff.
+export const optionalAuth = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(authHeader.substring(7), process.env.JWT_SECRET);
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+
+    if (user) req.user = user;
+  } catch (error) {
+    // Invalid or expired token - fall through as an anonymous visitor
+  }
+
+  next();
+};
+
 export const authorize = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {

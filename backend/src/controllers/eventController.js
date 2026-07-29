@@ -1,4 +1,5 @@
 import prisma from '../utils/prisma.js';
+import { invalidateEventsCache } from '../services/cacheService.js';
 
 export const getEvents = async (req, res, next) => {
   try {
@@ -120,6 +121,8 @@ export const createEvent = async (req, res, next) => {
       },
     });
 
+    invalidateEventsCache();
+
     res.status(201).json({
       message: 'Event created successfully',
       event,
@@ -157,6 +160,8 @@ export const updateEvent = async (req, res, next) => {
       },
     });
 
+    invalidateEventsCache();
+
     res.json({
       message: 'Event updated successfully',
       event,
@@ -176,6 +181,8 @@ export const deleteEvent = async (req, res, next) => {
     await prisma.event.delete({
       where: { id },
     });
+
+    invalidateEventsCache();
 
     res.json({ message: 'Event deleted successfully' });
   } catch (error) {
