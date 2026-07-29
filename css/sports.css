@@ -1,0 +1,365 @@
+/* ==========================================================================
+   York Castle High School - Sports and Extra-Curricular Activities
+
+   Loads after css/homepage-redesign.css and relies on its :root tokens.
+   ========================================================================== */
+
+/* The modern header is position:absolute so it can overlay the homepage hero.
+   The hero below sits behind it, so here it keeps that behaviour. */
+
+/* --- Hero ----------------------------------------------------------------- */
+
+.sports-hero {
+  position: relative;
+  min-height: 460px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  background: var(--ychs-charcoal);
+}
+
+.sports-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 40%;
+}
+
+.sports-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(transparent 15%, rgba(0, 0, 0, 0.88));
+}
+
+.sports-hero-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-xl) var(--spacing-lg);
+  color: var(--ychs-white);
+  text-align: center;
+}
+
+.sports-hero .section-eyebrow {
+  color: var(--ychs-gold);
+  justify-content: center;
+}
+
+.sports-hero .section-eyebrow::after {
+  content: '';
+  width: 40px;
+  height: 2px;
+  background: var(--ychs-gold);
+}
+
+.sports-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  line-height: 1.15;
+  margin: 0 0 var(--spacing-sm);
+  color: var(--ychs-white);
+  max-width: 18ch;
+  margin-inline: auto;
+}
+
+.sports-hero p {
+  margin: 0;
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 62ch;
+  margin-inline: auto;
+}
+
+/* --- Intro + aims --------------------------------------------------------- */
+
+.sports-intro {
+  background: var(--ychs-white);
+  padding: var(--spacing-2xl) var(--spacing-lg);
+}
+
+.sports-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.sports-intro-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: var(--spacing-xl);
+  align-items: start;
+}
+
+/* Headings centre; running text and card contents stay left-aligned. */
+.sports-intro p,
+.sports-aims,
+.sport-card-body {
+  text-align: left;
+}
+
+.sports-intro p {
+  font-size: 1.125rem;
+  line-height: 1.75;
+  color: var(--ychs-charcoal);
+  margin: 0 0 var(--spacing-md);
+  max-width: 62ch;
+}
+
+.sports-intro p:last-child {
+  margin-bottom: 0;
+}
+
+/* The aims were a single paragraph separated by <br>; they are a list. */
+.sports-aims {
+  background: var(--ychs-cream);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+}
+
+.sports-aims h2 {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  color: var(--ychs-charcoal);
+  margin: 0 0 var(--spacing-md);
+}
+
+.sports-aims ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.sports-aims li {
+  position: relative;
+  padding-left: 1.75rem;
+  line-height: 1.6;
+  color: var(--ychs-dark-gray);
+}
+
+.sports-aims li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ychs-gold);
+}
+
+/* --- Activity grid -------------------------------------------------------- */
+
+.sports-grid-section {
+  background: var(--ychs-cream);
+  padding: var(--spacing-2xl) var(--spacing-lg);
+}
+
+.sports-grid-section .section-header .section-eyebrow,
+.sports-news .section-header .section-eyebrow {
+  color: var(--ychs-gold-dark);
+}
+
+.sports-grid-section .section-header h2,
+.sports-news .section-header h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  color: var(--ychs-charcoal);
+  margin: 0 0 var(--spacing-sm);
+}
+
+.sports-grid-section .section-header p,
+.sports-news .section-header p {
+  color: var(--ychs-gray);
+}
+
+/* One grid for every activity, rather than three hand-split rows. */
+.sports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.sport-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--ychs-white);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-medium);
+  height: 100%;
+}
+
+.sport-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.sport-card-media {
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--ychs-light-gray);
+}
+
+.sport-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform var(--transition-slow);
+}
+
+.sport-card:hover .sport-card-media img {
+  transform: scale(1.04);
+}
+
+/* Used where no usable photograph exists yet. */
+.sport-card-media.is-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--ychs-charcoal), var(--ychs-dark-gray));
+}
+
+.sport-card-media.is-placeholder img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  opacity: 0.35;
+  transform: none;
+}
+
+.sport-card:hover .sport-card-media.is-placeholder img {
+  transform: none;
+}
+
+.sport-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-md);
+}
+
+.sport-card-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  line-height: 1.3;
+  color: var(--ychs-charcoal);
+  margin: 0;
+}
+
+.sport-card-desc {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--ychs-gray);
+  margin: 0;
+}
+
+/* --- Parents callout ------------------------------------------------------ */
+
+.sports-callout {
+  background: var(--ychs-charcoal);
+  padding: var(--spacing-2xl) var(--spacing-lg);
+  color: var(--ychs-white);
+}
+
+.sports-callout-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  gap: var(--spacing-lg);
+  align-items: flex-start;
+}
+
+.sports-callout-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--ychs-gold);
+  color: var(--ychs-black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sports-callout-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.sports-callout h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  margin: 0 0 var(--spacing-sm);
+  color: var(--ychs-white);
+}
+
+.sports-callout p {
+  margin: 0;
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* --- News strip ----------------------------------------------------------- */
+
+.sports-news {
+  background: var(--ychs-white);
+  padding: var(--spacing-2xl) var(--spacing-lg);
+}
+
+/* --- Responsive ----------------------------------------------------------- */
+
+@media (max-width: 1024px) {
+  .sports-intro-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+}
+
+@media (max-width: 768px) {
+  .sports-hero {
+    min-height: 360px;
+  }
+
+  .sports-hero-inner,
+  .sports-intro,
+  .sports-grid-section,
+  .sports-callout,
+  .sports-news {
+    padding-left: var(--spacing-md);
+    padding-right: var(--spacing-md);
+  }
+
+  .sports-intro,
+  .sports-grid-section,
+  .sports-callout,
+  .sports-news {
+    padding-top: var(--spacing-xl);
+    padding-bottom: var(--spacing-xl);
+  }
+
+  .sports-callout-inner {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .sports-hero {
+    min-height: 300px;
+  }
+
+  .sports-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+}

@@ -1,0 +1,375 @@
+/* ==========================================================================
+   York Castle High School - About YC
+   principals-message.html, history.html, mission-and-vision.html,
+   school-song.html
+
+   Loads after css/homepage-redesign.css and relies on its :root tokens.
+   ========================================================================== */
+
+.site-header.static-header {
+  position: static !important;
+}
+
+/* --- Page head ------------------------------------------------------------ */
+
+.about-head {
+  background: var(--ychs-charcoal);
+  color: var(--ychs-white);
+  padding: var(--spacing-2xl) var(--spacing-lg) var(--spacing-xl);
+  position: relative;
+  overflow: hidden;
+}
+
+.about-head::after {
+  content: '';
+  position: absolute;
+  right: -80px;
+  top: -120px;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: var(--ychs-gold);
+  opacity: 0.07;
+}
+
+.aboutyc-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.about-head .aboutyc-container {
+  text-align: center;
+}
+
+.about-head .section-eyebrow {
+  color: var(--ychs-gold);
+  justify-content: center;
+}
+
+.about-head .section-eyebrow::after {
+  content: '';
+  width: 40px;
+  height: 2px;
+  background: var(--ychs-gold);
+}
+
+.about-head h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  line-height: 1.15;
+  margin: 0;
+  color: var(--ychs-white);
+}
+
+.about-motto {
+  margin: var(--spacing-sm) 0 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--ychs-gold-light);
+}
+
+/* --- Body ----------------------------------------------------------------- */
+
+.about-body {
+  background: var(--ychs-white);
+  padding: var(--spacing-2xl) var(--spacing-lg);
+}
+
+/* Headings centre, but running text never does - centred paragraphs are
+   markedly harder to read. */
+.about-prose,
+.statement-card,
+.value-card {
+  text-align: left;
+}
+
+.about-prose p {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: var(--ychs-charcoal);
+  margin: 0 0 var(--spacing-md);
+}
+
+.about-prose p:last-child {
+  margin-bottom: 0;
+}
+
+.about-prose a {
+  color: var(--ychs-gold-dark);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.about-prose a:hover {
+  color: var(--ychs-charcoal);
+}
+
+/* Two-column: text beside a portrait or illustration */
+.about-split {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: var(--spacing-xl);
+  align-items: start;
+}
+
+.about-figure {
+  margin: 0;
+  position: sticky;
+  top: var(--spacing-lg);
+}
+
+.about-figure img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.about-figure figcaption {
+  margin-top: var(--spacing-sm);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ychs-gray);
+}
+
+/* --- Signature ------------------------------------------------------------ */
+
+.about-signature {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-md);
+  border-top: 2px solid var(--ychs-gold);
+  display: inline-block;
+}
+
+.about-signature-name {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--ychs-charcoal);
+}
+
+.about-signature-role {
+  font-size: 0.9rem;
+  color: var(--ychs-gray);
+  margin-top: 2px;
+}
+
+/* --- Mission / vision cards ----------------------------------------------- */
+
+.about-statements {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.statement-card {
+  background: var(--ychs-cream);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  border-top: 4px solid var(--ychs-gold);
+}
+
+.statement-card h2 {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  color: var(--ychs-charcoal);
+  margin: 0 0 var(--spacing-sm);
+}
+
+.statement-card p {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--ychs-dark-gray);
+}
+
+/* --- Core values ---------------------------------------------------------- */
+
+.about-values {
+  background: var(--ychs-cream);
+  padding: var(--spacing-2xl) var(--spacing-lg);
+}
+
+.about-values .section-header .section-eyebrow {
+  color: var(--ychs-gold-dark);
+}
+
+.about-values .section-header h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  color: var(--ychs-charcoal);
+  margin: 0;
+}
+
+.values-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--spacing-md);
+  /* These were previously inline opacity:0, awaiting a scroll animation that
+     never ran, so the whole section was invisible. */
+  counter-reset: value;
+}
+
+.value-card {
+  background: var(--ychs-white);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg) var(--spacing-md) var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  transition: var(--transition-medium);
+}
+
+.value-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.value-card::before {
+  counter-increment: value;
+  content: counter(value, decimal-leading-zero);
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ychs-gold);
+  margin-bottom: var(--spacing-xs);
+  line-height: 1;
+}
+
+.value-card p {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.65;
+  color: var(--ychs-dark-gray);
+}
+
+/* --- School song ---------------------------------------------------------- */
+
+/* Two columns, so the four verses form a clean 2x2 and each card is wide
+   enough that lyric lines are not wrapped mid-phrase. */
+.song-layout {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-lg);
+}
+
+.song-verse {
+  background: var(--ychs-cream);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  border-left: 4px solid var(--ychs-gold);
+}
+
+.song-verse-number {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ychs-gold-dark);
+  display: block;
+  margin-bottom: var(--spacing-sm);
+}
+
+.song-lines {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  line-height: 1.9;
+  color: var(--ychs-charcoal);
+}
+
+.song-chorus {
+  margin-top: var(--spacing-xl);
+  background: var(--ychs-charcoal);
+  color: var(--ychs-white);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  text-align: center;
+}
+
+.song-chorus .song-verse-number {
+  color: var(--ychs-gold);
+}
+
+.song-chorus .song-lines {
+  color: var(--ychs-white);
+  font-size: 1.25rem;
+}
+
+.song-note {
+  margin: var(--spacing-md) 0 0;
+  font-size: 0.9rem;
+  color: var(--ychs-gray);
+  text-align: center;
+}
+
+/* --- News strip ----------------------------------------------------------- */
+
+.about-news {
+  background: var(--ychs-cream);
+  padding: var(--spacing-2xl) var(--spacing-lg);
+}
+
+.about-news .section-header .section-eyebrow {
+  color: var(--ychs-gold-dark);
+}
+
+.about-news .section-header h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  color: var(--ychs-charcoal);
+  margin: 0 0 var(--spacing-sm);
+}
+
+.about-news .section-header p {
+  color: var(--ychs-gray);
+  margin: 0;
+}
+
+/* --- Responsive ----------------------------------------------------------- */
+
+@media (max-width: 1024px) {
+  .about-split {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+
+  .about-figure {
+    position: static;
+    max-width: 420px;
+  }
+}
+
+@media (max-width: 768px) {
+  .about-head,
+  .about-body,
+  .about-values,
+  .about-news {
+    padding-left: var(--spacing-md);
+    padding-right: var(--spacing-md);
+  }
+
+  .about-head {
+    padding-top: var(--spacing-xl);
+    padding-bottom: var(--spacing-lg);
+  }
+
+  .about-body,
+  .about-values,
+  .about-news {
+    padding-top: var(--spacing-xl);
+    padding-bottom: var(--spacing-xl);
+  }
+
+  .about-prose p {
+    font-size: 1.0625rem;
+  }
+
+  .song-layout {
+    grid-template-columns: 1fr;
+  }
+}

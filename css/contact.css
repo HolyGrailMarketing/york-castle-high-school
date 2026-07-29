@@ -1,0 +1,423 @@
+/* ==========================================================================
+   York Castle High School - Contact Us
+
+   Loads after css/homepage-redesign.css and relies on its :root tokens.
+   ========================================================================== */
+
+.site-header.static-header {
+  position: static !important;
+}
+
+/* --- Page head ------------------------------------------------------------ */
+
+.contact-head {
+  background: var(--ychs-charcoal);
+  color: var(--ychs-white);
+  padding: var(--spacing-2xl) var(--spacing-lg) var(--spacing-xl);
+  position: relative;
+  overflow: hidden;
+}
+
+.contact-head::after {
+  content: '';
+  position: absolute;
+  right: -80px;
+  top: -120px;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: var(--ychs-gold);
+  opacity: 0.07;
+}
+
+.contact-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.contact-head .contact-container {
+  text-align: center;
+}
+
+.contact-head .section-eyebrow {
+  color: var(--ychs-gold);
+  justify-content: center;
+}
+
+.contact-head .section-eyebrow::after {
+  content: '';
+  width: 40px;
+  height: 2px;
+  background: var(--ychs-gold);
+}
+
+.contact-head h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  line-height: 1.15;
+  margin: 0;
+  color: var(--ychs-white);
+}
+
+.contact-head p {
+  margin: var(--spacing-sm) auto 0;
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 56ch;
+}
+
+/* --- Details + map -------------------------------------------------------- */
+
+.contact-details {
+  background: var(--ychs-white);
+  padding: var(--spacing-2xl) var(--spacing-lg);
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: var(--spacing-xl);
+  align-items: start;
+  text-align: left;
+}
+
+.contact-card h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--ychs-charcoal);
+  margin: 0 0 var(--spacing-md);
+}
+
+.contact-list {
+  list-style: none;
+  margin: 0 0 var(--spacing-lg);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.contact-item {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: flex-start;
+}
+
+.contact-item-icon {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: var(--ychs-cream);
+  color: var(--ychs-gold-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contact-item-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.contact-item-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--ychs-gray);
+  margin-bottom: 2px;
+}
+
+.contact-item a,
+.contact-item span.contact-item-value {
+  color: var(--ychs-charcoal);
+  font-size: 1rem;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.contact-item a:hover {
+  color: var(--ychs-gold-dark);
+  text-decoration: underline;
+}
+
+.contact-socials {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.contact-socials .contact-social {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--ychs-charcoal);
+  color: var(--ychs-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+}
+
+.contact-socials .contact-social:hover {
+  background: var(--ychs-gold);
+  color: var(--ychs-black);
+}
+
+.contact-socials .contact-social svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Map */
+
+.contact-map {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  background: var(--ychs-light-gray);
+}
+
+.contact-map iframe {
+  display: block;
+  width: 100%;
+  height: 420px;
+  border: 0;
+}
+
+.contact-map .contact-map-link {
+  display: block;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--ychs-cream);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ychs-gold-dark);
+}
+
+.contact-map .contact-map-link:hover {
+  color: var(--ychs-charcoal);
+}
+
+/* --- Form ----------------------------------------------------------------- */
+
+.contact-form-section {
+  background: var(--ychs-cream);
+  padding: var(--spacing-2xl) var(--spacing-lg);
+}
+
+.contact-form-section .section-header .section-eyebrow {
+  color: var(--ychs-gold-dark);
+}
+
+.contact-form-section .section-header h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  color: var(--ychs-charcoal);
+  margin: 0 0 var(--spacing-sm);
+}
+
+.contact-form-section .section-header p {
+  color: var(--ychs-gray);
+}
+
+.contact-form {
+  max-width: 760px;
+  margin: 0 auto;
+  background: var(--ychs-white);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--spacing-md);
+}
+
+.form-field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ychs-charcoal);
+  margin-bottom: 6px;
+}
+
+.form-field .req {
+  color: var(--ychs-gold-dark);
+}
+
+.form-field input,
+.form-field textarea {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--ychs-charcoal);
+  padding: 12px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: var(--radius-sm);
+  background: var(--ychs-white);
+  transition: var(--transition-fast);
+  width: 100%;
+}
+
+.form-field textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+.form-field input:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-color: var(--ychs-gold);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+}
+
+.form-field input:invalid:not(:placeholder-shown) {
+  border-color: #c0392b;
+}
+
+/* Consent */
+
+.consent-block {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-md);
+  background: var(--ychs-cream);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.consent-block h3 {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ychs-charcoal);
+  margin: 0 0 6px;
+}
+
+.consent-intro {
+  font-size: 0.85rem;
+  color: var(--ychs-gray);
+  margin: 0 0 var(--spacing-sm);
+  line-height: 1.5;
+}
+
+.consent-intro a {
+  color: var(--ychs-gold-dark);
+  text-decoration: underline;
+}
+
+.consent-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ychs-dark-gray);
+  cursor: pointer;
+  margin-bottom: var(--spacing-sm);
+}
+
+.consent-option:last-child {
+  margin-bottom: 0;
+}
+
+.consent-option input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  accent-color: var(--ychs-gold-dark);
+  cursor: pointer;
+}
+
+.consent-option strong {
+  color: var(--ychs-charcoal);
+}
+
+/* Submit + status */
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.form-actions button {
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+.form-actions button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.form-status {
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-md);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.form-status[hidden] {
+  display: none;
+}
+
+.form-status.is-success {
+  background: #eaf7ee;
+  border: 1px solid #a8d5b5;
+  color: #1e5b31;
+}
+
+.form-status.is-error {
+  background: #fdecea;
+  border: 1px solid #f2b8b3;
+  color: #8c2018;
+}
+
+/* --- Responsive ----------------------------------------------------------- */
+
+@media (max-width: 1024px) {
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-map iframe {
+    height: 340px;
+  }
+}
+
+@media (max-width: 768px) {
+  .contact-head,
+  .contact-details,
+  .contact-form-section {
+    padding-left: var(--spacing-md);
+    padding-right: var(--spacing-md);
+  }
+
+  .contact-details,
+  .contact-form-section {
+    padding-top: var(--spacing-xl);
+    padding-bottom: var(--spacing-xl);
+  }
+
+  .contact-form {
+    padding: var(--spacing-md);
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}

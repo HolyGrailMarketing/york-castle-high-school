@@ -12,13 +12,11 @@
   <meta content="summary_large_image" name="twitter:card">
   <meta content="width=device-width, initial-scale=1" name="viewport">
   <link href="css/normalize.css" rel="stylesheet" type="text/css">
-  <link href="css/webflow.css" rel="stylesheet" type="text/css">
-  <link href="css/york-castle-high-school.webflow.css" rel="stylesheet" type="text/css">
+  <link href="css/homepage-redesign.css?v=4" rel="stylesheet" type="text/css">
+  <link href="css/blog.css?v=1" rel="stylesheet" type="text/css">
+  <link href="css/about.css?v=1" rel="stylesheet" type="text/css">
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin="anonymous">
-  <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script>
-  <script type="text/javascript">WebFont.load({  google: {    families: ["PT Serif:400,400italic,700,700italic","Varela:400","Merriweather:300,300italic,400,400italic,700,700italic,900,900italic","Source Sans Pro:200,300,regular,italic,600,700,900"]  }});</script>
-  <script type="text/javascript">!function(o,c){var n=c.documentElement,t=" w-mod-";n.className+=t+"js",("ontouchstart"in o||o.DocumentTouch&&c instanceof DocumentTouch)&&(n.className+=t+"touch")}(window,document);</script>
   <link href="images/favicon.ico" rel="shortcut icon" type="image/x-icon">
   <link href="images/webclip.png" rel="apple-touch-icon">
   <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-X57S1L85ZP"></script>
@@ -31,162 +29,228 @@
 </head>
 <body>
   
-  <div class="header-wrapper">
-    <div role="banner" class="top-navbar w-nav">
-      <div class="w-container">
-        <nav role="navigation" class="top-nav-menu w-nav-menu">
-          <div class="contact-info-section">
-              <a href="tel:+1876975-2217" class="top-nav-link w-inline-block">
-            <div class="top-nav-title icon"></div>
-            <div class="top-nav-title">+1 876 975-2217</div>
-          </a>
-          <a href="mailto:yorkcastle.high.san@moey.gov.jm" class="top-nav-link w-inline-block">
-            <div class="top-nav-title icon"></div>
-            <div class="top-nav-title">yorkcastle.high.san@moey.gov.jm</div>
-          </a>            </div>
-            <div class="login-section">
-              <button class="user-log-in-log-out top-nav-link login-button" data-wf-user-logout="Log out" data-wf-user-login="Log in" type="button">Log out</button>
-            </div>
-        </nav>
+    <header class="site-header static-header">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <div class="top-bar-container">
+          <div class="top-bar-left">
+            <a href="tel:+1876975-2217" class="top-bar-link">
+              <span class="top-bar-icon">📞</span>
+              <span>+1 876 975-2217</span>
+            </a>
+            <span class="top-bar-divider">|</span>
+            <a href="mailto:yorkcastle.high.san@moey.gov.jm" class="top-bar-link">
+              <span class="top-bar-icon">✉</span>
+              <span>yorkcastle.high.san@moey.gov.jm</span>
+            </a>
+          </div>
+          <div class="top-bar-right">
+            <a href="signin.html" class="btn-login">Log in</a>
+          </div>
+        </div>
       </div>
-    </div>
-    <div role="banner" class="navbar principal-navbar w-nav">
-      <div class="container-23 w-container">
-        <a href="index.html" class="logo-block w-nav-brand"></a><img src="images/logo-badge.webp" width="125" alt="York Castle Logo" class="image-logo">
-        <nav role="navigation" class="nav-menu w-nav-menu">
-          <a href="index.html" class="nav-link w-nav-link">Home</a>
-          <div data-delay="0" data-hover="true" class="dropdown w-dropdown">
-            <div class="nav-link dropdown-toggle w-dropdown-toggle">
-              <div class="dropdown-icon w-icon-dropdown-toggle"></div>
-              <div>ABout YC</div>
-            </div>
-            <nav class="dropdown-list w-dropdown-list">
-              <a href="principals-message.html" aria-current="page" class="dropdown-link-2 w-dropdown-link w--current">Meet The Principal</a>
-              <a href="history.html" class="dropdown-link-2 w-dropdown-link">History</a>
-              <a href="mission-and-vision.html" class="dropdown-link-2 w-dropdown-link">Vision and Mission</a>
-              <a href="school-song.html" class="dropdown-link-2 dropdrown-end w-dropdown-link">School Song</a>
-            </nav>
-          </div>
-          <div data-delay="0" data-hover="true" class="dropdown w-dropdown">
-            <div class="nav-link dropdown-toggle w-dropdown-toggle">
-              <div class="dropdown-icon w-icon-dropdown-toggle"></div>
-              <div>Resources</div>
-            </div>
-            <nav class="dropdown-list w-dropdown-list">
-              <div class="w-layout-grid grid-3">
-                <a href="doc-request.html" class="dropdown-link-2 w-dropdown-link">General Request Form</a>
-                <a href="application-form.html" class="dropdown-link-2 w-dropdown-link">General Admission Form</a>
-                <a href="request-student-information.html" class="dropdown-link-2 w-dropdown-link">Request Student Information</a>
-                <a href="sixth-form-application.html" class="dropdown-link-2 w-dropdown-link">Sixth Form Application</a><a href="application-status.html" class="dropdown-link-2 w-dropdown-link">Check Application Status</a>
-                <a href="info-on-colleges.html" class="dropdown-link-2 w-dropdown-link">Information on Colleges</a>
-                <a href="teachers.html" class="dropdown-link-2 w-dropdown-link">Staff Directory</a>
-                <a href="#" class="dropdown-link-2 dropdrown-end w-dropdown-link">Student Handbook</a>
-              </div>
-            </nav>
-          </div>
-          <div data-delay="0" data-hover="true" class="dropdown w-dropdown">
-            <div class="nav-link dropdown-toggle w-dropdown-toggle">
-              <div class="dropdown-icon w-icon-dropdown-toggle"></div>
-              <div>Campus LIfe</div>
-            </div>
-            <nav class="dropdown-list w-dropdown-list">
-              <a href="clubs.html" class="dropdown-link-2 w-dropdown-link">Clubs and Societies</a>
-              <a href="sports-and-extra-curricular-activities.html" class="dropdown-link-2 w-dropdown-link">Sports and Extra Curricular Activities</a>
-              <a href="student-highlights.html" class="dropdown-link-2 w-dropdown-link">Student Highlights</a>
-              <a href="https://mbasic.facebook.com/ycjournalismclub/?refid=17&amp;_ft_=mf_story_key.129935168982056%3Atop_level_post_id.129935168982056%3Atl_objid.129935168982056%3Acontent_owner_id_new.102282795080627%3Athrowback_story_fbid.129935168982056%3Apage_id.102282795080627%3Aphoto_attachments_list.%5B129935052315401%2C129935088982064%2C129935132315393%5D%3Aphoto_id.129935052315401%3Astory_location.4%3Astory_attachment_style.album%3Atds_flgs.3%3Aott.AX80yw9iEM_8XrKL%3Athid.102282795080627%3A306061129499414%3A2%3A0%3A1614585599%3A-3450172230927955999&amp;__tn__=C-R" target="_blank" class="dropdown-link-2 w-dropdown-link">School Magazine (YC HIVE)</a>
-              <a href="https://www.instagram.com/yorkcastle.sfa/" target="_blank" class="dropdown-link-2 w-dropdown-link">Sixth Form Association</a>
-              <a href="houses.html" class="dropdown-link-2 w-dropdown-link">Houses</a>
-              <a href="gallery.html" class="dropdown-link-2 dropdrown-end w-dropdown-link">Gallery</a>
-            </nav>
-          </div>
-          <a href="contact-us.html" class="nav-link w-nav-link">Contact us</a>
-        </nav>
-        <div class="menu-button w-nav-button">
+
+      <!-- Main Navigation -->
+      <nav class="main-nav">
+        <div class="nav-container">
+          <a href="index.html" class="nav-logo">
+            <img src="images/logo-badge.webp" width="125" alt="York Castle High School Logo" class="logo-image">
+          </a>
           
+          <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+
+          <ul class="nav-menu">
+            <li><a href="index.html" class="nav-item">Home</a></li>
+            
+            <li class="nav-dropdown">
+              <button class="nav-item dropdown-btn" aria-expanded="false">
+                About YC
+                <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <ul class="dropdown-menu">
+                <li><a href="principals-message.html" class="dropdown-item">Meet The Principal</a></li>
+                <li><a href="history.html" class="dropdown-item">History</a></li>
+                <li><a href="mission-and-vision.html" class="dropdown-item">Vision and Mission</a></li>
+                <li><a href="school-song.html" class="dropdown-item">School Song</a></li>
+              </ul>
+            </li>
+
+            <li class="nav-dropdown">
+              <button class="nav-item dropdown-btn" aria-expanded="false">
+                Resources
+                <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-wide">
+                <li><a href="doc-request.html" class="dropdown-item">General Request Form</a></li>
+                <li><a href="application-form.html" class="dropdown-item">General Admission Form</a></li>
+                <li><a href="request-student-information.html" class="dropdown-item">Request Student Information</a></li>
+                <li><a href="sixth-form-application.html" class="dropdown-item">Sixth Form Application</a></li><li><a href="application-status.html" class="dropdown-item">Check Application Status</a></li>
+                <li><a href="info-on-colleges.html" class="dropdown-item">Information on Colleges</a></li>
+                <li><a href="teachers.html" class="dropdown-item">Staff Directory</a></li>
+                <li><a href="#" class="dropdown-item">Student Handbook</a></li>
+              </ul>
+            </li>
+
+            <li class="nav-dropdown">
+              <button class="nav-item dropdown-btn" aria-expanded="false">
+                Campus Life
+                <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <ul class="dropdown-menu">
+                <li><a href="clubs.html" class="dropdown-item">Clubs and Societies</a></li>
+                <li><a href="sports-and-extra-curricular-activities.html" class="dropdown-item">Sports and Extra Curricular Activities</a></li>
+                <li><a href="student-highlights.html" class="dropdown-item">Student Highlights</a></li>
+                <li><a href="https://mbasic.facebook.com/ycjournalismclub/?refid=17&amp;_ft_=mf_story_key.129935168982056%3Atop_level_post_id.129935168982056%3Atl_objid.129935168982056%3Acontent_owner_id_new.102282795080627%3Athrowback_story_fbid.129935168982056%3Apage_id.102282795080627%3Aphoto_attachments_list.%5B129935052315401%2C129935088982064%2C129935132315393%5D%3Aphoto_id.129935052315401%3Astory_location.4%3Astory_attachment_style.album%3Atds_flgs.3%3Aott.AX80yw9iEM_8XrKL%3Athid.102282795080627%3A306061129499414%3A2%3A0%3A1614585599%3A-3450172230927955999&amp;__tn__=C-R" target="_blank" class="dropdown-item">School Magazine (YC HIVE)</a></li>
+                <li><a href="https://www.instagram.com/yorkcastle.sfa/" target="_blank" class="dropdown-item">Sixth Form Association</a></li>
+                <li><a href="houses.html" class="dropdown-item">Houses</a></li>
+                <li><a href="gallery.html" class="dropdown-item">Gallery</a></li>
+              </ul>
+            </li>
+
+            <li><a href="contact-us.html" class="nav-item">Contact us</a></li>
+          </ul>
         </div>
-      </div>
+      </nav>
+    </header>
+  <section class="about-head redesign">
+    <div class="aboutyc-container">
+      <div class="section-eyebrow">About YC</div>
+      <h1>Principal&rsquo;s Message</h1>
+      <p class="about-motto">&ldquo;Don&rsquo;t strive to be perfect. Strive for excellence.&rdquo;</p>
     </div>
-  </div>
-  <div class="head-section"></div>
-  <div class="section tint">
-    <div class="meet-the-principal-container w-container">
-      <div class="columns-2 w-row">
-        <div class="about-us-col-left principal-message-col w-col w-col-6">
-          <h1 class="heading-38">Principal&#x27;s Message</h1>
-          <div class="text-block-13">&quot;Don&#x27;t strive to be perfect. Strive for excellence&quot;</div>
-          <p class="paragraph-51">The York Castle High School is one of Jamaica&#x27;s premier co-educational secondary school. The school has educated some of the region&#x27;s most outstanding leaders and it continues to play a pivotal role in shaping Jamaica&#x27;s development.<br><br>The educational programmes at The York Castle High School emphasize the study of the liberal arts, humanities, sciences, business, technical and vocational education. As a Methodist High School, our curriculum also emphasizes spiritual tenets, ethics, values and morals, and co-curricular programmes that facilitate character development and a commitment to service, tolerance and respect for each other.<br><br>The York Castle High School endeavors to educate the whole person by developing the intellectual, social, personal, vocational, spiritual, moral and physical dimensions. A wide range of enrichment and extra-curricular activities complement the curriculum. Our graduates are highly regarded both nationally and globally for their distinguished qualities and attributes honed by the student centered and empowering learning environment at the York Castle High School.</p>
-        </div>
-        <div class="about-us-column-right w-col w-col-6">
-          <div class="w-layout-grid principal-message-pic"><img src="images/IMG_0816.webp" loading="lazy" id="w-node-_4a295168-50cb-ed6d-60af-4ab459d26901-8d23f4dd" sizes="(max-width: 767px) 96vw, (max-width: 991px) 354px, 460px" alt="York Castle High school&#x27;s principal. Mr Raymon Treasure" srcset="images/IMG_0816-p-500.jpeg 500w, images/IMG_0816-p-800.jpeg 800w, images/IMG_0816-p-1080.jpeg 1080w, images/IMG_0816.webp 1298w">
-            <div id="w-node-_8fae15c7-add9-1fa0-6dfc-26364cfabb05-8d23f4dd"></div>
-            <div id="w-node-textblock-3-8d23f4dd"><strong>Dip.Ed, B.A., M.A.</strong><br><br></div>
-            <div id="w-node-textblock-2-8d23f4dd"><strong>Raymon Treasure</strong></div>
+  </section>
+  <section class="about-body redesign">
+    <div class="aboutyc-container">
+      <div class="about-split">
+        <div class="about-prose">
+          <p>York Castle High School is one of Jamaica&rsquo;s premier co-educational
+          secondary schools. The school has educated some of the region&rsquo;s most outstanding
+          leaders and continues to play a pivotal role in shaping Jamaica&rsquo;s development.</p>
+        <p>Our educational programmes emphasise the study of the liberal arts, humanities,
+          sciences, business, and technical and vocational education. As a Methodist high school,
+          the curriculum also emphasises spiritual tenets, ethics, values and morals, alongside
+          co-curricular programmes that build character and a commitment to service, tolerance
+          and mutual respect.</p>
+        <p>We endeavour to educate the whole person by developing the intellectual, social,
+          personal, vocational, spiritual, moral and physical dimensions. A wide range of
+          enrichment and extra-curricular activities complements the curriculum, and our graduates
+          are highly regarded both nationally and globally for the qualities honed in our
+          student-centred, empowering learning environment.</p>
+          <div class="about-signature">
+            <div class="about-signature-name">Raymon Treasure</div>
+            <div class="about-signature-role">Principal &middot; Dip.Ed., B.A., M.A.</div>
           </div>
         </div>
+        <figure class="about-figure">
+          <img src="images/IMG_0816.webp"
+               alt="Raymon Treasure, Principal of York Castle High School"
+               width="1298" height="1946" decoding="async">
+          <figcaption>Mr. Raymon Treasure, Principal.</figcaption>
+        </figure>
       </div>
     </div>
+  </section>
+  <section class="about-news redesign">
+    <div class="aboutyc-container">
+      <div class="section-header">
+        <div class="section-eyebrow">Stay Connected</div>
+        <h2>Latest News</h2>
+        <p>Announcements and features from around the school.</p>
+      </div>
+      <div id="latest-news">
+        <p class="blog-empty">Loading news&hellip;</p>
+      </div>
+    </div>
+  </section>
+  <footer class="footer-redesign redesign">
+    <div class="footer-container">
+      <div class="footer-main">
+        <div class="footer-brand">
+          <div class="footer-logo">
+            <img src="images/logo-badge.webp" alt="York Castle High School Logo">
+            <span>York Castle<br>High School</span>
   </div>
-  <div class="section-9">
-    <div class="container-8 w-container">
-      <h1 class="heading-24">Latest News</h1>
-      <div class="collection-list-wrapper-2 w-dyn-list">
-        <div role="list" class="collection-list-2 w-dyn-items w-row">
-          <div role="listitem" class="collection-item w-dyn-item w-col w-col-3">
-            <div class="div-block-22"><img loading="lazy" alt="" width="699" src="" class="image-4 fix-footer w-dyn-bind-empty">
-              <div class="text-block-17 w-dyn-bind-empty"></div>
-              <div class="text-block-7 w-dyn-bind-empty"></div>
+          <p>A seven year grant-aided Methodist co-educational secondary school serving students from across Jamaica since 1914.</p>
+          <div class="footer-social">
+            <a href="https://m.facebook.com/YORK-CASTLE-HIGH-SCHOOL-JAMAICA-380111685446/" target="_blank" class="social-link">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+            </a>
+            <a href="https://www.instagram.com/york_castle_high/" target="_blank" class="social-link">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+              </svg>
+            </a>
+        </div>
+        </div>
+        
+        <div class="footer-column">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="history.html">About Us</a></li>
+            <li><a href="teachers.html">Staff Directory</a></li>
+            <li><a href="calendar.html">Calendar</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="blog.html">News</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-column">
+          <h4>Resources</h4>
+          <ul>
+            <li><a href="booklist.html">Book Lists</a></li>
+            <li><a href="doc-request.html">Request Transcript</a></li>
+            <li><a href="info-on-colleges.html">College Info</a></li>
+            <li><a href="https://yorkcastle.myschooljamaica.com" target="_blank">View Report Online</a></li>
+            <li><a href="#" data_open_privacy="true">Privacy Policy</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-column">
+          <h4>Contact</h4>
+          <div class="footer-contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path>
+            </svg>
+            <span>+1 876 975-2217</span>
+      </div>
+          <div class="footer-contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <span>yorkcastle.high.san@moey.gov.jm</span>
+              </div>
+          <div class="footer-contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span>Brown's Town, St. Ann, Jamaica</span>
+          </div>
+        </div>
             </div>
-          </div>
-        </div>
-        <div class="w-dyn-empty">
-          <div>No items found.</div>
+      
+      <div class="footer-bottom">
+        <p>© 2026 York Castle High School. All rights reserved.</p>
+        <div class="footer-bottom-links">
+          <a href="#" data_open_privacy="true">Privacy Policy</a>
+          <a href="contact-us.html">Contact</a>
         </div>
       </div>
     </div>
-  </div>
-  <div class="footer">
-    <div class="w-container">
-      <div class="footer-row w-row">
-        <div class="footer-column footer-sports w-col w-col-4">
-          <div class="footer-title">Contact us</div>
-          <a href="#" class="footer-contact-block w-inline-block">
-            <div class="footer-contact-title icon"></div>
-            <div class="footer-contact-title">+1 876 975-2217</div>
-          </a>
-          <a href="#" class="footer-contact-block w-inline-block">
-            <div class="footer-contact-title icon"></div>
-            <div class="footer-contact-title">+1 876-917-6387</div>
-          </a>
-          <a href="#" class="footer-contact-block w-inline-block">
-            <div class="footer-contact-title icon"></div>
-            <div class="footer-contact-title">yorkcastle.high.san@moey</div>
-          </a>
-          <a href="http://www.facebook.com" target="_blank" class="footer-social-button w-inline-block"><img src="images/Icon-facebook_2.png" alt="Facebook Logo" class="footer-social-icon"></a>
-          <a href="https://www.instagram.com/york_castle_high/?hl=en" target="_blank" class="footer-social-button w-inline-block"><img src="images/pngfind.com-instagram-png-22629.png" sizes="(max-width: 767px) 96vw, (max-width: 991px) 229.3203125px, 299.984375px" srcset="images/pngfind.com-instagram-png-22629-p-500.png 500w, images/pngfind.com-instagram-png-22629-p-800.png 800w, images/pngfind.com-instagram-png-22629.png 974w" alt="Instagram Logo" class="footer-social-icon"></a>
-        </div>
-        <div class="footer-column footer-sports w-col w-col-4">
-          <div class="footer-title">About us</div>
-          <a href="history.html" class="footer-list-link">About YC</a>
-          <a href="calendar.html" class="footer-list-link">Calendar</a>
-          <a href="teachers.html" class="footer-list-link">Teachers</a>
-          <a href="contact-us.html" class="footer-list-link">Contact Us</a>
-        </div>
-        <div class="footer-column footer-sports w-col w-col-4">
-          <div class="footer-title">USEFUL LINKS</div>
-          <a href="request-student-information.html" class="footer-list-link">Request Student Information</a>
-          <a href="info-on-colleges.html" class="footer-list-link">Collage Information</a>
-          <a href="info-on-colleges.html" class="footer-list-link">Collage Information</a>
-          <a href="application-form.html" class="footer-list-link">Admission Form</a>
-          <a href="booklist.html" class="footer-list-link">Booklist</a>
-          <a href="#" data_open_privacy="true" class="footer-list-link">Privacy Policy</a>
-        </div>
-      </div>
-      <div class="bottom-footer-block w-clearfix">
-        <div class="bottom-footer-text">Copyright © York Castle High School 2025</div>
-        <div class="div-block-270 w-clearfix">
-          <div class="bottom-footer-text right">Powered by </div><img src="images/HOLY-GRAIL--LOGO.png" loading="lazy" alt="" class="image-46">
-        </div>
-      </div>
+  </footer>
       <div class="w-embed w-script"><!--  Privacy Policy Popup for York Castle High School (with Cookie Banner and Contact Details)  -->
         <!--  Paste near the closing   <script src="js/auth.js"></script>
 </body> tag on pages where you want it available  -->
@@ -431,10 +495,9 @@
 <button class="btn btn_primary" data_open_privacy="true">Read Privacy Policy</button>
  -->
       </div>
-    </div>
-  </div>
-  <script src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=5ff7c2ade6e719f4bf214be0" type="text/javascript" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
   
   
+  <script src="js/auth.js"></script>
+  <script src="js/blog.js?v=2"></script>
 </body>
 </html>
