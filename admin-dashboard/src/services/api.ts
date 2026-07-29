@@ -207,6 +207,23 @@ class ApiService {
     return this.request('DELETE', `/documents/${id}`);
   }
 
+  // Image uploads
+  async getUploadConfig() {
+    return this.request<{ enabled: boolean; maxSizeBytes: number; acceptedTypes: string[] }>(
+      'GET',
+      '/uploads/config'
+    );
+  }
+
+  async uploadImage(formData: FormData) {
+    return axios.post<{ url: string; path: string }>(`${API_BASE_URL}/uploads/image`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${this.token}`,
+      },
+    }).then(res => res.data);
+  }
+
   async downloadDocument(id: string) {
     window.open(`${API_BASE_URL}/documents/${id}/download`, '_blank');
   }

@@ -144,6 +144,35 @@ export const upload = multer({
   },
 });
 
+export const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+export const MAX_IMAGE_BYTES = Math.min(
+  parseInt(process.env.MAX_FILE_SIZE) || 10 * 1024 * 1024,
+  5 * 1024 * 1024
+);
+
+// Images only, held in memory because they are forwarded straight to object
+// storage - the disk path above is not durable on serverless.
+const imageFileFilter = (req, file, cb) => {
+  if (!IMAGE_MIME_TYPES.includes(file.mimetype)) {
+    logger.warn('Rejected image upload - invalid MIME type', {
+      filename: file.originalname,
+      mimetype: file.mimetype,
+      ip: req.ip,
+    });
+    return cb(new Error(`Invalid image type: ${file.mimetype}. Allowed: JPEG, PNG, WEBP, GIF`), false);
+  }
+
+  // Reuse the shared filename/extension checks.
+  return fileFilter(req, file, cb);
+};
+
+export const imageUpload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: imageFileFilter,
+  limits: { fileSize: MAX_IMAGE_BYTES },
+});
+
 
 
 

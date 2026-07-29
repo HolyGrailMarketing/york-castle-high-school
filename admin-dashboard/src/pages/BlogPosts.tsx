@@ -1,21 +1,46 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { apiService } from '../services/api';
 import type { BlogPost } from '../types';
 import Modal from '../components/Modal';
 import Toast from '../components/Toast';
 import { useToast } from '../hooks/useToast';
+import { SITE_IMAGES } from '../constants/siteImages';
 import './BlogPosts.css';
+
+const emptyForm = {
+  title: '',
+  content: '',
+  excerpt: '',
+  featuredImage: '',
+  published: false,
+};
+
+/**
+ * The admin is served from /admin/, so a repo-relative path like
+ * "images/foo.webp" would resolve to /admin/images/foo.webp and 404.
+ */
+const resolvePreview = (value: string) =>
+  /^https?:\/\//i.test(value) ? value : '/' + value.replace(/^\/+/, '');
 
 const BlogPosts = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
-  const [formData, setFormData] = useState({ title: '', content: '', excerpt: '', published: false });
+  const [formData, setFormData] = useState(emptyForm);
+  const [uploadEnabled, setUploadEnabled] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [previewFailed, setPreviewFailed] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toasts, showToast, removeToast } = useToast();
 
   useEffect(() => {
     fetchPosts();
+    // Storage is optional; the path/URL field works either way.
+    apiService
+      .getUploadConfig()
+      .then((cfg) => setUploadEnabled(Boolean(cfg?.enabled)))
+      .catch(() => setUploadEnabled(false));
   }, []);
 
   const fetchPosts = async () => {
@@ -32,17 +57,19 @@ const BlogPosts = () => {
   };
 
   const handleOpenModal = (post?: BlogPost) => {
+    setPreviewFailed(false);
     if (post) {
       setEditingPost(post);
       setFormData({
         title: post.title,
         content: post.content,
         excerpt: post.excerpt || '',
+        featuredImage: post.featuredImage || '',
         published: post.published,
       });
     } else {
       setEditingPost(null);
-      setFormData({ title: '', content: '', excerpt: '', published: false });
+      setFormData(emptyForm);
     }
     setIsModalOpen(true);
   };
@@ -50,7 +77,29 @@ const BlogPosts = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingPost(null);
-    setFormData({ title: '', content: '', excerpt: '', published: false });
+    setFormData(emptyForm);
+    setPreviewFailed(false);
+  };
+
+  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    // Reset immediately so re-picking the same file fires onChange again.
+    e.target.value = '';
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const body = new FormData();
+      body.append('file', file);
+      const { url } = await apiService.uploadImage(body);
+      setPreviewFailed(false);
+      setFormData((prev) => ({ ...prev, featuredImage: url }));
+      showToast('Image uploaded', 'success');
+    } catch (error: any) {
+      showToast(error?.response?.data?.error || 'Failed to upload image', 'error');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,7 +140,7 @@ const BlogPosts = () => {
       {toasts.map((toast) => (
         <Toast key={toast.id} message={toast.message} type={toast.type} onClose={() => removeToast(toast.id)} />
       ))}
-      
+
       <div className="page-header">
         <h1>Blog Posts</h1>
         <button className="btn-primary" onClick={() => handleOpenModal()}>New Post</button>
@@ -105,6 +154,16 @@ const BlogPosts = () => {
         ) : (
           posts.map((post) => (
             <div key={post.id} className="post-card">
+              {post.featuredImage ? (
+                <img
+                  src={resolvePreview(post.featuredImage)}
+                  alt=""
+                  className="post-card-thumb"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="post-card-thumb post-card-thumb-empty">No image</div>
+              )}
               <h3>{post.title}</h3>
               <p className="post-excerpt">{post.excerpt || post.content?.substring(0, 150) || ''}...</p>
               <div className="post-meta">
@@ -143,6 +202,71 @@ const BlogPosts = () => {
               placeholder="Brief summary..."
             />
           </div>
+
+          <div className="form-group">
+            <label>Featured image</label>
+            <div className="featured-image-row">
+              <input
+                type="text"
+                list="site-images"
+                value={formData.featuredImage}
+                onChange={(e) => {
+                  setPreviewFailed(false);
+                  setFormData({ ...formData, featuredImage: e.target.value });
+                }}
+                placeholder="images/IMG_0813.webp or https://..."
+              />
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileSelected}
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                hidden
+              />
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={!uploadEnabled || uploading}
+              >
+                {uploading ? 'Uploading…' : 'Upload…'}
+              </button>
+              {formData.featuredImage && (
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setFormData({ ...formData, featuredImage: '' })}
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <datalist id="site-images">
+              {SITE_IMAGES.map((img) => (
+                <option key={img.path} value={img.path}>{img.label}</option>
+              ))}
+            </datalist>
+            {!uploadEnabled && (
+              <p className="upload-hint">
+                Image upload isn’t configured yet — pick one of the school photos above,
+                or paste a full image URL.
+              </p>
+            )}
+            {formData.featuredImage && !previewFailed && (
+              <img
+                src={resolvePreview(formData.featuredImage)}
+                alt=""
+                className="featured-preview"
+                onError={() => setPreviewFailed(true)}
+              />
+            )}
+            {formData.featuredImage && previewFailed && (
+              <p className="upload-hint upload-hint-error">
+                That image couldn’t be loaded. Check the path or URL.
+              </p>
+            )}
+          </div>
+
           <div className="form-group">
             <label>Content</label>
             <textarea
@@ -173,4 +297,3 @@ const BlogPosts = () => {
 };
 
 export default BlogPosts;
-

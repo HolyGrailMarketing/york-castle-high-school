@@ -139,3 +139,55 @@
   padding: 48px;
   color: #6b7280;
 }
+
+/* Featured image picker */
+.featured-image-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.featured-image-row input[type='text'] {
+  flex: 1;
+  min-width: 0;
+}
+
+.featured-preview {
+  display: block;
+  width: 220px;
+  height: 124px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  margin-top: 8px;
+  background: #f5f5f5;
+}
+
+.upload-hint {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 6px;
+}
+
+.upload-hint-error {
+  color: #b91c1c;
+}
+
+.post-card-thumb {
+  display: block;
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  background: #f5f5f5;
+}
+
+.post-card-thumb-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  border: 1px dashed #e5e7eb;
+}
