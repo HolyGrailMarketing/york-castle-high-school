@@ -1,0 +1,225 @@
+/* ==========================================================================
+   York Castle High School - Calendar
+   Upcoming events listing on calendar.html.
+
+   Loads after css/homepage-redesign.css and relies on its :root tokens.
+   ========================================================================== */
+
+/* The modern header is position:absolute so it can overlay the homepage hero.
+   This page has no hero behind it, so it sits in normal flow instead. */
+.site-header.static-header {
+  position: static !important;
+}
+
+/* --- Page shell ----------------------------------------------------------- */
+
+.calendar-section {
+  background: var(--ychs-cream);
+  padding: var(--spacing-2xl) var(--spacing-lg);
+}
+
+.calendar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.calendar-section .section-header .section-eyebrow,
+.calendar-news .section-header .section-eyebrow {
+  color: var(--ychs-gold-dark);
+}
+
+.calendar-section .section-header h1,
+.calendar-news .section-header h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.15;
+  color: var(--ychs-charcoal);
+  margin: 0 0 var(--spacing-sm);
+}
+
+.calendar-section .section-header p,
+.calendar-news .section-header p {
+  color: var(--ychs-gray);
+}
+
+/* --- Event cards ---------------------------------------------------------- */
+
+.event-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.event-card {
+  display: flex;
+  gap: var(--spacing-md);
+  background: var(--ychs-white);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-medium);
+  border-left: 4px solid var(--ychs-gold);
+}
+
+.event-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+/* Date badge */
+
+.event-card-date {
+  flex-shrink: 0;
+  width: 72px;
+  border-radius: var(--radius-md);
+  background: var(--ychs-charcoal);
+  color: var(--ychs-white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xs) 0;
+  align-self: flex-start;
+}
+
+.event-card-day {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ychs-gold);
+}
+
+.event-card-month {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-top: 2px;
+}
+
+.event-card-year {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 1px;
+}
+
+/* Body */
+
+.event-card-body {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.event-card-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  line-height: 1.3;
+  color: var(--ychs-charcoal);
+  margin: 0;
+}
+
+.event-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: 0.85rem;
+  color: var(--ychs-gold-dark);
+  font-weight: 600;
+}
+
+.event-card-meta svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.event-card-location {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ychs-gray);
+  font-weight: 500;
+}
+
+.event-card-desc {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--ychs-gray);
+  margin: 0;
+}
+
+/* An event running today, or already under way */
+.event-card.is-today {
+  border-left-color: var(--ychs-gold-dark);
+}
+
+.event-card.is-today .event-card-date {
+  background: var(--ychs-gold);
+}
+
+.event-card.is-today .event-card-day,
+.event-card.is-today .event-card-month {
+  color: var(--ychs-black);
+}
+
+.event-card.is-today .event-card-year {
+  color: rgba(0, 0, 0, 0.55);
+}
+
+/* --- Latest news strip ---------------------------------------------------- */
+
+.calendar-news {
+  background: var(--ychs-white);
+  padding: var(--spacing-2xl) var(--spacing-lg);
+}
+
+/* --- Empty / loading states ----------------------------------------------- */
+
+.calendar-empty {
+  background: var(--ychs-white);
+  border: 1px dashed rgba(0, 0, 0, 0.12);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--ychs-gray);
+}
+
+.calendar-empty p {
+  margin: 0 0 var(--spacing-sm);
+}
+
+.calendar-empty p:last-child {
+  margin-bottom: 0;
+}
+
+/* --- Responsive ----------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .calendar-section,
+  .calendar-news {
+    padding: var(--spacing-xl) var(--spacing-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .event-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .event-card {
+    padding: var(--spacing-sm);
+    gap: var(--spacing-sm);
+  }
+
+  .event-card-date {
+    width: 60px;
+  }
+
+  .event-card-day {
+    font-size: 1.5rem;
+  }
+}

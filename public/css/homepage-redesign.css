@@ -749,6 +749,12 @@ html, body {
   gap: var(--spacing-xs);
 }
 
+.events-empty {
+  color: var(--ychs-charcoal);
+  font-size: 0.9rem;
+  padding: var(--spacing-sm) 0;
+}
+
 .event-item {
   display: flex;
   gap: var(--spacing-md);

@@ -12,7 +12,7 @@
   <meta content="summary_large_image" name="twitter:card">
   <meta content="width=device-width, initial-scale=1" name="viewport">
   <link href="/css/normalize.css" rel="stylesheet" type="text/css">
-  <link href="/css/homepage-redesign.css?v=3" rel="stylesheet" type="text/css">
+  <link href="/css/homepage-redesign.css?v=4" rel="stylesheet" type="text/css">
   <link href="/images/favicon.ico" rel="shortcut icon" type="image/x-icon">
   <link href="/images/webclip.png" rel="apple-touch-icon">
 </head>
@@ -363,7 +363,7 @@
         </a>
         
         <a href="clubs.html" class="program-card">
-          <img src="images/Tivoli-Dance-Troupe-Spirits-of-Our-Heritage-Class-5-Most-Outstanding-Senior-Fok-A.webp" alt="Clubs and Societies" class="program-card-bg">
+          <img src="images/IMG_0808.webp" alt="York Castle cadets marching through the campus with the school band" class="program-card-bg">
           <div class="program-card-overlay"></div>
           <div class="program-card-content">
             <span class="program-tag">Campus Life</span>
@@ -394,7 +394,7 @@
       </div>
       
       <div class="news-grid">
-        <div class="news-main">
+        <div class="news-main" id="homepage-news">
           <a href="principals-message.html" class="news-featured">
             <img src="images/Screenshot-2022-01-20-at-9.22.00-PM.webp" alt="Principal's Message">
             <div class="news-featured-content">
@@ -411,23 +411,6 @@
               <p>Principal Raymon Treasure reflects on our resilience and the path forward.</p>
           </div>
           </a>
-          
-          <div class="news-list">
-            <a href="blog.html" class="news-item">
-              <img src="images/Screenshot-2021-08-27-at-7.24.16-PM.webp" alt="Defying The Odds" class="news-item-image">
-              <div class="news-item-content">
-                <h4>Defying The Odds Despite Your Circumstances</h4>
-                <div class="news-date">Video • Inspiration</div>
-              </div>
-            </a>
-            <a href="https://play.google.com/store/apps/details?id=com.comsol.myschool" target="_blank" class="news-item">
-              <img src="images/Screenshot-2021-08-27-at-9.01.12-PM.webp" alt="MySchool App" class="news-item-image">
-              <div class="news-item-content">
-                <h4>How To Download And Use The MYSCHOOL App</h4>
-                <div class="news-date">Tutorial • Parent Resources</div>
-              </div>
-            </a>
-          </div>
         </div>
         
         <div class="news-sidebar">
@@ -442,39 +425,10 @@
               Upcoming Events
             </h3>
             
-            <div class="event-item">
-              <div class="event-date-box">
-                <span class="day">15</span>
-                <span class="month">Jan</span>
-      </div>
-              <div class="event-details">
-                <h4>New Term Begins</h4>
-                <p>Spring semester starts</p>
-          </div>
+            <div id="upcoming-events">
+              <p class="events-empty">Loading events&hellip;</p>
             </div>
-            
-            <div class="event-item">
-              <div class="event-date-box">
-                <span class="day">28</span>
-                <span class="month">Feb</span>
-          </div>
-              <div class="event-details">
-                <h4>Inter-House Sports</h4>
-                <p>Annual athletics competition</p>
-              </div>
-            </div>
-            
-            <div class="event-item">
-              <div class="event-date-box">
-                <span class="day">15</span>
-                <span class="month">Mar</span>
-          </div>
-              <div class="event-details">
-                <h4>Open Day</h4>
-                <p>Campus tours for prospective students</p>
-              </div>
-            </div>
-            
+
             <a href="calendar.html" class="btn-primary" style="width: 100%; justify-content: center; margin-top: var(--spacing-md);">
               View Full Calendar
             </a>
@@ -848,6 +802,8 @@
   
   <!-- Backend Authentication -->
   <script src="js/auth.js"></script>
+  <script src="js/events.js?v=2"></script>
+  <script src="js/blog.js?v=2"></script>
   <script>
     // Mobile menu toggle
     document.addEventListener('DOMContentLoaded', function() {
