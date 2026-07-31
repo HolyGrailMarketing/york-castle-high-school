@@ -243,6 +243,15 @@ const Requests = () => {
     if (metadata.requestType) {
       sections.push({ label: 'Request Type', value: metadata.requestType });
     }
+    if (metadata.visaApplicationType) {
+      sections.push({ label: 'Visa Application Type', value: metadata.visaApplicationType });
+    }
+    if (metadata.lastFormTeacher) {
+      sections.push({ label: 'Last Form Teacher', value: metadata.lastFormTeacher });
+    }
+    if (metadata.gradeElevenClass) {
+      sections.push({ label: 'Grade 11 Class', value: metadata.gradeElevenClass });
+    }
     if (metadata.deliveryMethod) {
       sections.push({ label: 'Delivery Method', value: metadata.deliveryMethod });
     }
