@@ -36,11 +36,13 @@ import blogRoutes from './routes/blog.js';
 import eventRoutes from './routes/events.js';
 import courseRoutes from './routes/courses.js';
 import documentRoutes from './routes/documents.js';
+import booklistRoutes from './routes/booklist.js';
 import requestRoutes from './routes/requests.js';
 import analyticsRoutes from './routes/analytics.js';
 import healthRoutes from './routes/health.js';
 import dataSubjectRoutes from './routes/dataSubject.js';
 import consentRoutes from './routes/consent.js';
+import cronRoutes from './routes/cron.js';
 import { initEmailService } from './services/emailService.js';
 
 // Load environment variables
@@ -572,10 +574,12 @@ app.use('/api/blog', blogRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/documents', documentRoutes);
+app.use('/api/booklist', booklistRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/data-subject', dataSubjectRoutes);
 app.use('/api/consent', consentRoutes);
+app.use('/api/cron', cronRoutes);
 
 // CRITICAL: Serve root index.html FIRST, before any static middleware
 // This ensures the correct file is served and prevents admin dashboard from being served at root

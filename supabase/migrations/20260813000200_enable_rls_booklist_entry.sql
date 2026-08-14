@@ -1,0 +1,21 @@
+-- Enable Row Level Security (RLS) on public."BooklistEntry".
+--
+-- Follow-up to 20260723133201_enable_rls_all_public_tables.sql. That migration
+-- enabled RLS table-by-table by name; there is no event trigger, so any table
+-- Prisma creates afterwards ships with RLS DISABLED and raises a fresh
+-- rls_disabled_in_public Security Advisor error. This clears it for the
+-- BooklistEntry table added by the Prisma migration
+-- 20260813000100_add_booklist_entry.
+--
+-- No policies are defined, matching the established convention: the tables are
+-- deny-by-default for the anon/authenticated API roles, while Prisma (connecting
+-- as `postgres`) bypasses RLS and is unaffected. Public read access to the
+-- booklist is served by the Express route GET /api/booklist, not by PostgREST.
+--
+-- Table grants need no action here: the ALTER DEFAULT PRIVILEGES statements in
+-- 20260723133854_revoke_data_api_grants_public.sql already prevent new tables
+-- created by `postgres` from being granted to anon/authenticated.
+--
+-- ALTER TABLE ... ENABLE ROW LEVEL SECURITY is idempotent and safe to re-run.
+
+ALTER TABLE public."BooklistEntry" ENABLE ROW LEVEL SECURITY;

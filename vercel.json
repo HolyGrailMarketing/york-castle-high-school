@@ -3,6 +3,12 @@
   "installCommand": "npm install && cd backend && npm install && npm run prisma:generate && cd ../admin-dashboard && npm install && cd ..",
   "buildCommand": "cd admin-dashboard && npm run build && cd .. && bash scripts/copy-static-files.sh",
   "outputDirectory": "public",
+  "crons": [
+    {
+      "path": "/api/cron/overdue-requests",
+      "schedule": "0 12 * * 1-5"
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/:path*",

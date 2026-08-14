@@ -1,6 +1,6 @@
 import prisma from '../utils/prisma.js';
 import logger from '../utils/logger.js';
-import { getBaseUrl } from '../utils/helpers.js';
+import { getBaseUrl, extractRequester } from '../utils/helpers.js';
 import { sendAdminRequestNotification, sendRequestAssignmentNotification, getNotificationRecipients, isEmailConfigured } from '../services/emailService.js';
 
 // Field selection reused across request queries. Includes the assigned staff
@@ -33,18 +33,6 @@ const requestSelect = {
       email: true,
     },
   },
-};
-
-// Pull a human-friendly requester name/contact out of a request's metadata or linked user.
-const extractRequester = (request) => {
-  const student = request.metadata?.studentInfo;
-  const name =
-    request.user?.name ||
-    [student?.firstName, student?.middleName, student?.lastName].filter(Boolean).join(' ') ||
-    'Unknown';
-  const email = request.user?.email || student?.email || null;
-  const phone = student?.phone || student?.phoneNumber || null;
-  return { name, email, phone };
 };
 
 // Notify staff that a new request was submitted. Failures are logged, never thrown,

@@ -61,6 +61,9 @@ model User {
   notifyGeneralRequests Boolean @default(false)
   notifySixthFormApps   Boolean @default(false)
   notifyAdmissions      Boolean @default(false)
+  // Escalation routing - who is emailed when a document request misses the
+  // turnaround promised on doc-request.html. Intended for the principal.
+  notifyOverdueRequests Boolean @default(false)
 
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
@@ -252,6 +255,29 @@ model Document {
   @@index([isPublic])
 }
 
+// One booklist file per grade, per school year - what booklist.html renders.
+// Files live in Supabase Storage (see src/services/storageService.js) rather
+// than on local disk, because the serverless filesystem is ephemeral.
+model BooklistEntry {
+  id          String   @id @default(uuid())
+  schoolYear  String   // e.g. "2025-2026" - also drives the heading on booklist.html
+  gradeLabel  String   // e.g. "Grade 7", "Sixth Form"
+  fileName    String
+  fileUrl     String   // public URL; may point at Storage or a legacy /documents path
+  storagePath String?  // key within the Storage bucket; null for legacy /documents files
+  fileSize    Int?
+  mimeType    String?
+  sortOrder   Int      @default(0)
+  isPublished Boolean  @default(true)
+  uploadedBy  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([schoolYear, gradeLabel])
+  @@index([isPublished, sortOrder])
+  @@index([schoolYear])
+}
+
 model Request {
   id          String      @id @default(uuid())
   type        RequestType
@@ -266,6 +292,10 @@ model Request {
   metadata    Json?       // Store request-specific data
   response    String?     @db.Text
   respondedAt DateTime?
+  // Stamped once the principal has been emailed about this request running past
+  // its promised turnaround, so the escalation fires exactly once. See
+  // src/services/overdueRequestService.js
+  escalatedAt DateTime?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 

@@ -1384,6 +1384,9 @@
       };
       
       // Document processing times
+      // NOTE: these are also the school's SLA. Keep them in sync with
+      // backend/src/services/requestSla.js, which uses the upper bound of each
+      // range to decide when to escalate an overdue request to the principal.
       const processingTimes = {
         'Transcript': '15-21 working days',
         'Embassy Letter': '5-7 working days',

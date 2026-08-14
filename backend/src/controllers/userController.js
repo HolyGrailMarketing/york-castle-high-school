@@ -32,6 +32,7 @@ export const getUsers = async (req, res, next) => {
           notifyGeneralRequests: true,
           notifySixthFormApps: true,
           notifyAdmissions: true,
+          notifyOverdueRequests: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -74,6 +75,7 @@ export const getUser = async (req, res, next) => {
         notifyGeneralRequests: true,
         notifySixthFormApps: true,
         notifyAdmissions: true,
+        notifyOverdueRequests: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -95,7 +97,7 @@ export const getUser = async (req, res, next) => {
 export const updateUser = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, phone, password, notifyGeneralRequests, notifySixthFormApps, notifyAdmissions } = req.body;
+    const { name, phone, password, notifyGeneralRequests, notifySixthFormApps, notifyAdmissions, notifyOverdueRequests } = req.body;
 
     // Users can only update their own profile unless they're admin
     if (id !== req.user.id && req.user.role !== 'ADMIN') {
@@ -115,6 +117,7 @@ export const updateUser = async (req, res, next) => {
       if (notifyGeneralRequests !== undefined) updateData.notifyGeneralRequests = Boolean(notifyGeneralRequests);
       if (notifySixthFormApps !== undefined) updateData.notifySixthFormApps = Boolean(notifySixthFormApps);
       if (notifyAdmissions !== undefined) updateData.notifyAdmissions = Boolean(notifyAdmissions);
+      if (notifyOverdueRequests !== undefined) updateData.notifyOverdueRequests = Boolean(notifyOverdueRequests);
     }
 
     const user = await prisma.user.update({
@@ -129,6 +132,7 @@ export const updateUser = async (req, res, next) => {
         notifyGeneralRequests: true,
         notifySixthFormApps: true,
         notifyAdmissions: true,
+        notifyOverdueRequests: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -189,6 +193,7 @@ export const createUser = async (req, res, next) => {
       notifyGeneralRequests = false,
       notifySixthFormApps = false,
       notifyAdmissions = false,
+      notifyOverdueRequests = false,
     } = req.body;
 
     if (!rawEmail || !name) {
@@ -238,6 +243,7 @@ export const createUser = async (req, res, next) => {
         notifyGeneralRequests: Boolean(notifyGeneralRequests),
         notifySixthFormApps: Boolean(notifySixthFormApps),
         notifyAdmissions: Boolean(notifyAdmissions),
+        notifyOverdueRequests: Boolean(notifyOverdueRequests),
       },
       select: {
         id: true,
@@ -251,6 +257,7 @@ export const createUser = async (req, res, next) => {
         notifyGeneralRequests: true,
         notifySixthFormApps: true,
         notifyAdmissions: true,
+        notifyOverdueRequests: true,
         createdAt: true,
         updatedAt: true,
       },

@@ -14,6 +14,7 @@ interface UserFormData {
   notifyGeneralRequests: boolean;
   notifySixthFormApps: boolean;
   notifyAdmissions: boolean;
+  notifyOverdueRequests: boolean;
 }
 
 const initialFormData: UserFormData = {
@@ -26,6 +27,7 @@ const initialFormData: UserFormData = {
   notifyGeneralRequests: false,
   notifySixthFormApps: false,
   notifyAdmissions: false,
+  notifyOverdueRequests: false,
 };
 
 // Roles eligible to be submission-notification recipients.
@@ -123,6 +125,7 @@ const Users = () => {
       notifyGeneralRequests: user.notifyGeneralRequests ?? false,
       notifySixthFormApps: user.notifySixthFormApps ?? false,
       notifyAdmissions: user.notifyAdmissions ?? false,
+      notifyOverdueRequests: user.notifyOverdueRequests ?? false,
     });
     setError('');
     setShowEditModal(true);
@@ -172,6 +175,7 @@ const Users = () => {
         notifyGeneralRequests: notifyEligible && formData.notifyGeneralRequests,
         notifySixthFormApps: notifyEligible && formData.notifySixthFormApps,
         notifyAdmissions: notifyEligible && formData.notifyAdmissions,
+        notifyOverdueRequests: notifyEligible && formData.notifyOverdueRequests,
       });
       setShowAddModal(false);
       await fetchUsers();
@@ -201,6 +205,7 @@ const Users = () => {
         notifyGeneralRequests: notifyEligible && formData.notifyGeneralRequests,
         notifySixthFormApps: notifyEligible && formData.notifySixthFormApps,
         notifyAdmissions: notifyEligible && formData.notifyAdmissions,
+        notifyOverdueRequests: notifyEligible && formData.notifyOverdueRequests,
       });
 
       // Update role if changed
@@ -489,6 +494,19 @@ const Users = () => {
             </div>
           )}
 
+          {NOTIFY_ELIGIBLE_ROLES.includes(formData.role) && (
+            <div className="form-group">
+              <label>Escalations</label>
+              <span className="field-hint">Email this user when work runs past what the website promised. Intended for the principal.</span>
+              <div className="checkbox-group">
+                <label className="checkbox-label">
+                  <input type="checkbox" name="notifyOverdueRequests" checked={formData.notifyOverdueRequests} onChange={handleCheckboxChange} />
+                  Overdue document requests
+                </label>
+              </div>
+            </div>
+          )}
+
           <div className="form-actions">
             <button type="button" className="btn-secondary" onClick={() => setShowAddModal(false)}>
               Cancel
@@ -569,6 +587,19 @@ const Users = () => {
                 <label className="checkbox-label">
                   <input type="checkbox" name="notifyAdmissions" checked={formData.notifyAdmissions} onChange={handleCheckboxChange} />
                   General admission applications
+                </label>
+              </div>
+            </div>
+          )}
+
+          {NOTIFY_ELIGIBLE_ROLES.includes(formData.role) && (
+            <div className="form-group">
+              <label>Escalations</label>
+              <span className="field-hint">Email this user when work runs past what the website promised. Intended for the principal.</span>
+              <div className="checkbox-group">
+                <label className="checkbox-label">
+                  <input type="checkbox" name="notifyOverdueRequests" checked={formData.notifyOverdueRequests} onChange={handleCheckboxChange} />
+                  Overdue document requests
                 </label>
               </div>
             </div>

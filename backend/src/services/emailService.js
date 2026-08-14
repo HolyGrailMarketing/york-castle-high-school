@@ -133,6 +133,27 @@ export const getNotificationRecipients = async (flagField) => {
   return recipients.length ? recipients : REQUEST_NOTIFICATION_EMAIL;
 };
 
+// Recipients for overdue-request escalations - the principal, in practice.
+//
+// Deliberately does NOT union in ALWAYS_NOTIFY_EMAILS the way
+// getNotificationRecipients does: that shared inbox wants the new-submission
+// firehose, but an escalation is meant for whoever is accountable for it.
+// Falls back to REQUEST_NOTIFICATION_EMAIL if nobody is flagged, so the alert
+// is never silently dropped.
+export const getOverdueEscalationRecipients = async () => {
+  const users = await prisma.user.findMany({
+    where: { notifyOverdueRequests: true },
+    select: { email: true },
+  });
+  const recipients = users.map((u) => u.email).filter(Boolean);
+  return recipients.length ? recipients : REQUEST_NOTIFICATION_EMAIL;
+};
+
+export const sendOverdueRequestsEscalation = async (details, to) => {
+  const template = templates.overdueRequestsDigest(details);
+  await sendEmail(to, template.subject, template.text, template.html);
+};
+
 export const sendRequestAssignmentNotification = async (email, details) => {
   const template = templates.requestAssignment(details);
   await sendEmail(email, template.subject, template.text, template.html);

@@ -18,6 +18,15 @@ const schoolColors = {
   textLight: '#6b6b6b',
 };
 
+/** Escape values that originate from public form input before interpolating them. */
+const escapeHtml = (value) =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
 const baseTemplate = (content, title) => `
 <!DOCTYPE html>
 <html>
@@ -303,6 +312,76 @@ export const templates = {
       subject: `Request Assigned to You - ${requestType || 'Request'} - York Castle High School`,
       html: baseTemplate(content, 'Request Assigned to You'),
       text: `A Request Has Been Assigned to You\n\nHi ${firstName},\n\n${assignedByName ? `${assignedByName} has assigned` : 'You have been assigned'} a request to you on the administrative portal.\n\nRequest Type: ${requestType || 'Request'}\nSubmitted By: ${requesterName || 'Unknown'}\n${requesterEmail ? `Email: ${requesterEmail}\n` : ''}${requesterPhone ? `Phone: ${requesterPhone}\n` : ''}Submitted On: ${submittedStr}\nRequest ID: ${requestId}\n\nView the request here:\n${requestUrl}\n\nYork Castle High School`,
+    };
+  },
+
+  /**
+   * Escalation email - sent to the principal when document requests have run past
+   * the turnaround promised to the requester on doc-request.html.
+   *
+   * One digest per run rather than one email per request, so a backlog does not
+   * flood the principal's inbox.
+   */
+  overdueRequestsDigest: ({ items, dashboardUrl }) => {
+    const count = items.length;
+    const noun = count === 1 ? 'request' : 'requests';
+
+    const rows = items
+      .map(
+        (item) => `
+        <tr>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e5e5;">
+            <strong>${escapeHtml(item.documentType)}</strong><br>
+            <span style="color: ${schoolColors.textLight}; font-size: 13px;">${escapeHtml(item.requesterName)}</span>
+          </td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e5e5; font-size: 13px;">
+            Submitted ${escapeHtml(item.submittedStr)}<br>
+            <span style="color: ${schoolColors.textLight};">Promised ${escapeHtml(item.promisedTurnaround)}</span>
+          </td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e5e5; font-size: 13px; white-space: nowrap;">
+            Due ${escapeHtml(item.dueStr)}<br>
+            <strong style="color: #b00020;">${item.workingDaysOverdue} working ${item.workingDaysOverdue === 1 ? 'day' : 'days'} late</strong>
+          </td>
+        </tr>`
+      )
+      .join('');
+
+    const content = `
+      <h2 style="color: ${schoolColors.secondary}; margin-top: 0;">Overdue Document ${count === 1 ? 'Request' : 'Requests'}</h2>
+      <p>${count} document ${noun} submitted through the school website ${count === 1 ? 'has' : 'have'} passed the processing time promised to the requester and ${count === 1 ? 'is' : 'are'} still outstanding.</p>
+      <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px;">
+        <tbody>${rows}</tbody>
+      </table>
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="${dashboardUrl}" class="button" style="display: inline-block;">Open Requests</a>
+      </p>
+      <p style="color: ${schoolColors.textLight}; font-size: 14px;">If the button above doesn't work, copy and paste this link into your browser:<br>
+        <a href="${dashboardUrl}" style="color: ${schoolColors.goldDark}; word-break: break-all;">${dashboardUrl}</a>
+      </p>
+      <p style="color: ${schoolColors.textLight}; font-size: 13px;">You are receiving this because your account is set to receive overdue request alerts. Each request is reported once only.</p>
+    `;
+
+    const text =
+      `Overdue Document ${count === 1 ? 'Request' : 'Requests'}\n\n` +
+      `${count} document ${noun} submitted through the school website ${count === 1 ? 'has' : 'have'} passed the promised processing time and ${count === 1 ? 'is' : 'are'} still outstanding.\n\n` +
+      items
+        .map(
+          (item) =>
+            `- ${item.documentType} for ${item.requesterName}\n` +
+            `  Submitted: ${item.submittedStr}\n` +
+            `  Promised: ${item.promisedTurnaround}\n` +
+            `  Due: ${item.dueStr} (${item.workingDaysOverdue} working ${item.workingDaysOverdue === 1 ? 'day' : 'days'} late)\n` +
+            `  Request ID: ${item.requestId}`
+        )
+        .join('\n\n') +
+      `\n\nOpen the requests dashboard:\n${dashboardUrl}\n\n` +
+      `You are receiving this because your account is set to receive overdue request alerts. Each request is reported once only.\n\n` +
+      `York Castle High School`;
+
+    return {
+      subject: `${count} overdue document ${noun} - York Castle High School`,
+      html: baseTemplate(content, 'Overdue Document Requests'),
+      text,
     };
   },
 

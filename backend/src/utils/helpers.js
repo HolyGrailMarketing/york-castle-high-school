@@ -10,6 +10,20 @@ export const slugify = (text) => {
     .replace(/-+$/, '');
 };
 
+// Pull a human-friendly requester name/contact out of a request's metadata or
+// linked user. Public submissions have no user row, so the name lives in
+// metadata.studentInfo as written by doc-request.html.
+export const extractRequester = (request) => {
+  const student = request.metadata?.studentInfo;
+  const name =
+    request.user?.name ||
+    [student?.firstName, student?.middleName, student?.lastName].filter(Boolean).join(' ') ||
+    'Unknown';
+  const email = request.user?.email || student?.email || null;
+  const phone = student?.phone || student?.phoneNumber || null;
+  return { name, email, phone };
+};
+
 // Build the public-facing base URL for the site (used in email links).
 // Prioritizes explicit env config, then derives from the sending email domain,
 // and finally falls back to the incoming request host (for local development).

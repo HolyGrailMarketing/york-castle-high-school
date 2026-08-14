@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { User, Application, SixthFormApplication, SixthFormInterview, Course, BlogPost, Event, Document, Request } from '../types';
+import type { User, Application, SixthFormApplication, SixthFormInterview, Course, BlogPost, Event, Document, BooklistEntry, Request } from '../types';
 
 // Use relative path since everything is served from the same server
 // This works in both development and production when served from backend
@@ -58,7 +58,7 @@ class ApiService {
     return this.request<{ user: User }>('GET', `/users/${id}`);
   }
 
-  async createUser(data: { email: string; password?: string; name: string; role?: string; phone?: string; authMethod?: 'EMAIL' | 'GOOGLE'; notifyGeneralRequests?: boolean; notifySixthFormApps?: boolean; notifyAdmissions?: boolean }) {
+  async createUser(data: { email: string; password?: string; name: string; role?: string; phone?: string; authMethod?: 'EMAIL' | 'GOOGLE'; notifyGeneralRequests?: boolean; notifySixthFormApps?: boolean; notifyAdmissions?: boolean; notifyOverdueRequests?: boolean }) {
     return this.request<{ user: User }>('POST', '/users', data);
   }
 
@@ -209,6 +209,33 @@ class ApiService {
 
   async downloadDocument(id: string) {
     window.open(`${API_BASE_URL}/documents/${id}/download`, '_blank');
+  }
+
+  // Booklist
+  async getBooklistEntries(year?: string) {
+    const queryString = year ? `?year=${encodeURIComponent(year)}` : '';
+    return this.request<{ schoolYear: string | null; entries: BooklistEntry[] }>(
+      'GET',
+      `/booklist/all${queryString}`
+    );
+  }
+
+  // Multipart, so this bypasses the generic request() helper - same as uploadDocument.
+  async uploadBooklistEntry(formData: FormData) {
+    return axios.post(`${API_BASE_URL}/booklist`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${this.token}`,
+      },
+    }).then(res => res.data);
+  }
+
+  async updateBooklistEntry(id: string, data: Partial<BooklistEntry>) {
+    return this.request<{ entry: BooklistEntry }>('PUT', `/booklist/${id}`, data);
+  }
+
+  async deleteBooklistEntry(id: string) {
+    return this.request('DELETE', `/booklist/${id}`);
   }
 
   // Requests

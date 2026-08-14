@@ -144,6 +144,36 @@ export const upload = multer({
   },
 });
 
+// Booklists are always a PDF or Word document - no images or spreadsheets.
+const BOOKLIST_MIMES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+];
+
+// Runs the shared validation (name safety, MIME allowlist, extension/MIME
+// cross-check) first, then narrows to document types.
+const booklistFileFilter = (req, file, cb) => {
+  fileFilter(req, file, (error, accepted) => {
+    if (error || !accepted) return cb(error, false);
+    if (!BOOKLIST_MIMES.includes(file.mimetype)) {
+      return cb(new Error('Booklists must be a PDF or Word document (.pdf, .doc, .docx)'), false);
+    }
+    return cb(null, true);
+  });
+};
+
+// Buffers in memory rather than writing to disk: the file is forwarded straight
+// to Supabase Storage (see services/storageService.js), and the serverless
+// filesystem doesn't persist between invocations anyway.
+export const uploadBooklistFile = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: booklistFileFilter,
+  limits: {
+    fileSize: parseInt(process.env.MAX_FILE_SIZE) || 10 * 1024 * 1024, // 10MB default
+  },
+});
+
 
 
 

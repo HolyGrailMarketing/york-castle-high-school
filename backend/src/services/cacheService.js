@@ -76,6 +76,7 @@ const CACHE_KEYS = {
   blogPosts: (published = true) => `blog_posts:${published}`,
   events: (publicOnly = true) => `events:${publicOnly}`,
   documents: (category) => `documents:${category || 'all'}`,
+  booklist: (schoolYear) => `booklist:${schoolYear || 'current'}`,
   userProfile: (userId) => `user_profile:${userId}`,
   applicationsList: (filters) => `applications:${JSON.stringify(filters)}`,
   analytics: (type) => `analytics:${type}`,
@@ -173,6 +174,19 @@ export const setCoursesCache = (courses, pool) => {
 export const invalidateCoursesCache = (pool) => {
   const keys = pool ? [CACHE_KEYS.courses(pool)] : [CACHE_KEYS.courses(), CACHE_KEYS.courses(null)];
   return keys.map(key => deleteCache(key)).every(Boolean);
+};
+
+/**
+ * Cache booklist data
+ */
+export const booklistCacheKey = (schoolYear) => CACHE_KEYS.booklist(schoolYear);
+
+// Drop the cached "current" view plus the specific year that changed, so an
+// admin edit shows up on booklist.html immediately instead of after the TTL.
+export const invalidateBooklistCache = (schoolYear) => {
+  const keys = [CACHE_KEYS.booklist()];
+  if (schoolYear) keys.push(CACHE_KEYS.booklist(schoolYear));
+  return keys.map((key) => deleteCache(key)).every(Boolean);
 };
 
 /**

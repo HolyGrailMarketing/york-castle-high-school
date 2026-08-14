@@ -16,6 +16,7 @@ export interface User {
   notifyGeneralRequests?: boolean;
   notifySixthFormApps?: boolean;
   notifyAdmissions?: boolean;
+  notifyOverdueRequests?: boolean;
   createdAt: string;
   updatedAt?: string;
 }
@@ -154,6 +155,22 @@ export interface Document {
   isPublic: boolean;
   downloadCount: number;
   uploadedBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BooklistEntry {
+  id: string;
+  schoolYear: string;
+  gradeLabel: string;
+  fileName: string;
+  fileUrl: string;
+  storagePath?: string | null;
+  fileSize?: number | null;
+  mimeType?: string | null;
+  sortOrder: number;
+  isPublished: boolean;
+  uploadedBy?: string | null;
   createdAt: string;
   updatedAt: string;
 }
