@@ -1,9 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 import { apiService } from '../services/api';
-import type { SixthFormApplication, SixthFormInterview } from '../types';
+import type { SixthFormApplication, SixthFormInterview, SixthFormNotificationType } from '../types';
 import { exportSixthFormApplicationToPDF } from '../utils/export';
 import Modal from '../components/Modal';
 import './Applications.css';
+
+const NOTIFICATION_TYPES: { value: SixthFormNotificationType; label: string }[] = [
+  { value: 'INTERVIEW_INVITATION', label: 'Interview Invitation' },
+  { value: 'CXC_RESULTS_RELEASED', label: 'CXC Results Released' },
+  { value: 'CUSTOM', label: 'Custom Announcement…' },
+];
+const NOTIFICATION_TYPE_LABELS: Record<SixthFormNotificationType, string> = {
+  INTERVIEW_INVITATION: 'Interview Invitation',
+  CXC_RESULTS_RELEASED: 'CXC Results Released',
+  CUSTOM: 'Custom Announcement',
+};
 
 const RATINGS = [
   { value: 1, label: '1 – Poor' },
@@ -46,17 +57,25 @@ const SixthFormApplications = () => {
   const [activeTab, setActiveTab] = useState<'application' | 'interview'>('application');
   const [statusError, setStatusError] = useState('');
 
-  // Bulk interview-invitation state
+  // Bulk notification state
   const selectAllRef = useRef<HTMLInputElement>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [inviteModalOpen, setInviteModalOpen] = useState(false);
-  const [inviteSending, setInviteSending] = useState(false);
-  const [inviteError, setInviteError] = useState('');
-  const [inviteResult, setInviteResult] = useState<{
+  const [notifyType, setNotifyType] = useState<SixthFormNotificationType | ''>('');
+  const [notifyModalOpen, setNotifyModalOpen] = useState(false);
+  const [notifySending, setNotifySending] = useState(false);
+  const [notifyError, setNotifyError] = useState('');
+  const [notifyResult, setNotifyResult] = useState<{
     message: string;
-    invitedCount: number;
+    notifiedCount: number;
     failed: { id: string; email: string | null; reason: string }[];
   } | null>(null);
+  const [customSubject, setCustomSubject] = useState('');
+  const [customMessage, setCustomMessage] = useState('');
+
+  // "Select all matching the current filter" — reaches beyond the loaded page
+  const [blastMode, setBlastMode] = useState(false);
+  const [blastRecipients, setBlastRecipients] = useState<SixthFormApplication[] | null>(null);
+  const [blastLoading, setBlastLoading] = useState(false);
 
   // Interview state
   const [interview, setInterview] = useState<SixthFormInterview | null>(null);
@@ -83,6 +102,8 @@ const SixthFormApplications = () => {
       const data = await apiService.getSixthFormApplications(params);
       setApplications(data.applications);
       setSelectedIds(new Set());
+      setBlastMode(false);
+      setBlastRecipients(null);
       if (data.pagination) {
         setTotalPages(data.pagination.pages || 1);
         setTotalCount(data.pagination.total || 0);
@@ -182,10 +203,14 @@ const SixthFormApplications = () => {
 
   const toggleSelectAll = () => {
     const allSelected = applications.length > 0 && selectedIds.size === applications.length;
+    setBlastMode(false);
+    setBlastRecipients(null);
     setSelectedIds(allSelected ? new Set() : new Set(applications.map((a) => a.id)));
   };
 
   const toggleSelectOne = (id: string) => {
+    setBlastMode(false);
+    setBlastRecipients(null);
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -197,17 +222,41 @@ const SixthFormApplications = () => {
     });
   };
 
-  const handleSendInvitations = async () => {
-    setInviteError('');
-    setInviteSending(true);
+  // Reach beyond the loaded page: select every applicant matching the
+  // current status filter, not just the ones currently on screen.
+  const selectAllMatching = async () => {
+    setBlastLoading(true);
     try {
-      const result = await apiService.sendInterviewInvitations(Array.from(selectedIds));
-      setInviteResult(result);
+      const params: any = { page: 1, limit: totalCount };
+      if (statusFilter) params.status = statusFilter;
+      const data = await apiService.getSixthFormApplications(params);
+      setBlastRecipients(data.applications);
+      setBlastMode(true);
+      setSelectedIds(new Set(data.applications.map((a) => a.id)));
+    } catch (error) {
+      console.error('Failed to select all matching applicants:', error);
+    } finally {
+      setBlastLoading(false);
+    }
+  };
+
+  const handleSendNotifications = async () => {
+    if (!notifyType) return;
+    setNotifyError('');
+    setNotifySending(true);
+    try {
+      const result = await apiService.sendSixthFormNotifications(
+        Array.from(selectedIds),
+        notifyType,
+        notifyType === 'CUSTOM' ? customSubject : undefined,
+        notifyType === 'CUSTOM' ? customMessage : undefined
+      );
+      setNotifyResult(result);
       fetchApplications();
     } catch (error: any) {
-      setInviteError(error?.error || error?.message || 'Failed to send interview invitations.');
+      setNotifyError(error?.error || error?.message || 'Failed to send notification.');
     } finally {
-      setInviteSending(false);
+      setNotifySending(false);
     }
   };
 
@@ -232,16 +281,48 @@ const SixthFormApplications = () => {
 
       <div className="bulk-actions-bar">
         <span className="bulk-actions-count">
-          {selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Select applicants to send a bulk interview invitation'}
+          {selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Select applicants to send a notification'}
         </span>
+        <select
+          className="filter-select"
+          value={notifyType}
+          onChange={(e) => setNotifyType(e.target.value as SixthFormNotificationType | '')}
+          aria-label="Notification type"
+        >
+          <option value="">Send notification…</option>
+          {NOTIFICATION_TYPES.map((t) => (
+            <option key={t.value} value={t.value}>{t.label}</option>
+          ))}
+        </select>
         <button
           className="btn-invite"
-          disabled={selectedIds.size === 0}
-          onClick={() => { setInviteResult(null); setInviteError(''); setInviteModalOpen(true); }}
+          disabled={selectedIds.size === 0 || !notifyType}
+          onClick={() => { setNotifyResult(null); setNotifyError(''); setCustomSubject(''); setCustomMessage(''); setNotifyModalOpen(true); }}
         >
-          Send Interview Invitation{selectedIds.size > 1 ? 's' : ''}
+          Send
         </button>
       </div>
+
+      {!blastMode && applications.length > 0 && selectedIds.size === applications.length && totalCount > applications.length && (
+        <div className="bulk-actions-bar" style={{ marginTop: -8 }}>
+          <span className="bulk-actions-count">
+            All {applications.length} on this page are selected.
+          </span>
+          <button className="btn-invite" onClick={selectAllMatching} disabled={blastLoading}>
+            {blastLoading ? 'Selecting…' : `Select all ${totalCount} matching ${statusFilter ? statusFilter.replace('_', ' ').toLowerCase() : 'all statuses'}`}
+          </button>
+        </div>
+      )}
+      {blastMode && (
+        <div className="bulk-actions-bar" style={{ marginTop: -8 }}>
+          <span className="bulk-actions-count">
+            All {selectedIds.size} applicants matching {statusFilter ? statusFilter.replace('_', ' ').toLowerCase() : 'all statuses'} are selected.
+          </span>
+          <button className="pagination-btn" onClick={() => { setBlastMode(false); setBlastRecipients(null); setSelectedIds(new Set()); }}>
+            Clear
+          </button>
+        </div>
+      )}
 
       <div className="applications-list">
         <div className="table-scroll">
@@ -261,7 +342,7 @@ const SixthFormApplications = () => {
                 <th>Email</th>
                 <th>Phone</th>
                 <th>Status</th>
-                <th>Invitation</th>
+                <th>Notifications</th>
                 <th>Submitted</th>
                 <th className="col-actions">Actions</th>
               </tr>
@@ -285,13 +366,13 @@ const SixthFormApplications = () => {
                       {app.status.replace('_', ' ')}
                     </span>
                   </td>
-                  <td data-label="Invitation" className="col-nowrap">
-                    {app.interviewInvitedAt ? (
-                      <span className="invited-badge" title={new Date(app.interviewInvitedAt).toLocaleString()}>
-                        Invited {new Date(app.interviewInvitedAt).toLocaleDateString()}
+                  <td data-label="Notifications" className="col-nowrap">
+                    {app.notifications && app.notifications.length > 0 ? (
+                      <span className="invited-badge" title={new Date(app.notifications[0].sentAt).toLocaleString()}>
+                        {NOTIFICATION_TYPE_LABELS[app.notifications[0].type]} {new Date(app.notifications[0].sentAt).toLocaleDateString()}
                       </span>
                     ) : (
-                      <span className="invited-badge invited-badge--none">Not invited</span>
+                      <span className="invited-badge invited-badge--none">None sent</span>
                     )}
                   </td>
                   <td data-label="Submitted" className="col-nowrap">{new Date(app.submittedAt).toLocaleDateString()}</td>
@@ -580,73 +661,124 @@ const SixthFormApplications = () => {
         </div>
       )}
 
-      {inviteModalOpen && (() => {
-        const selectedApps = applications.filter((a) => selectedIds.has(a.id));
-        const alreadyInvited = selectedApps.filter((a) => a.interviewInvitedAt);
+      {notifyModalOpen && notifyType && (() => {
+        const pool = blastMode && blastRecipients ? blastRecipients : applications;
+        const selectedApps = pool.filter((a) => selectedIds.has(a.id));
+        const alreadyNotified = selectedApps.filter((a) => a.notifications?.some((n) => n.type === notifyType));
+        const title = NOTIFICATION_TYPE_LABELS[notifyType];
+        const customValid = notifyType !== 'CUSTOM' || (customSubject.trim().length > 0 && customMessage.trim().length > 0);
         return (
           <Modal
-            isOpen={inviteModalOpen}
-            onClose={() => !inviteSending && setInviteModalOpen(false)}
-            title="Send Interview Invitation"
+            isOpen={notifyModalOpen}
+            onClose={() => !notifySending && setNotifyModalOpen(false)}
+            title={`Send ${title}`}
             size="medium"
           >
-            {!inviteResult ? (
+            {!notifyResult ? (
               <>
-                <div className="invite-session-details">
-                  <h4 className="detail-section-heading">Fixed Interview Session</h4>
-                  <div><strong>Date:</strong> Tuesday, August 25, 2026</div>
-                  <div><strong>Time:</strong> 8:30 a.m.</div>
-                  <div><strong>Location:</strong> York Castle High School, Brown's Town, St. Ann</div>
-                  <div><strong>Processing Fee:</strong> J$2,000 (non-refundable, payable on the day)</div>
-                  <div style={{ marginTop: 8 }}>
-                    <strong>Documents to bring:</strong>
-                    <ul>
-                      <li>Copy of birth certificate</li>
-                      <li>Copy of TRN</li>
-                      <li>Copy of SRN</li>
-                      <li>Copy of CSEC results</li>
-                      <li>Two passport-sized photographs</li>
-                      <li>Last two school reports</li>
-                      <li>Two recommendation letters (Principal, Teacher, JP, or Minister of Religion)</li>
-                    </ul>
+                {notifyType === 'INTERVIEW_INVITATION' && (
+                  <div className="invite-session-details">
+                    <h4 className="detail-section-heading">Fixed Interview Session</h4>
+                    <div><strong>Date:</strong> Tuesday, August 25, 2026</div>
+                    <div><strong>Time:</strong> 8:30 a.m.</div>
+                    <div><strong>Location:</strong> York Castle High School, Brown's Town, St. Ann</div>
+                    <div><strong>Processing Fee:</strong> J$2,000 (non-refundable, payable on the day)</div>
+                    <div style={{ marginTop: 8 }}>
+                      <strong>Documents to bring:</strong>
+                      <ul>
+                        <li>Copy of birth certificate</li>
+                        <li>Copy of TRN</li>
+                        <li>Copy of SRN</li>
+                        <li>Copy of CSEC results</li>
+                        <li>Two passport-sized photographs</li>
+                        <li>Last two school reports</li>
+                        <li>Two recommendation letters (Principal, Teacher, JP, or Minister of Religion)</li>
+                      </ul>
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {notifyType === 'CXC_RESULTS_RELEASED' && (
+                  <div className="invite-session-details">
+                    <h4 className="detail-section-heading">Preview</h4>
+                    <p>
+                      Tells each applicant CXC/CSEC results are out and to sign in
+                      (with their application password, Forgot Password, or
+                      Continue with Google) and use the "Update CXC Results"
+                      button on their application status page.
+                    </p>
+                  </div>
+                )}
+
+                {notifyType === 'CUSTOM' && (
+                  <div className="invite-session-details">
+                    <h4 className="detail-section-heading">Compose Announcement</h4>
+                    <div style={{ marginBottom: 12 }}>
+                      <label style={{ display: 'block', fontWeight: 600, fontSize: 13, marginBottom: 4 }}>Subject</label>
+                      <input
+                        type="text"
+                        value={customSubject}
+                        onChange={(e) => setCustomSubject(e.target.value)}
+                        maxLength={200}
+                        placeholder="e.g. Important update about your application"
+                        style={{ width: '100%', padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 14 }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontWeight: 600, fontSize: 13, marginBottom: 4 }}>Message</label>
+                      <textarea
+                        value={customMessage}
+                        onChange={(e) => setCustomMessage(e.target.value)}
+                        maxLength={5000}
+                        rows={6}
+                        placeholder="Write your announcement. Separate paragraphs with a blank line."
+                        style={{ width: '100%', padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 14, resize: 'vertical' }}
+                      />
+                    </div>
+                    <p style={{ fontSize: 12, color: '#6b7280', marginTop: 6 }}>
+                      This will be wrapped in the standard York Castle branded email template.
+                    </p>
+                  </div>
+                )}
 
                 <h4 className="detail-section-heading">Recipients ({selectedApps.length})</h4>
                 <ul className="invite-recipient-list">
-                  {selectedApps.map((a) => (
-                    <li key={a.id}>
-                      <span>{a.firstName} {a.lastName} — {a.email}</span>
-                      {a.interviewInvitedAt && (
-                        <span className="invited-badge">Already invited {new Date(a.interviewInvitedAt).toLocaleDateString()}</span>
-                      )}
-                    </li>
-                  ))}
+                  {selectedApps.map((a) => {
+                    const lastForType = a.notifications?.find((n) => n.type === notifyType);
+                    return (
+                      <li key={a.id}>
+                        <span>{a.firstName} {a.lastName} — {a.email}</span>
+                        {lastForType && (
+                          <span className="invited-badge">Already sent {new Date(lastForType.sentAt).toLocaleDateString()}</span>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
-                {alreadyInvited.length > 0 && (
+                {alreadyNotified.length > 0 && notifyType !== 'CUSTOM' && (
                   <div className="interview-warning">
-                    {alreadyInvited.length} of these applicants were already invited. Sending again will re-send the invitation email.
+                    {alreadyNotified.length} of these applicants already received "{title}". Sending again will re-send it.
                   </div>
                 )}
-                {inviteError && <div className="interview-error">{inviteError}</div>}
+                {notifyError && <div className="interview-error">{notifyError}</div>}
 
                 <div className="modal-footer-actions">
-                  <button className="btn-close" onClick={() => setInviteModalOpen(false)} disabled={inviteSending}>Cancel</button>
-                  <button className="btn-approve" onClick={handleSendInvitations} disabled={inviteSending}>
-                    {inviteSending ? 'Sending…' : `Send to ${selectedApps.length}`}
+                  <button className="btn-close" onClick={() => setNotifyModalOpen(false)} disabled={notifySending}>Cancel</button>
+                  <button className="btn-approve" onClick={handleSendNotifications} disabled={notifySending || !customValid}>
+                    {notifySending ? 'Sending…' : `Send to ${selectedApps.length}`}
                   </button>
                 </div>
               </>
             ) : (
               <>
                 <div className="invite-result-summary">
-                  {inviteResult.message}
+                  {notifyResult.message}
                 </div>
-                {inviteResult.failed.length > 0 && (
+                {notifyResult.failed.length > 0 && (
                   <>
-                    <h4 className="detail-section-heading">Failed ({inviteResult.failed.length})</h4>
+                    <h4 className="detail-section-heading">Failed ({notifyResult.failed.length})</h4>
                     <ul className="invite-recipient-list">
-                      {inviteResult.failed.map((fail) => (
+                      {notifyResult.failed.map((fail) => (
                         <li key={fail.id}>
                           <span>{fail.email || fail.id}</span>
                           <span>{fail.reason}</span>
@@ -656,7 +788,7 @@ const SixthFormApplications = () => {
                   </>
                 )}
                 <div className="modal-footer-actions">
-                  <button className="btn-close" onClick={() => setInviteModalOpen(false)}>Close</button>
+                  <button className="btn-close" onClick={() => setNotifyModalOpen(false)}>Close</button>
                 </div>
               </>
             )}

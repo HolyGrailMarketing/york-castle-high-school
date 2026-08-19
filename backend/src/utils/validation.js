@@ -255,13 +255,26 @@ export const sixthFormUpdateValidation = [
   body('subjectChoices').optional().isObject().withMessage('Subject choices must be a valid object'),
 ];
 
-export const sixthFormBulkInviteValidation = [
+export const sixthFormBulkNotifyValidation = [
   body('applicationIds')
     .isArray({ min: 1 })
     .withMessage('applicationIds must be a non-empty array'),
   body('applicationIds.*')
     .isUUID()
     .withMessage('Each applicationId must be a valid UUID'),
+  body('type')
+    .isIn(['INTERVIEW_INVITATION', 'CXC_RESULTS_RELEASED', 'CUSTOM'])
+    .withMessage('Invalid notification type'),
+  body('subject')
+    .if(body('type').equals('CUSTOM'))
+    .trim()
+    .isLength({ min: 1, max: 200 })
+    .withMessage('Subject is required for a custom announcement (max 200 characters)'),
+  body('message')
+    .if(body('type').equals('CUSTOM'))
+    .trim()
+    .isLength({ min: 1, max: 5000 })
+    .withMessage('Message is required for a custom announcement (max 5000 characters)'),
 ];
 
 export const userUpdateValidation = [

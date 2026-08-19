@@ -1,0 +1,21 @@
+-- Enable Row Level Security (RLS) on public."SixthFormNotification".
+--
+-- Follow-up to 20260723133201_enable_rls_all_public_tables.sql. That migration
+-- enabled RLS table-by-table by name; there is no event trigger, so any table
+-- Prisma creates afterwards ships with RLS DISABLED and raises a fresh
+-- rls_disabled_in_public Security Advisor error. This clears it for the
+-- SixthFormNotification table added by the Prisma migration
+-- 20260818044720_add_sixth_form_notification_log.
+--
+-- No policies are defined, matching the established convention: the table is
+-- deny-by-default for the anon/authenticated API roles, while Prisma (connecting
+-- as `postgres`) bypasses RLS and is unaffected. All access to this table is
+-- served by the Express backend, not by PostgREST.
+--
+-- Table grants need no action here: the ALTER DEFAULT PRIVILEGES statements in
+-- 20260723133854_revoke_data_api_grants_public.sql already prevent new tables
+-- created by `postgres` from being granted to anon/authenticated.
+--
+-- ALTER TABLE ... ENABLE ROW LEVEL SECURITY is idempotent and safe to re-run.
+
+ALTER TABLE public."SixthFormNotification" ENABLE ROW LEVEL SECURITY;

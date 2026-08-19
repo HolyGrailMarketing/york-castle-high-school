@@ -94,8 +94,17 @@ export interface SixthFormApplication {
   reviewedAt?: string;
   reviewedBy?: string;
   interviewInvitedAt?: string;
+  notifications?: SixthFormNotification[];
   userId?: string;
   user?: User;
+}
+
+export type SixthFormNotificationType = 'INTERVIEW_INVITATION' | 'CXC_RESULTS_RELEASED' | 'CUSTOM';
+
+export interface SixthFormNotification {
+  type: SixthFormNotificationType;
+  subject: string;
+  sentAt: string;
 }
 
 export interface Course {

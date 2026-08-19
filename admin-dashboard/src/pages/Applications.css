@@ -156,14 +156,27 @@
 }
 
 .btn-close {
-  width: 100%;
-  padding: 10px;
+  padding: 10px 18px;
   background-color: #6c757d;
   color: white;
-  border: none;
-  border-radius: 4px;
+  border: 1px solid #6c757d;
+  border-radius: 6px;
   cursor: pointer;
-  margin-top: 20px;
+  font-size: 14px;
+}
+
+/* .btn-close always lives in .modal-footer-actions alongside .btn-pdf-lg /
+   .btn-approve, both of which use this same 10px/18px, 6px-radius sizing --
+   kept in sync so footer buttons read as one consistent set. */
+.modal-footer-actions .btn-approve {
+  padding: 10px 18px;
+  border: 1px solid #28a745;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.modal-footer-actions .btn-approve:disabled {
+  border-color: #a8d5b5;
 }
 
 /* ── Modal tabs ── */

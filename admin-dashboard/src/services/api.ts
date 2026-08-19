@@ -102,12 +102,12 @@ class ApiService {
     return this.request<{ application: SixthFormApplication }>('PUT', `/sixth-form/${id}/status`, { status, notes });
   }
 
-  async sendInterviewInvitations(applicationIds: string[]) {
+  async sendSixthFormNotifications(applicationIds: string[], type: string, subject?: string, message?: string) {
     return this.request<{
       message: string;
-      invitedCount: number;
+      notifiedCount: number;
       failed: { id: string; email: string | null; reason: string }[];
-    }>('POST', '/sixth-form/interview-invitations', { applicationIds });
+    }>('POST', '/sixth-form/notifications', { applicationIds, type, subject, message });
   }
 
   async getInterview(applicationId: string) {

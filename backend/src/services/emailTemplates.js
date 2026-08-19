@@ -654,6 +654,75 @@ export const templates = {
       text: `You're Invited to Interview\n\nDear ${name},\n\nYou have been invited to interview for the Sixth Form Programme at York Castle High School.\n\nDate: Tuesday, August 25, 2026\nTime: 8:30 a.m.\nLocation: York Castle High School, Brown's Town, St. Ann\n\nPlease bring:\n${textDocs}\n\nA non-refundable processing fee of J$2,000 is payable on the day of the interview.\n\nWe look forward to meeting you.\n\nBest regards,\nYork Castle High School`,
     };
   },
+
+  /**
+   * CXC/CSEC results-released notice - sent in bulk to Sixth Form applicants
+   * once results come out, pointing them to cxc-update.html via the sign-in page.
+   */
+  cxcResultsReleased: (name, loginUrl) => {
+    const signInUrl = `${loginUrl}/signin.html`;
+
+    const content = `
+      <h2 style="color: ${schoolColors.secondary}; margin-top: 0;">CXC Results Are Out</h2>
+      <p>Dear ${name},</p>
+      <p>CXC/CSEC results have been released. If you sat exams this year, please log in to your Sixth Form application as soon as possible and update your results — this is an important part of completing your application review.</p>
+      <div class="highlight">
+        <p style="margin-top: 0;"><strong>Signing in:</strong></p>
+        <ul style="margin-top: 8px; margin-bottom: 0;">
+          <li>Use the email address you applied with.</li>
+          <li>Your password is the one shown on screen when you submitted your application. Forgotten it? Use <strong>Forgot password</strong> on the sign-in page.</li>
+          <li>You can also <strong>Continue with Google</strong>, if that email address is linked to a Google account.</li>
+        </ul>
+      </div>
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="${signInUrl}" class="button" style="display: inline-block;">Update My CXC Results</a>
+      </p>
+      <p>Once signed in, look for the <strong>Update CXC Results</strong> button on your application status page.</p>
+      <p>If you have any questions, please contact our admissions office at <a href="mailto:yorkcastle.high.san@moey.gov.jm" style="color: ${schoolColors.secondary}; text-decoration: none;">yorkcastle.high.san@moey.gov.jm</a> or call us at <a href="tel:+1876975-2217" style="color: ${schoolColors.secondary}; text-decoration: none;">+1 876 975-2217</a>.</p>
+      <p>Best regards,<br><strong>York Castle High School</strong><br><span style="color: ${schoolColors.textLight}; font-size: 14px;">Admissions Office</span></p>
+    `;
+
+    return {
+      subject: 'CXC Results Are Out — Update Your Sixth Form Application',
+      html: baseTemplate(content, 'CXC Results Released'),
+      text: `CXC Results Are Out\n\nDear ${name},\n\nCXC/CSEC results have been released. Please log in to your Sixth Form application as soon as possible and update your results.\n\nSigning in:\n- Use the email address you applied with.\n- Your password is the one shown on screen when you submitted your application. Forgotten it? Use Forgot password on the sign-in page.\n- You can also Continue with Google, if that email is linked to a Google account.\n\nSign in at: ${signInUrl}\n\nOnce signed in, look for the Update CXC Results button on your application status page.\n\nQuestions? yorkcastle.high.san@moey.gov.jm or +1 876 975-2217.\n\nBest regards,\nYork Castle High School — Admissions Office`,
+    };
+  },
+
+  /**
+   * Free-form bulk announcement composed by an admin from the Sixth Form
+   * Applications dashboard. `message` is admin-authored plain text (not HTML)
+   * -- escaped and turned into paragraphs so it can't inject markup, then
+   * wrapped in the same branded template as every other outbound email.
+   */
+  customAnnouncement: (name, subject, message) => {
+    const paragraphs = String(message ?? '')
+      .split(/\n\s*\n/)
+      .map((p) => escapeHtml(p.trim()).replace(/\n/g, '<br>'))
+      .filter(Boolean)
+      .map((p) => `<p>${p}</p>`)
+      .join('\n');
+
+    const content = `
+      <h2 style="color: ${schoolColors.secondary}; margin-top: 0;">${escapeHtml(subject)}</h2>
+      <p>Dear ${name},</p>
+      ${paragraphs}
+      <p>If you have any questions, please contact our admissions office at <a href="mailto:yorkcastle.high.san@moey.gov.jm" style="color: ${schoolColors.secondary}; text-decoration: none;">yorkcastle.high.san@moey.gov.jm</a> or call us at <a href="tel:+1876975-2217" style="color: ${schoolColors.secondary}; text-decoration: none;">+1 876 975-2217</a>.</p>
+      <p>Best regards,<br><strong>York Castle High School</strong></p>
+    `;
+
+    const textParagraphs = String(message ?? '')
+      .split(/\n\s*\n/)
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .join('\n\n');
+
+    return {
+      subject,
+      html: baseTemplate(content, subject),
+      text: `${subject}\n\nDear ${name},\n\n${textParagraphs}\n\nQuestions? yorkcastle.high.san@moey.gov.jm or +1 876 975-2217.\n\nBest regards,\nYork Castle High School`,
+    };
+  },
 };
 
 

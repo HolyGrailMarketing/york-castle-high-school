@@ -6,9 +6,10 @@ import {
   sendAdminSixthFormNotification,
   getNotificationRecipients,
   isEmailConfigured,
-  sendSixthFormInterviewInvitation,
+  sendEmail,
 } from '../services/emailService.js';
 import { auditLog } from '../middleware/auditLog.js';
+import { NOTIFICATION_TYPES } from '../services/notificationTypes.js';
 
 // Sixth Form applications closed on this date. Jamaica does not observe DST,
 // so a fixed -05:00 offset is always correct. Kept in sync with the deadline
@@ -41,8 +42,12 @@ const notifyAdminOfNewSixthForm = async (req, application) => {
 
 export const getSixthFormApplications = async (req, res, next) => {
   try {
-    const { status, search, page = 1, limit = 20 } = req.query;
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const { status, search, page = 1 } = req.query;
+    // Clamped rather than left uncapped so the admin dashboard's "select all
+    // matching this filter" action (which asks for limit = total) can't be
+    // used to pull an unbounded result set.
+    const limit = Math.min(parseInt(req.query.limit) || 20, 1000);
+    const skip = (parseInt(page) - 1) * limit;
 
     const where = {};
     if (status) where.status = status;
@@ -58,7 +63,7 @@ export const getSixthFormApplications = async (req, res, next) => {
       prisma.sixthFormApplication.findMany({
         where,
         skip,
-        take: parseInt(limit),
+        take: limit,
         include: {
           user: {
             select: {
@@ -66,6 +71,10 @@ export const getSixthFormApplications = async (req, res, next) => {
               email: true,
               name: true,
             },
+          },
+          notifications: {
+            select: { type: true, subject: true, sentAt: true },
+            orderBy: { sentAt: 'desc' },
           },
         },
         orderBy: { submittedAt: 'desc' },
@@ -77,9 +86,9 @@ export const getSixthFormApplications = async (req, res, next) => {
       applications,
       pagination: {
         page: parseInt(page),
-        limit: parseInt(limit),
+        limit,
         total,
-        pages: Math.ceil(total / parseInt(limit)),
+        pages: Math.ceil(total / limit),
       },
     });
   } catch (error) {
@@ -285,25 +294,27 @@ export const updateSixthFormStatus = async (req, res, next) => {
   }
 };
 
-// How many interview-invitation emails to send concurrently per batch. Keeps
-// a large selection from hammering Resend or the request timeout, without the
+// How many notification emails to send concurrently per batch. Keeps a large
+// selection from hammering Resend or the request timeout, without the
 // overhead of a real job queue for what's expected to be at most a few dozen
-// recipients at a time.
-const INVITE_BATCH_SIZE = 5;
+// (occasionally a few hundred) recipients at a time.
+const NOTIFY_BATCH_SIZE = 5;
 
-// Send the fixed interview-session invitation email to a batch of selected
-// applicants. Unlike the best-effort admin-notification emails elsewhere in
-// this file, sending the email IS the point of this action, so a
-// misconfigured email service is a hard error rather than a silent no-op.
-export const sendInterviewInvitations = async (req, res, next) => {
+// Send a bulk notification (a fixed template, or an admin-composed custom
+// announcement) to a batch of selected Sixth Form applicants. Unlike the
+// best-effort admin-notification emails elsewhere in this file, sending the
+// email IS the point of this action, so a misconfigured email service is a
+// hard error rather than a silent no-op.
+export const sendSixthFormNotifications = async (req, res, next) => {
   try {
     if (!isEmailConfigured()) {
       return res.status(503).json({
-        error: 'Email service is not configured. Interview invitations cannot be sent right now.',
+        error: 'Email service is not configured. Notifications cannot be sent right now.',
       });
     }
 
-    const { applicationIds } = req.body;
+    const { applicationIds, type, subject, message } = req.body;
+    const notificationType = NOTIFICATION_TYPES[type];
 
     const applications = await prisma.sixthFormApplication.findMany({
       where: { id: { in: applicationIds } },
@@ -315,28 +326,34 @@ export const sendInterviewInvitations = async (req, res, next) => {
       .filter((id) => !foundIds.has(id))
       .map((id) => ({ id, email: null, reason: 'Application not found' }));
 
-    let invitedCount = 0;
-    const invitedIds = [];
+    const ctx = { loginUrl: getBaseUrl(req), subject, message };
+    // Every recipient gets the same subject for a given send (fixed per
+    // preset template, or the admin's own `subject` for a custom one) — build
+    // once up front rather than recomputing it per recipient below.
+    const sentSubject = notificationType.build('Applicant', ctx).subject;
 
-    for (let i = 0; i < applications.length; i += INVITE_BATCH_SIZE) {
-      const batch = applications.slice(i, i + INVITE_BATCH_SIZE);
+    let notifiedCount = 0;
+    const notifiedIds = [];
+
+    for (let i = 0; i < applications.length; i += NOTIFY_BATCH_SIZE) {
+      const batch = applications.slice(i, i + NOTIFY_BATCH_SIZE);
       const results = await Promise.allSettled(
-        batch.map((app) =>
-          sendSixthFormInterviewInvitation(
-            app.email,
-            [app.firstName, app.lastName].filter(Boolean).join(' ') || 'Applicant'
-          )
-        )
+        batch.map((app) => {
+          const name = [app.firstName, app.lastName].filter(Boolean).join(' ') || 'Applicant';
+          const template = notificationType.build(name, ctx);
+          return sendEmail(app.email, template.subject, template.text, template.html);
+        })
       );
       results.forEach((result, idx) => {
         const app = batch[idx];
         if (result.status === 'fulfilled') {
-          invitedCount += 1;
-          invitedIds.push(app.id);
+          notifiedCount += 1;
+          notifiedIds.push(app.id);
         } else {
-          logger.error('Failed to send sixth-form interview invitation', {
+          logger.error('Failed to send sixth-form notification', {
             applicationId: app.id,
             email: app.email,
+            type,
             error: result.reason?.message,
           });
           failed.push({ id: app.id, email: app.email, reason: result.reason?.message || 'Failed to send email' });
@@ -344,35 +361,41 @@ export const sendInterviewInvitations = async (req, res, next) => {
       });
     }
 
-    if (invitedIds.length > 0) {
-      await prisma.sixthFormApplication.updateMany({
-        where: { id: { in: invitedIds } },
-        data: { interviewInvitedAt: new Date() },
+    if (notifiedIds.length > 0) {
+      await prisma.sixthFormNotification.createMany({
+        data: notifiedIds.map((applicationId) => ({
+          applicationId,
+          type,
+          subject: sentSubject,
+          sentBy: req.user.id,
+        })),
       });
 
-      // One audit entry per invited application (real entityId), matching the
+      // One audit entry per notified application (real entityId), matching the
       // AuditLog schema's required entityId and its [entityType, entityId]
-      // index — so each invitation is individually traceable for DPA compliance.
+      // index — so each notification is individually traceable for DPA compliance.
       await Promise.all(
-        invitedIds.map((id) =>
+        notifiedIds.map((id) =>
           auditLog('update', 'SixthFormApplication', id, req.user.id, req.user.email, {
-            action: 'bulk_interview_invitation',
+            action: 'bulk_notification',
+            type,
             batchRequestedCount: applicationIds.length,
-            batchInvitedCount: invitedCount,
+            batchNotifiedCount: notifiedCount,
           })
         )
       );
     }
 
-    logger.info('Sixth-form interview invitations sent', {
+    logger.info('Sixth-form notifications sent', {
+      type,
       requestedCount: applicationIds.length,
-      invitedCount,
+      notifiedCount,
       failedCount: failed.length,
     });
 
     res.json({
-      message: `Interview invitation sent to ${invitedCount} of ${applicationIds.length} selected applicant(s).`,
-      invitedCount,
+      message: `${notificationType.label} sent to ${notifiedCount} of ${applicationIds.length} selected applicant(s).`,
+      notifiedCount,
       failed,
     });
   } catch (error) {

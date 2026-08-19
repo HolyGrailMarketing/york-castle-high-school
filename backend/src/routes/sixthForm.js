@@ -7,12 +7,12 @@ import {
   createSixthFormApplication,
   updateSixthFormStatus,
   deleteSixthFormApplication,
-  sendInterviewInvitations,
+  sendSixthFormNotifications,
 } from '../controllers/sixthFormController.js';
 import { getInterview, saveInterview } from '../controllers/interviewController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { publicRequestLimiter, adminLimiter, generalLimiter } from '../middleware/rateLimiter.js';
-import { sixthFormValidation, sixthFormUpdateValidation, sixthFormBulkInviteValidation, handleValidationErrors, sanitizeBody } from '../utils/validation.js';
+import { sixthFormValidation, sixthFormUpdateValidation, sixthFormBulkNotifyValidation, handleValidationErrors, sanitizeBody } from '../utils/validation.js';
 
 const router = express.Router();
 
@@ -34,8 +34,14 @@ router.post('/', publicRequestLimiter, sanitizeBody, sixthFormValidation, handle
 // Update application status (admin/staff only)
 router.put('/:id/status', adminLimiter, authenticate, authorize('ADMIN', 'STAFF', 'TEACHER'), updateSixthFormStatus);
 
-// Bulk-send the fixed interview-session invitation email to selected applicants (admin/staff only)
-router.post('/interview-invitations', adminLimiter, authenticate, authorize('ADMIN', 'STAFF', 'TEACHER'), sanitizeBody, sixthFormBulkInviteValidation, handleValidationErrors, sendInterviewInvitations);
+// Bulk-send a notification/announcement (interview invitation, CXC results released,
+// or a custom one-off message) to selected applicants (admin/staff only).
+// Deliberately skips `sanitizeBody`: its blanket HTML-entity escaping would
+// corrupt the plain-text email body and double-escape the HTML body, since
+// `customAnnouncement` (emailTemplates.js) already escapes `subject`/`message`
+// itself at the one place that needs it. `applicationIds` and `type` are
+// validated against a UUID/enum shape below regardless.
+router.post('/notifications', adminLimiter, authenticate, authorize('ADMIN', 'STAFF', 'TEACHER'), sixthFormBulkNotifyValidation, handleValidationErrors, sendSixthFormNotifications);
 
 // Delete application (admin only)
 router.delete('/:id', adminLimiter, authenticate, authorize('ADMIN'), deleteSixthFormApplication);

@@ -140,10 +140,24 @@ model SixthFormApplication {
   userId          String?
   user            User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
   interview       SixthFormInterview?
+  notifications   SixthFormNotification[]
 
   @@index([status])
   @@index([submittedAt])
   @@index([userId])
+}
+
+model SixthFormNotification {
+  id            String               @id @default(uuid())
+  applicationId String
+  application   SixthFormApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  type          String               // 'INTERVIEW_INVITATION' | 'CXC_RESULTS_RELEASED' | 'CUSTOM'
+  subject       String
+  sentAt        DateTime             @default(now())
+  sentBy        String?              // admin user id
+
+  @@index([applicationId])
+  @@index([type])
 }
 
 model SixthFormInterview {
