@@ -264,7 +264,7 @@ export const templates = {
         <p style="margin-bottom: 0;"><strong>Request ID:</strong> <span style="font-family: monospace; background: ${schoolColors.lightGray}; padding: 4px 8px; border-radius: 4px;">${requestId}</span></p>
       </div>
       <p style="text-align: center; margin: 30px 0;">
-        <a href="${requestUrl}" class="button" style="display: inline-block;">View Request</a>
+        <a href="${requestUrl}" class="button" style="display: inline-block; padding: 14px 28px; background: ${schoolColors.secondary}; color: ${schoolColors.charcoal}; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px;">View Request</a>
       </p>
       <p style="color: ${schoolColors.textLight}; font-size: 14px;">If the button above doesn't work, copy and paste this link into your browser:<br>
         <a href="${requestUrl}" style="color: ${schoolColors.goldDark}; word-break: break-all;">${requestUrl}</a>
@@ -300,7 +300,7 @@ export const templates = {
         <p style="margin-bottom: 0;"><strong>Request ID:</strong> <span style="font-family: monospace; background: ${schoolColors.lightGray}; padding: 4px 8px; border-radius: 4px;">${requestId}</span></p>
       </div>
       <p style="text-align: center; margin: 30px 0;">
-        <a href="${requestUrl}" class="button" style="display: inline-block;">View Request</a>
+        <a href="${requestUrl}" class="button" style="display: inline-block; padding: 14px 28px; background: ${schoolColors.secondary}; color: ${schoolColors.charcoal}; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px;">View Request</a>
       </p>
       <p style="color: ${schoolColors.textLight}; font-size: 14px;">If the button above doesn't work, copy and paste this link into your browser:<br>
         <a href="${requestUrl}" style="color: ${schoolColors.goldDark}; word-break: break-all;">${requestUrl}</a>
@@ -353,7 +353,7 @@ export const templates = {
         <tbody>${rows}</tbody>
       </table>
       <p style="text-align: center; margin: 30px 0;">
-        <a href="${dashboardUrl}" class="button" style="display: inline-block;">Open Requests</a>
+        <a href="${dashboardUrl}" class="button" style="display: inline-block; padding: 14px 28px; background: ${schoolColors.secondary}; color: ${schoolColors.charcoal}; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px;">Open Requests</a>
       </p>
       <p style="color: ${schoolColors.textLight}; font-size: 14px;">If the button above doesn't work, copy and paste this link into your browser:<br>
         <a href="${dashboardUrl}" style="color: ${schoolColors.goldDark}; word-break: break-all;">${dashboardUrl}</a>
@@ -403,7 +403,7 @@ export const templates = {
         <p style="margin-bottom: 0;"><strong>Application ID:</strong> <span style="font-family: monospace; background: ${schoolColors.lightGray}; padding: 4px 8px; border-radius: 4px;">${applicationId}</span></p>
       </div>
       <p style="text-align: center; margin: 30px 0;">
-        <a href="${applicationUrl}" class="button" style="display: inline-block;">View Application</a>
+        <a href="${applicationUrl}" class="button" style="display: inline-block; padding: 14px 28px; background: ${schoolColors.secondary}; color: ${schoolColors.charcoal}; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px;">View Application</a>
       </p>
       <p style="color: ${schoolColors.textLight}; font-size: 14px;">If the button above doesn't work, copy and paste this link into your browser:<br>
         <a href="${applicationUrl}" style="color: ${schoolColors.goldDark}; word-break: break-all;">${applicationUrl}</a>
@@ -437,7 +437,7 @@ export const templates = {
         <p style="margin-bottom: 0;"><strong>Application ID:</strong> <span style="font-family: monospace; background: ${schoolColors.lightGray}; padding: 4px 8px; border-radius: 4px;">${applicationId}</span></p>
       </div>
       <p style="text-align: center; margin: 30px 0;">
-        <a href="${applicationUrl}" class="button" style="display: inline-block;">View Application</a>
+        <a href="${applicationUrl}" class="button" style="display: inline-block; padding: 14px 28px; background: ${schoolColors.secondary}; color: ${schoolColors.charcoal}; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px;">View Application</a>
       </p>
       <p style="color: ${schoolColors.textLight}; font-size: 14px;">If the button above doesn't work, copy and paste this link into your browser:<br>
         <a href="${applicationUrl}" style="color: ${schoolColors.goldDark}; word-break: break-all;">${applicationUrl}</a>
@@ -573,7 +573,7 @@ export const templates = {
           <p style="margin-bottom: 0; color: ${schoolColors.textLight}; font-size: 14px;"><em>Make sure you're using a Google account from one of these domains.</em></p>
         </div>
         <p style="text-align: center; margin: 30px 0;">
-          <a href="${loginUrl}" class="button" style="display: inline-block;">Sign In with Google</a>
+          <a href="${loginUrl}" class="button" style="display: inline-block; padding: 14px 28px; background: ${schoolColors.secondary}; color: ${schoolColors.charcoal}; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px;">Sign In with Google</a>
         </p>
       `
       : `
@@ -584,7 +584,7 @@ export const templates = {
         </div>
         <p>You can now sign in to the portal using your email and password.</p>
         <p style="text-align: center; margin: 30px 0;">
-          <a href="${loginUrl}" class="button" style="display: inline-block;">Sign In to Portal</a>
+          <a href="${loginUrl}" class="button" style="display: inline-block; padding: 14px 28px; background: ${schoolColors.secondary}; color: ${schoolColors.charcoal}; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px;">Sign In to Portal</a>
         </p>
         <p style="color: ${schoolColors.textLight}; font-size: 14px;"><em>If you need to reset your password, please contact the system administrator.</em></p>
       `;
@@ -675,7 +675,7 @@ export const templates = {
         </ul>
       </div>
       <p style="text-align: center; margin: 30px 0;">
-        <a href="${signInUrl}" class="button" style="display: inline-block;">Update My CXC Results</a>
+        <a href="${signInUrl}" class="button" style="display: inline-block; padding: 14px 28px; background: ${schoolColors.secondary}; color: ${schoolColors.charcoal}; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px;">Update My CXC Results</a>
       </p>
       <p>Once signed in, look for the <strong>Update CXC Results</strong> button on your application status page.</p>
       <p>If you have any questions, please contact our admissions office at <a href="mailto:yorkcastle.high.san@moey.gov.jm" style="color: ${schoolColors.secondary}; text-decoration: none;">yorkcastle.high.san@moey.gov.jm</a> or call us at <a href="tel:+1876975-2217" style="color: ${schoolColors.secondary}; text-decoration: none;">+1 876 975-2217</a>.</p>
