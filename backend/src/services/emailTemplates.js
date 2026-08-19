@@ -175,7 +175,7 @@ const baseTemplate = (content, title) => `
     <div class="container">
       <div class="header">
         <div class="logo">York Castle High School</div>
-        <div class="subtitle">Excellence in Education</div>
+        <div class="subtitle">Nil Sine Magno Labore</div>
       </div>
       <div class="content">
         ${content}
