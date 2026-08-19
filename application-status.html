@@ -565,7 +565,21 @@
     const API = '/api';
 
     const STATUS_CONFIG = {
-      PENDING:      { label: 'Pending Review',  color: '#92740a', bg: '#fdfbf0', border: '#d4af37', icon: '📋', msg: 'Your application is in the queue and will be reviewed by our admissions team within 5–7 business days.' },
+      PENDING:      { label: 'Pending Review',  color: '#92740a', bg: '#fdfbf0', border: '#d4af37', icon: '📋', msg: `You&rsquo;re invited to attend an interview for the Sixth Form Programme.<br><br>
+        <strong>Date:</strong> Tuesday, August 25, 2026<br>
+        <strong>Time:</strong> 8:30 a.m.<br>
+        <strong>Location:</strong> York Castle High School, Brown&rsquo;s Town, St. Ann<br><br>
+        <strong>Please bring:</strong>
+        <ul style="margin:8px 0 0; padding-left:18px;">
+          <li>Copy of your birth certificate</li>
+          <li>Copy of your TRN</li>
+          <li>Copy of your SRN</li>
+          <li>Copy of your CSEC results</li>
+          <li>Two passport-sized photographs</li>
+          <li>Your last two school reports</li>
+          <li>Two recommendation letters (from a Principal, Teacher, Justice of the Peace, or Minister of Religion)</li>
+        </ul><br>
+        A non-refundable processing fee of <strong>J$2,000</strong> is payable on the day of the interview.` },
       UNDER_REVIEW: { label: 'Under Review',    color: '#141417', bg: '#f6f4ea', border: '#141417', icon: '🔍', msg: 'Our admissions team is currently reviewing your application. You will be contacted soon.' },
       APPROVED:     { label: 'Approved',        color: '#15803d', bg: '#f0fdf4', border: '#22c55e', icon: '✅', msg: 'Congratulations! Your application has been approved. Please check your email for your offer letter and next steps.' },
       REJECTED:     { label: 'Not Successful',  color: '#991b1b', bg: '#fef2f2', border: '#ef4444', icon: '❌', msg: 'We regret to inform you that your application was not successful at this time. Please contact the school for more information.' },
@@ -639,7 +653,10 @@
       document.getElementById('status-date').textContent = `Submitted ${fmtDate(app.submittedAt)}`;
 
       const msgEl = document.getElementById('status-msg');
-      msgEl.textContent = cfg.msg;
+      // cfg.msg is one of the fixed, hardcoded strings in STATUS_CONFIG above
+      // (never derived from application/user data), so innerHTML here is safe
+      // and lets the PENDING message include the interview details as a list.
+      msgEl.innerHTML = cfg.msg;
       msgEl.style.color = cfg.color;
       msgEl.style.borderTopColor = cfg.border;
 
