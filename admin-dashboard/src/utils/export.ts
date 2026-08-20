@@ -1,4 +1,5 @@
 import logoUrl from '../assets/logo.png';
+import { streamLabel, programmeLabel, needsStreamSelection } from './sixthForm';
 
 /**
  * Export data to CSV format
@@ -331,11 +332,22 @@ export const exportSixthFormApplicationToPDF = (app: any, interview?: any) => {
   }
   sections.push(academicSection);
 
+  // Blank-valued rows are dropped when the section renders, so the stream rows
+  // and the legacy programme rows can both be listed — whichever shape this
+  // application actually stores is what appears.
   sections.push({
-    heading: 'Programme Choice',
+    heading: 'CAPE Subject Stream Selection',
     rows: [
-      { label: '1st Choice', value: app.subjectChoices?.firstChoice },
-      { label: '2nd Choice', value: app.subjectChoices?.secondChoice },
+      { label: 'Core Subject', value: app.subjectChoices?.coreSubject },
+      { label: 'Stream', value: streamLabel(app.subjectChoices?.stream) },
+      { label: 'Subjects', value: app.subjectChoices?.streamSubjects?.join(', ') },
+      { label: 'Preferred Stream', value: app.subjectChoices?.preferredStream },
+      { label: 'Alternative Stream', value: app.subjectChoices?.alternativeStream },
+      { label: 'Programme Choice (pre-streams)', value: programmeLabel(app.subjectChoices?.firstChoice) },
+      { label: 'Second Choice (pre-streams)', value: programmeLabel(app.subjectChoices?.secondChoice) },
+      ...(needsStreamSelection(app.subjectChoices)
+        ? [{ label: 'Note', value: 'Subject stream selection not yet completed — collect Section D at interview.' }]
+        : []),
     ],
   });
 

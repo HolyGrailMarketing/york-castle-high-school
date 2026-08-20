@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { apiService } from '../services/api';
 import type { SixthFormApplication, SixthFormInterview, SixthFormNotificationType } from '../types';
 import { exportSixthFormApplicationToPDF } from '../utils/export';
+import { streamLabel, programmeLabel, needsStreamSelection } from '../utils/sixthForm';
 import Modal from '../components/Modal';
 import './Applications.css';
 
@@ -490,11 +491,30 @@ const SixthFormApplications = () => {
                   </div>
                 )}
 
-                <h4 className="detail-section-heading">Programme Choice</h4>
+                <h4 className="detail-section-heading">CAPE Subject Stream Selection</h4>
                 <ul style={{ margin: '4px 0 0 0', paddingLeft: '20px' }}>
-                  {selectedApp.subjectChoices?.firstChoice && <li>1st Choice: {selectedApp.subjectChoices.firstChoice}</li>}
-                  {selectedApp.subjectChoices?.secondChoice && <li>2nd Choice: {selectedApp.subjectChoices.secondChoice}</li>}
+                  {selectedApp.subjectChoices?.coreSubject && <li>Core Subject: {selectedApp.subjectChoices.coreSubject}</li>}
+                  {selectedApp.subjectChoices?.stream && <li>Stream: {streamLabel(selectedApp.subjectChoices.stream)}</li>}
+                  {selectedApp.subjectChoices?.streamSubjects?.length > 0 && (
+                    <li>Subjects: {selectedApp.subjectChoices.streamSubjects.join(', ')}</li>
+                  )}
+                  {selectedApp.subjectChoices?.preferredStream && <li>Preferred Stream: {selectedApp.subjectChoices.preferredStream}</li>}
+                  {selectedApp.subjectChoices?.alternativeStream && <li>Alternative Stream: {selectedApp.subjectChoices.alternativeStream}</li>}
+
+                  {/* Applications submitted before the stream section existed kept a
+                      first/second programme choice — still the only subject preference
+                      on file for those applicants, so show it rather than nothing. */}
+                  {selectedApp.subjectChoices?.firstChoice && (
+                    <li>Programme choice (submitted before subject streams): {programmeLabel(selectedApp.subjectChoices.firstChoice)}
+                      {selectedApp.subjectChoices.secondChoice && `, then ${programmeLabel(selectedApp.subjectChoices.secondChoice)}`}
+                    </li>
+                  )}
                 </ul>
+                {needsStreamSelection(selectedApp.subjectChoices) && (
+                  <p style={{ margin: '8px 0 0 0', padding: '8px 10px', background: '#fdfbf0', border: '1px solid #d4af37', borderRadius: '6px', fontSize: '13px' }}>
+                    Subject stream selection not yet completed — collect Section D at the interview.
+                  </p>
+                )}
 
                 {(selectedApp.reasonForAttending || selectedApp.careerGoals || selectedApp.strengthsWeaknesses) && (
                   <>

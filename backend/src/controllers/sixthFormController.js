@@ -16,6 +16,20 @@ import { NOTIFICATION_TYPES } from '../services/notificationTypes.js';
 // shown on sixth-form-application.html.
 const SIXTH_FORM_APPLICATION_DEADLINE = new Date('2026-07-20T23:59:59-05:00');
 
+// Applicants who only completed the paper form finish the online application
+// at their interview, so the form reopens for that day alone. A time window
+// rather than an access code: there is no secret to hand out, leak, or
+// remember to revoke afterwards, and it closes itself. Kept in sync with the
+// matching window in sixth-form-application.html.
+const SIXTH_FORM_INTERVIEW_WINDOW = {
+  start: new Date('2026-08-25T06:00:00-05:00'),
+  end: new Date('2026-08-25T18:00:00-05:00'),
+};
+
+const isWithinInterviewWindow = (now = Date.now()) =>
+  now >= SIXTH_FORM_INTERVIEW_WINDOW.start.getTime() &&
+  now <= SIXTH_FORM_INTERVIEW_WINDOW.end.getTime();
+
 // Notify staff that a new sixth-form application was submitted. Failures are
 // logged, never thrown, so a notification problem can't break the submission.
 const notifyAdminOfNewSixthForm = async (req, application) => {
@@ -133,7 +147,8 @@ export const getSixthFormApplication = async (req, res, next) => {
 
 export const createSixthFormApplication = async (req, res, next) => {
   try {
-    if (Date.now() > SIXTH_FORM_APPLICATION_DEADLINE.getTime()) {
+    const now = Date.now();
+    if (now > SIXTH_FORM_APPLICATION_DEADLINE.getTime() && !isWithinInterviewWindow(now)) {
       return res.status(403).json({
         error: 'Sixth Form applications closed on July 20, 2026 and are no longer being accepted.',
       });
@@ -300,6 +315,12 @@ export const updateSixthFormStatus = async (req, res, next) => {
 // (occasionally a few hundred) recipients at a time.
 const NOTIFY_BATCH_SIZE = 5;
 
+// "Kayla", "Kayla and Andre", "Kayla, Andre and Shanice"
+const formatNames = (names) => {
+  if (names.length === 1) return names[0];
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+};
+
 // Send a bulk notification (a fixed template, or an admin-composed custom
 // announcement) to a batch of selected Sixth Form applicants. Unlike the
 // best-effort admin-notification emails elsewhere in this file, sending the
@@ -332,31 +353,57 @@ export const sendSixthFormNotifications = async (req, res, next) => {
     // once up front rather than recomputing it per recipient below.
     const sentSubject = notificationType.build('Applicant', ctx).subject;
 
+    // Siblings routinely apply on one parent's email address. Sending per
+    // application would drop two or three identical messages into that inbox,
+    // so group by address and send once, addressed to every applicant it
+    // covers. Each application is still logged as notified individually.
+    const groups = new Map();
+    applications.forEach((app) => {
+      const key = (app.email || '').trim().toLowerCase();
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(app);
+    });
+    const recipients = [...groups.values()];
+
     let notifiedCount = 0;
+    let emailCount = 0;
     const notifiedIds = [];
 
-    for (let i = 0; i < applications.length; i += NOTIFY_BATCH_SIZE) {
-      const batch = applications.slice(i, i + NOTIFY_BATCH_SIZE);
+    for (let i = 0; i < recipients.length; i += NOTIFY_BATCH_SIZE) {
+      const batch = recipients.slice(i, i + NOTIFY_BATCH_SIZE);
       const results = await Promise.allSettled(
-        batch.map((app) => {
-          const name = [app.firstName, app.lastName].filter(Boolean).join(' ') || 'Applicant';
-          const template = notificationType.build(name, ctx);
-          return sendEmail(app.email, template.subject, template.text, template.html);
+        batch.map((group) => {
+          const names = group.map(
+            (app) => [app.firstName, app.lastName].filter(Boolean).join(' ') || 'Applicant'
+          );
+          const template = notificationType.build(formatNames(names), {
+            ...ctx,
+            applicantCount: group.length,
+          });
+          return sendEmail(group[0].email, template.subject, template.text, template.html);
         })
       );
       results.forEach((result, idx) => {
-        const app = batch[idx];
+        const group = batch[idx];
         if (result.status === 'fulfilled') {
-          notifiedCount += 1;
-          notifiedIds.push(app.id);
+          // One email covered every application on that address.
+          emailCount += 1;
+          notifiedCount += group.length;
+          group.forEach((app) => notifiedIds.push(app.id));
         } else {
           logger.error('Failed to send sixth-form notification', {
-            applicationId: app.id,
-            email: app.email,
+            applicationIds: group.map((app) => app.id),
+            email: group[0].email,
             type,
             error: result.reason?.message,
           });
-          failed.push({ id: app.id, email: app.email, reason: result.reason?.message || 'Failed to send email' });
+          group.forEach((app) => {
+            failed.push({
+              id: app.id,
+              email: app.email,
+              reason: result.reason?.message || 'Failed to send email',
+            });
+          });
         }
       });
     }
@@ -390,12 +437,18 @@ export const sendSixthFormNotifications = async (req, res, next) => {
       type,
       requestedCount: applicationIds.length,
       notifiedCount,
+      emailCount,
       failedCount: failed.length,
     });
 
+    // Mention the email count only when it differs, so the usual send reads
+    // exactly as it did before.
+    const shared = notifiedCount !== emailCount ? ` in ${emailCount} email(s) — addresses shared by siblings received one message covering each applicant.` : '.';
+
     res.json({
-      message: `${notificationType.label} sent to ${notifiedCount} of ${applicationIds.length} selected applicant(s).`,
+      message: `${notificationType.label} sent to ${notifiedCount} of ${applicationIds.length} selected applicant(s)${shared}`,
       notifiedCount,
+      emailCount,
       failed,
     });
   } catch (error) {
@@ -403,9 +456,13 @@ export const sendSixthFormNotifications = async (req, res, next) => {
   }
 };
 
+// Siblings frequently apply using the same parent's email address, which means
+// one login account can own several applications. Return all of them so the
+// portal can offer a choice; `application` stays in the response as the newest
+// one so older clients keep working.
 export const getMyApplication = async (req, res, next) => {
   try {
-    const application = await prisma.sixthFormApplication.findFirst({
+    const applications = await prisma.sixthFormApplication.findMany({
       where: { userId: req.user.id },
       orderBy: { submittedAt: 'desc' },
       include: {
@@ -419,11 +476,11 @@ export const getMyApplication = async (req, res, next) => {
       },
     });
 
-    if (!application) {
+    if (applications.length === 0) {
       return res.status(404).json({ error: 'No application found for this account.' });
     }
 
-    res.json({ application });
+    res.json({ application: applications[0], applications });
   } catch (error) {
     next(error);
   }
@@ -437,8 +494,15 @@ const EDITABLE_STATUSES = ['PENDING', 'UNDER_REVIEW'];
 
 export const updateMyApplication = async (req, res, next) => {
   try {
+    // An account may own several applications (siblings sharing an email), so
+    // the client says which one it is saving. The lookup is always scoped to
+    // req.user.id, so an id belonging to someone else simply isn't found.
+    // Without an id we fall back to the newest, preserving the old behaviour.
+    const { applicationId } = req.body;
     const application = await prisma.sixthFormApplication.findFirst({
-      where: { userId: req.user.id },
+      where: applicationId
+        ? { id: applicationId, userId: req.user.id }
+        : { userId: req.user.id },
       orderBy: { submittedAt: 'desc' },
     });
 

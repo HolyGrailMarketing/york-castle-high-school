@@ -163,9 +163,21 @@ const { useState, useEffect, useCallback, useRef } = React;
 /* ─── Constants ──────────────────────────────────────────────── */
 const API_BASE   = window.location.hostname === 'localhost' ? 'http://localhost:3000/api' : '/api';
 const LOGO       = 'images/logo-badge.webp';
-const STORAGE_KEY = 'ychs_sf_draft_v2';
+const STORAGE_KEY = 'ychs_sf_draft_v3';
 // Jamaica does not observe DST, so a fixed -05:00 offset is always correct.
 const APPLICATION_DEADLINE = new Date('2026-07-20T23:59:59-05:00');
+// The form reopens for interview day so walk-in applicants who only completed
+// the paper form can fill it in on the spot. Must stay in sync with
+// SIXTH_FORM_INTERVIEW_WINDOW in backend/src/controllers/sixthFormController.js,
+// which enforces the same window on submission.
+const INTERVIEW_WINDOW = {
+  start: new Date('2026-08-25T06:00:00-05:00'),
+  end:   new Date('2026-08-25T18:00:00-05:00'),
+};
+const isInterviewDay = () => {
+  const now = Date.now();
+  return now >= INTERVIEW_WINDOW.start.getTime() && now <= INTERVIEW_WINDOW.end.getTime();
+};
 
 const PARISHES = [
   'Clarendon','Hanover','Kingston','Manchester','Portland',
@@ -184,70 +196,32 @@ const COMMON_SUBJECTS = [
   'Technical Drawing','Food & Nutrition','Home Economics',
 ];
 
-const PROGRAMMES = [
+const CORE_SUBJECTS = ['Caribbean Studies', 'Communication Studies'];
+
+const STREAMS = [
   {
-    id: 'natural-sciences',
-    name: 'Natural Sciences',
-    units: ['Biology Unit 1 & 2','Chemistry Unit 1 & 2','Physics Unit 1 & 2'],
-    desc: 'Prepare for careers in medicine, nursing, engineering and research.',
-    recommended: ['Biology','Chemistry','Physics','Human & Social Biology'],
-    seats: 32,
+    id: 'business',
+    label: 'Business & Management',
+    preferredLabel: 'Business',
+    subjects: ['Accounting','Economics','Management of Business','Entrepreneurship','Tourism','Logistics & Supply Chain Operations','Integrated Mathematics','Spanish'],
   },
   {
-    id: 'entrepreneurship',
-    name: 'Entrepreneurship',
-    units: ['Entrepreneurship Unit 1 & 2','Principles of Business Unit 1 & 2','Accounting Unit 1 & 2'],
-    desc: 'Build business acumen and launch your own ventures.',
-    recommended: ['Principles of Business','Principles of Accounts','Economics'],
-    seats: 18,
+    id: 'humanities',
+    label: 'Arts/Humanities',
+    preferredLabel: 'Humanities',
+    subjects: ['Sociology','History','Geography','Literatures in English','Law','Art & Design','Integrated Mathematics','Spanish'],
   },
   {
-    id: 'ict',
-    name: 'ICT',
-    units: ['Computer Science Unit 1 & 2','Information Technology Unit 1 & 2','Digital Media'],
-    desc: 'Develop skills in programming, networking and digital systems.',
-    recommended: ['Information Technology','Mathematics','Physics'],
-    seats: 20,
+    id: 'sciences',
+    label: 'Pure & Applied Sciences',
+    preferredLabel: 'Science',
+    subjects: ['Biology','Chemistry','Physics','Environmental Science','Agricultural Science','Physical Education & Sport','Pure Mathematics','Spanish'],
   },
   {
-    id: 'law',
-    name: 'Law',
-    units: ['Law Unit 1 & 2','Sociology Unit 1 & 2','Communication Studies'],
-    desc: 'Foundation for legal studies, social justice and public service.',
-    recommended: ['History','Social Studies','English A','English B'],
-    seats: 14,
-  },
-  {
-    id: 'industrial-tech',
-    name: 'Industrial Technology',
-    units: ['Industrial Technology (Building) Unit 1 & 2','Technical Drawing','Physics Unit 1'],
-    desc: 'Hands-on technical training in construction and engineering.',
-    recommended: ['Technical Drawing','Physics','Mathematics'],
-    seats: 16,
-  },
-  {
-    id: 'tourism',
-    name: 'Tourism',
-    units: ['Tourism Unit 1 & 2','Food & Beverage Service','Hospitality Management'],
-    desc: 'Explore Jamaica\'s leading industry: tourism and hospitality.',
-    recommended: ['Food & Nutrition','Office Administration','English A'],
-    seats: 14,
-  },
-  {
-    id: 'visual-communication',
-    name: 'Visual Communication',
-    units: ['Visual Arts Unit 1 & 2','Communication Studies Unit 1 & 2','Art & Design'],
-    desc: 'Creative arts, design thinking and multimedia production.',
-    recommended: ['Visual Arts','English A','Information Technology'],
-    seats: 10,
-  },
-  {
-    id: 'sociology',
-    name: 'Sociology',
-    units: ['Sociology Unit 1 & 2','Communication Studies Unit 1 & 2','Caribbean Studies'],
-    desc: 'Study society, culture and human behaviour in the Caribbean context.',
-    recommended: ['Social Studies','History','English A'],
-    seats: 12,
+    id: 'engineering',
+    label: 'Engineering/Computer Science',
+    preferredLabel: 'Technical',
+    subjects: ['Information Technology','Computer Science','Digital Media','Animation & Game Design','Electrical & Electronic Technology','Building & Mechanical Engineering','Physics','Art & Design','Pure Mathematics','Spanish'],
   },
 ];
 
@@ -260,7 +234,7 @@ const DRAFT_DEFAULTS = {
   guardianWorkPhone:'', guardianHomePhone:'', guardianCellPhone:'',
   previousSchool:'', positionsHeld:'',
   csecResults:[{ subject:'', grade:'' }],
-  programmeId:'', secondChoiceId:'',
+  coreSubject:'', stream:'', streamSubjects:[], preferredStream:'', alternativeStream:'',
   refName1:'', refPhone1:'', refEmail1:'',
   refName2:'', refPhone2:'', refEmail2:'',
   careerGoals:'', strengthsWeaknesses:'', reasonForAttending:'',
@@ -411,7 +385,7 @@ const FORM_STEPS = [
   { id:'guardian',  label:'Guardian Information' },
   { id:'academic',  label:'Academic Background'  },
   { id:'csec',      label:'CSEC Results'         },
-  { id:'subjects',  label:'Programme Choice'     },
+  { id:'subjects',  label:'Subject Stream Selection' },
   { id:'refs',      label:'References'           },
   { id:'statement', label:'Personal Statement'   },
   { id:'docs',      label:'Documents'            },
@@ -617,12 +591,12 @@ function S_Landing({ onStart, draft }) {
   const isDesktop = useIsDesktop();
   const requirements = [
     'Minimum 5 CSEC passes including English A and Mathematics',
-    'Grades 1–3 in subjects related to your chosen CAPE programme',
+    'Grades 1–3 in subjects related to your chosen subject stream',
     'Satisfactory school report from your current/previous school',
   ];
   const timeline = [
-    { label:'Deadline',    value:'June 30, 2026' },
-    { label:'Decisions',   value:'July 15, 2026' },
+    { label:'Deadline',    value:'July 20, 2026' },
+    { label:'Interviews',  value:'August 25, 2026' },
     { label:'Orientation', value:'Early September 2026' },
   ];
 
@@ -643,8 +617,10 @@ function S_Landing({ onStart, draft }) {
             </div>
           </div>
           <div style={{ display:'flex', gap:16, alignItems:'center', position:'relative' }}>
-            <Pill tone="gold"><Icon name="calendar" size={10}/>Applications Open</Pill>
-            <span style={{ font:'400 13px/1 Inter', opacity:0.55 }}>Academic Year 2026–2027 · Deadline: June 30, 2026</span>
+            <Pill tone="gold"><Icon name="calendar" size={10}/>{isInterviewDay() ? 'Interview Day — Walk-in Application' : 'Applications Open'}</Pill>
+            <span style={{ font:'400 13px/1 Inter', opacity:0.55 }}>
+              Academic Year 2026–2027{isInterviewDay() ? '' : ' · Deadline: July 20, 2026'}
+            </span>
           </div>
         </div>
 
@@ -689,21 +665,23 @@ function S_Landing({ onStart, draft }) {
             </div>
           </div>
 
-          {/* Right: programmes grid */}
+          {/* Right: subject streams grid */}
           <div style={{ flex:1, padding:'48px 48px' }}>
             <div style={{ font:'600 11px/1 Inter', letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--ink-3)', marginBottom:20 }}>
-              {PROGRAMMES.length} Available Programmes
+              {STREAMS.length} Subject Streams
             </div>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
-              {PROGRAMMES.map(p => (
-                <Card key={p.id}>
+              {STREAMS.map(stream => (
+                <Card key={stream.id}>
                   <div style={{ padding:'16px' }}>
-                    <div style={{ font:'600 14px/1.2 Inter', marginBottom:6 }}>{p.name}</div>
-                    <div style={{ font:'400 12px/1.4 Inter', color:'var(--ink-3)', marginBottom:10 }}>{p.desc}</div>
+                    <div style={{ font:'600 14px/1.2 Inter', marginBottom:10 }}>{stream.label}</div>
                     <div style={{ display:'flex', gap:4, flexWrap:'wrap' }}>
-                      {p.recommended.slice(0,2).map(s => (
+                      {stream.subjects.slice(0,4).map(s => (
                         <span key={s} style={{ padding:'3px 8px', borderRadius:999, background:'var(--primary-soft)', font:'500 10px/1 Inter', color:'var(--ink-2)' }}>{s}</span>
                       ))}
+                      {stream.subjects.length > 4 && (
+                        <span style={{ padding:'3px 8px', font:'500 10px/1 Inter', color:'var(--ink-3)' }}>+{stream.subjects.length - 4} more</span>
+                      )}
                     </div>
                   </div>
                 </Card>
@@ -725,8 +703,8 @@ function S_Landing({ onStart, draft }) {
           <div style={{ font:'700 28px/1.15 Fraunces, serif', marginBottom:8, position:'relative' }}>Sixth Form<br/>Application</div>
           <div style={{ font:'400 15px/1.5 Inter', opacity:0.8, position:'relative' }}>York Castle High School · CAPE Programme<br/>Academic Year 2026–2027</div>
           <div style={{ display:'flex', gap:8, marginTop:20, position:'relative', flexWrap:'wrap' }}>
-            <Pill tone="gold"><Icon name="calendar" size={10}/>Applications Open</Pill>
-            <span style={{ font:'500 11px/1 Inter', opacity:0.6, alignSelf:'center' }}>Deadline: June 30, 2026</span>
+            <Pill tone="gold"><Icon name="calendar" size={10}/>{isInterviewDay() ? 'Interview Day — Walk-in' : 'Applications Open'}</Pill>
+            {!isInterviewDay() && <span style={{ font:'500 11px/1 Inter', opacity:0.6, alignSelf:'center' }}>Deadline: July 20, 2026</span>}
           </div>
         </div>
         <div style={{ padding:'24px 20px 0', display:'flex', flexDirection:'column', gap:12 }}>
@@ -738,10 +716,10 @@ function S_Landing({ onStart, draft }) {
           ))}
         </div>
         <div style={{ padding:'24px 20px 0' }}>
-          <div style={{ font:'600 11px/1 Inter', letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--ink-3)', marginBottom:12 }}>Available Programmes</div>
+          <div style={{ font:'600 11px/1 Inter', letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--ink-3)', marginBottom:12 }}>Subject Streams</div>
           <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
-            {PROGRAMMES.map(p => (
-              <span key={p.id} style={{ padding:'6px 12px', borderRadius:999, background:'var(--paper)', border:'1px solid var(--line)', font:'500 12px/1 Inter', color:'var(--ink-2)' }}>{p.name}</span>
+            {STREAMS.map(stream => (
+              <span key={stream.id} style={{ padding:'6px 12px', borderRadius:999, background:'var(--paper)', border:'1px solid var(--line)', font:'500 12px/1 Inter', color:'var(--ink-2)' }}>{stream.label}</span>
             ))}
           </div>
         </div>
@@ -764,7 +742,7 @@ function S_Overview({ onNext, onBack }) {
     { n:'1', label:'Personal Info',       desc:'Name, contact details, address' },
     { n:'2', label:'Academic Background', desc:'Previous school and qualifications' },
     { n:'3', label:'CSEC Results',        desc:'All subjects and grades' },
-    { n:'4', label:'Programme Choice',    desc:'CAPE programme selection' },
+    { n:'4', label:'Subject Stream Selection', desc:'CAPE core subject, stream and subject choices' },
     { n:'5', label:'References',          desc:'Two referees from your school' },
     { n:'6', label:'Documents',           desc:'ID, results slip, passport photo' },
     { n:'7', label:'Review & Submit',     desc:'Final check before submitting' },
@@ -1063,14 +1041,16 @@ function S_CXC({ data, onChangeRow, onAddRow, onRemoveRow, onNext, onBack, error
         {/* AI Nudge */}
         {data.csecResults.filter(r => r.subject && r.grade).length >= 3 && (
           <InfoBox tone="gold" icon="sparkle">
-            <strong>AI suggestion:</strong> Based on your results, you may be a strong fit for{' '}
+            <strong>AI suggestion:</strong> Based on your results, you may be a strong fit for the{' '}
             {(() => {
+              // Rank streams by how many of the applicant's CSEC subjects also
+              // appear in that stream's CAPE subject list.
               const taken = data.csecResults.map(r => r.subject);
-              const scored = PROGRAMMES.map(p => ({
-                p, score: p.recommended.filter(s => taken.includes(s)).length,
+              const scored = STREAMS.map(stream => ({
+                stream, score: stream.subjects.filter(s => taken.includes(s)).length,
               })).sort((a,b) => b.score - a.score);
-              return scored[0].p.name;
-            })()}.
+              return scored[0].stream.label;
+            })()} stream.
           </InfoBox>
         )}
 
@@ -1080,82 +1060,114 @@ function S_CXC({ data, onChangeRow, onAddRow, onRemoveRow, onNext, onBack, error
   );
 }
 
-/* ─── SCREEN 6: Programme Choice ─────────────────────────────── */
+/* ─── SCREEN 6: CAPE Subject Stream Selection ────────────────── */
 function S_Subjects({ data, onChange, onNext, onBack, errors }) {
   const isDesktop = useIsDesktop();
-  const taken = data.csecResults.map(r => r.subject);
+  const p = isDesktop ? '36px 48px 48px' : '20px 20px 32px';
+  const activeStream = STREAMS.find(s => s.id === data.stream);
 
-  function matchScore(prog) {
-    return prog.recommended.filter(s => taken.includes(s)).length;
+  function selectStream(streamId) {
+    // Re-clicking the active stream would otherwise clear the subjects the
+    // applicant has already ticked.
+    if (streamId === data.stream) return;
+    const stream = STREAMS.find(s => s.id === streamId);
+    onChange('stream', streamId);
+    onChange('streamSubjects', []);
+    onChange('preferredStream', stream ? stream.preferredLabel : '');
   }
 
-  const sorted = [...PROGRAMMES].sort((a, b) => matchScore(b) - matchScore(a));
-  const topMatch = sorted[0];
-  const p = isDesktop ? '36px 48px 48px' : '20px 20px 32px';
+  function toggleSubject(subject) {
+    const current = data.streamSubjects || [];
+    const next = current.includes(subject)
+      ? current.filter(s => s !== subject)
+      : [...current, subject];
+    onChange('streamSubjects', next);
+  }
 
   return (
     <Shell>
-      <TopBar title="Programme Choice" step={5} totalSteps={9} onBack={onBack}/>
+      <TopBar title="Subject Stream Selection" step={5} totalSteps={9} onBack={onBack}/>
       <div style={{ padding:p, display:'flex', flexDirection:'column', gap:isDesktop ? 24 : 18 }}>
         <div>
-          <div style={{ font:`600 ${isDesktop?26:20}px/1.2 Fraunces, serif`, marginBottom:6 }}>Choose your CAPE Programme</div>
-          <div style={{ font:'400 13px/1.5 Inter', color:'var(--ink-3)' }}>Select your first and second choice. Click a card to choose.</div>
+          <div style={{ font:`600 ${isDesktop?26:20}px/1.2 Fraunces, serif`, marginBottom:6 }}>CAPE Subject Stream Selection</div>
+          <div style={{ font:'400 13px/1.5 Inter', color:'var(--ink-3)' }}>Select your preferred subjects. Final placement will depend on CSEC results and subject availability.</div>
         </div>
 
-        {errors.programmeId && <InfoBox tone="rose" icon="alert">{errors.programmeId}</InfoBox>}
-
-        {taken.length >= 3 && (
-          <InfoBox tone="gold" icon="sparkle">
-            <strong>Best match for you:</strong> {topMatch.name} — {topMatch.recommended.filter(s => taken.includes(s)).length} of your CSEC subjects align.
-          </InfoBox>
-        )}
-
-        <div style={{ display:'grid', gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr', gap:12 }}>
-          {sorted.map(prog => {
-            const score = matchScore(prog);
-            const isFirst  = data.programmeId === prog.id;
-            const isSecond = data.secondChoiceId === prog.id;
-            return (
-              <Card key={prog.id} style={{
-                borderColor: isFirst ? 'var(--primary)' : isSecond ? 'var(--gold)' : 'var(--line)',
-                boxShadow: isFirst ? '0 0 0 2px rgba(26,20,16,0.15)' : isSecond ? '0 0 0 2px rgba(201,162,39,0.25)' : 'none',
-                cursor:'pointer', transition:'box-shadow .15s, border-color .15s',
+        <FieldGroup label="Core Subject (select one)" error={errors.coreSubject}>
+          <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+            {CORE_SUBJECTS.map(subject => (
+              <label key={subject} style={{
+                display:'flex', alignItems:'center', gap:10, padding:'12px 14px',
+                borderRadius:12, border: `1px solid ${data.coreSubject === subject ? 'var(--primary)' : 'var(--line)'}`,
+                background: data.coreSubject === subject ? 'var(--primary-soft)' : 'var(--paper)',
+                cursor:'pointer', font:'500 14px/1 Inter',
               }}>
-                <div style={{ padding: isDesktop ? '18px 20px' : '14px 16px' }}>
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:6 }}>
-                    <div style={{ font:'600 14px/1.2 Inter' }}>{prog.name}</div>
-                    <div style={{ display:'flex', gap:5, flexWrap:'wrap', justifyContent:'flex-end' }}>
-                      {score > 0 && <Pill tone="green"><Icon name="check" size={10}/>{score}</Pill>}
-                      {isFirst  && <Pill tone="primary">1st</Pill>}
-                      {isSecond && <Pill tone="gold">2nd</Pill>}
+                <input type="radio" name="coreSubject" checked={data.coreSubject === subject}
+                  onChange={() => onChange('coreSubject', subject)}/>
+                {subject}
+              </label>
+            ))}
+          </div>
+        </FieldGroup>
+
+        <div>
+          <div style={{ font:'600 11px/1 Inter', letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--ink-3)', marginBottom:8 }}>Choose a Stream</div>
+          <div style={{ font:'400 12px/1.5 Inter', color:'var(--ink-3)', marginBottom:12 }}>Applicants are encouraged to select three subjects from the stream of choice. Final subject combinations will be approved by the school administration.</div>
+          {errors.stream && <div style={{ marginBottom:10 }}><InfoBox tone="rose" icon="alert">{errors.stream}</InfoBox></div>}
+          <div style={{ display:'grid', gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr', gap:10 }}>
+            {STREAMS.map(stream => {
+              const active = data.stream === stream.id;
+              return (
+                <Card key={stream.id} style={{
+                  borderColor: active ? 'var(--primary)' : 'var(--line)',
+                  boxShadow: active ? '0 0 0 2px rgba(26,20,16,0.15)' : 'none',
+                  cursor:'pointer', transition:'box-shadow .15s, border-color .15s',
+                }}>
+                  <div onClick={() => selectStream(stream.id)} style={{ padding:'14px 16px' }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                      <div style={{ font:'600 14px/1.2 Inter' }}>{stream.label}</div>
+                      {active && <Pill tone="primary"><Icon name="check" size={10}/>Selected</Pill>}
                     </div>
                   </div>
-                  <div style={{ font:'400 12px/1.4 Inter', color:'var(--ink-3)', marginBottom:isDesktop?12:10 }}>{prog.desc}</div>
-                  <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
-                    <button
-                      onClick={() => onChange('programmeId', isFirst ? '' : prog.id)}
-                      style={{
-                        padding:'7px 12px', borderRadius:8, border: isFirst ? 'none' : '1px solid var(--line-2)',
-                        background: isFirst ? 'var(--primary)' : 'transparent',
-                        color: isFirst ? '#fff' : 'var(--ink)', font:'600 12px/1 Inter', cursor:'pointer',
-                      }}
-                    >{isFirst ? '✓ 1st Choice' : 'Set 1st Choice'}</button>
-                    {!isFirst && (
-                      <button
-                        onClick={() => onChange('secondChoiceId', isSecond ? '' : prog.id)}
-                        style={{
-                          padding:'7px 12px', borderRadius:8, border: isSecond ? 'none' : '1px solid var(--line-2)',
-                          background: isSecond ? 'var(--gold)' : 'transparent',
-                          color:'var(--ink)', font:'600 12px/1 Inter', cursor:'pointer',
-                        }}
-                      >{isSecond ? '✓ 2nd' : '2nd Choice'}</button>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            );
-          })}
+                </Card>
+              );
+            })}
+          </div>
         </div>
+
+        {activeStream && (
+          <FieldGroup label={`${activeStream.label} subjects`} error={errors.streamSubjects}>
+            <div style={{ display:'grid', gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr', gap:8 }}>
+              {activeStream.subjects.map(subject => {
+                const checked = (data.streamSubjects || []).includes(subject);
+                return (
+                  <label key={subject} style={{
+                    display:'flex', alignItems:'center', gap:10, padding:'10px 12px',
+                    borderRadius:10, border: `1px solid ${checked ? 'var(--primary)' : 'var(--line)'}`,
+                    background: checked ? 'var(--primary-soft)' : 'var(--paper)',
+                    cursor:'pointer', font:'500 13px/1 Inter',
+                  }}>
+                    <input type="checkbox" checked={checked} onChange={() => toggleSubject(subject)}/>
+                    {subject}
+                  </label>
+                );
+              })}
+            </div>
+          </FieldGroup>
+        )}
+
+        <FieldGroup label="Preferred Stream">
+          <Select value={data.preferredStream} onChange={e => onChange('preferredStream', e.target.value)}>
+            <option value="">Select...</option>
+            {STREAMS.map(stream => (
+              <option key={stream.id} value={stream.preferredLabel}>{stream.preferredLabel}</option>
+            ))}
+          </Select>
+        </FieldGroup>
+
+        <FieldGroup label="Alternative Stream (optional)">
+          <Input value={data.alternativeStream} onChange={e => onChange('alternativeStream', e.target.value)} placeholder="e.g. Would also consider Humanities"/>
+        </FieldGroup>
 
         <div style={{ maxWidth: isDesktop ? 280 : 'none' }}>
           <Btn variant="primary" block onClick={onNext} icon="arrow-right">Continue</Btn>
@@ -1324,8 +1336,7 @@ function S_Docs({ data, onChange, onNext, onBack }) {
 /* ─── SCREEN 9: Review ───────────────────────────────────────── */
 function S_Review({ data, onSubmit, onBack, submitting, submitError }) {
   const isDesktop = useIsDesktop();
-  const prog  = PROGRAMMES.find(p => p.id === data.programmeId);
-  const prog2 = PROGRAMMES.find(p => p.id === data.secondChoiceId);
+  const stream = STREAMS.find(s => s.id === data.stream);
   const passes = data.csecResults.filter(r => r.grade && ['1','2','3'].includes(r.grade)).length;
   const eligible = passes >= 5;
   const [agreed, setAgreed] = React.useState(false);
@@ -1393,9 +1404,12 @@ function S_Review({ data, onSubmit, onBack, submitting, submitError }) {
             <Row label="Passes (1–3)" value={passes}/>
           </Section>
 
-          <Section title="Programme">
-            <Row label="1st Choice" value={prog?.name}/>
-            <Row label="2nd Choice" value={prog2?.name}/>
+          <Section title="Subject Stream">
+            <Row label="Core Subject" value={data.coreSubject}/>
+            <Row label="Stream" value={stream?.label}/>
+            <Row label="Subjects" value={(data.streamSubjects || []).join(', ')}/>
+            <Row label="Preferred Stream" value={data.preferredStream}/>
+            <Row label="Alternative Stream" value={data.alternativeStream}/>
           </Section>
 
           <Section title="Guardian">
@@ -1463,7 +1477,7 @@ function S_Review({ data, onSubmit, onBack, submitting, submitError }) {
 function S_Status({ data, credentials }) {
   const isDesktop = useIsDesktop();
   const [copied, setCopied] = React.useState(false);
-  const prog = PROGRAMMES.find(p => p.id === data.programmeId);
+  const stream = STREAMS.find(s => s.id === data.stream);
 
   function copyCredentials() {
     const text = `Email: ${credentials.email}\nPassword: ${credentials.password}`;
@@ -1495,7 +1509,7 @@ function S_Status({ data, credentials }) {
         <div style={{ font:`700 ${isDesktop?32:24}px/1.2 Fraunces, serif`, marginBottom:12 }}>Application Submitted!</div>
         <div style={{ font:'400 15px/1.6 Inter', color:'var(--ink-2)', maxWidth:420, marginBottom: credentials ? 24 : 40 }}>
           Thank you, {data.firstName}. We've received your application
-          {prog ? <> for the <strong>{prog.name}</strong> programme</> : ''}.
+          {stream ? <> for the <strong>{stream.label}</strong> stream</> : ''}.
         </div>
 
         {credentials ? (
@@ -1720,7 +1734,9 @@ function validate(screen, data) {
     if (valid.length < 1) errs.csec = 'Add at least one CSEC result';
   }
   if (screen === 'subjects') {
-    if (!data.programmeId) errs.programmeId = 'Select a first-choice programme';
+    if (!data.coreSubject) errs.coreSubject = 'Select a core subject';
+    if (!data.stream) errs.stream = 'Select a stream';
+    else if (!(data.streamSubjects || []).length) errs.streamSubjects = 'Select at least one subject from your stream';
   }
   if (screen === 'refs') {
     if (!data.refName1.trim()) errs.refName1 = 'Required';
@@ -1795,8 +1811,11 @@ function App() {
         reasonForAttending: data.reasonForAttending || undefined,
         csecResults:    data.csecResults.filter(r => r.subject && r.grade),
         subjectChoices: {
-          firstChoice:  data.programmeId,
-          secondChoice: data.secondChoiceId || undefined,
+          coreSubject:       data.coreSubject,
+          stream:            data.stream,
+          streamSubjects:    data.streamSubjects,
+          preferredStream:   data.preferredStream,
+          alternativeStream: data.alternativeStream || undefined,
         },
       };
       console.log('[YCHS submit payload]', JSON.stringify(payload, null, 2));
@@ -1831,7 +1850,7 @@ function App() {
   };
 
   function renderScreen() {
-    if (Date.now() > APPLICATION_DEADLINE.getTime()) {
+    if (Date.now() > APPLICATION_DEADLINE.getTime() && !isInterviewDay()) {
       return <S_Closed/>;
     }
     switch (screen) {

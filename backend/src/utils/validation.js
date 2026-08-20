@@ -253,6 +253,8 @@ export const sixthFormUpdateValidation = [
     .custom(val => Array.isArray(val) || (typeof val === 'object' && val !== null))
     .withMessage('CSEC results must be a valid array or object'),
   body('subjectChoices').optional().isObject().withMessage('Subject choices must be a valid object'),
+  // Names which of the account's applications to save when siblings share a login.
+  body('applicationId').optional().isUUID().withMessage('Invalid application reference'),
 ];
 
 export const sixthFormBulkNotifyValidation = [
