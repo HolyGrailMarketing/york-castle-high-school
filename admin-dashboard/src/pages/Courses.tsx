@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { apiService } from '../services/api';
 import type { Course } from '../types';
 import './Courses.css';
+import PageHelp from '../components/PageHelp';
 
 const Courses = () => {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -32,6 +33,7 @@ const Courses = () => {
 
   return (
     <div className="courses-page">
+      <PageHelp pageKey="courses" />
       <div className="page-header">
         <h1>Courses</h1>
         <div className="filters">
@@ -52,7 +54,7 @@ const Courses = () => {
       </div>
 
       <div className="courses-list">
-        <table className="data-table">
+        <table className="data-table data-table--stack">
           <thead>
             <tr>
               <th>Code</th>
@@ -67,13 +69,13 @@ const Courses = () => {
           <tbody>
             {courses.map((course) => (
               <tr key={course.id}>
-                <td>{course.code}</td>
-                <td>{course.name}</td>
-                <td>{course.pool || 'N/A'}</td>
-                <td>{course.teacher || 'N/A'}</td>
-                <td>{course.enrolled}</td>
-                <td>{course.capacity || 'Unlimited'}</td>
-                <td>
+                <td data-label="Code">{course.code}</td>
+                <td data-label="Name" className="col-name">{course.name}</td>
+                <td data-label="Pool">{course.pool || 'N/A'}</td>
+                <td data-label="Teacher">{course.teacher || 'N/A'}</td>
+                <td data-label="Enrolled">{course.enrolled}</td>
+                <td data-label="Capacity">{course.capacity || 'Unlimited'}</td>
+                <td data-label="Status">
                   <span className={course.isActive ? 'status-active' : 'status-inactive'}>
                     {course.isActive ? 'Active' : 'Inactive'}
                   </span>

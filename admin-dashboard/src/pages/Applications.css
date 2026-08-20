@@ -413,6 +413,13 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  /* The desktop 32px title costs four lines of vertical space on a phone. */
+  .page-header h1 {
+    font-size: 20px;
+    line-height: 1.25;
   }
 
   .search-input {
@@ -654,6 +661,20 @@
   margin-bottom: 16px;
 }
 
+/* Label for the cohort progress figures, so the row reads as a sentence
+   rather than three loose buttons. */
+.readiness-summary-label {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  margin-right: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #6b7280;
+}
+
 .readiness-stat {
   padding: 8px 14px;
   border: 1px solid #e5e7eb;
@@ -846,6 +867,72 @@
     gap: 8px;
   }
 
+  /* The desktop column sizing must not leak into the stacked cards. These
+     widths and nowrap rules exist to lay out a real table; inside a card on a
+     phone they force the cell wider than its container, which is what pushed
+     the notification badge and the action buttons outside the card. */
+  .data-table--stack .col-select {
+    width: auto;
+    padding-right: 0;
+  }
+
+  .data-table--stack .col-name,
+  .data-table--stack .col-email {
+    min-width: 0;
+  }
+
+  .data-table--stack .col-nowrap,
+  .data-table--stack .col-actions {
+    white-space: normal;
+  }
+
+  .data-table--stack td {
+    min-width: 0;
+  }
+
+  /* Some of these tables previously coped on a phone by scrolling sideways
+     with a forced min-width, and by hiding the email and phone columns
+     outright. Now that they stack into cards, those rules have to give way —
+     otherwise every card inherits a 640px floor, and a teacher still cannot
+     see an applicant's email address on their phone.
+     Selectors are one step more specific than the rules they override, so no
+     !important is needed. */
+  table.data-table--stack {
+    min-width: 0;
+  }
+
+  .users-list-container,
+  .requests-list-container,
+  .recent-table-wrapper {
+    overflow-x: visible;
+  }
+
+  .data-table--stack .col-email,
+  .data-table--stack .col-phone {
+    display: flex;
+  }
+
+  /* Users.css and Requests.css declare these as bare `.col-*` selectors, so
+     their fixed column widths apply to every table in the portal — that is
+     why the action buttons wrapped onto two lines in a 299px card. Inside a
+     stacked card a cell is always full width. */
+  .data-table--stack .col-type,
+  .data-table--stack .col-requester,
+  .data-table--stack .col-date,
+  .data-table--stack .col-status,
+  .data-table--stack .col-assignee,
+  .data-table--stack .col-actions,
+  .data-table--stack .col-user,
+  .data-table--stack .col-role,
+  .data-table--stack .col-auth,
+  .data-table--stack .col-joined,
+  .data-table--stack .col-phone,
+  .data-table--stack .col-email {
+    width: auto;
+    min-width: 0;
+    white-space: normal;
+  }
+
   /* Bulk-action bar stacks and the button goes full width on phones */
   .bulk-actions-bar {
     flex-wrap: wrap;
@@ -853,5 +940,41 @@
 
   .bulk-actions-bar .btn-invite {
     width: 100%;
+  }
+}
+
+/* Narrow phones: the row label ("NOTIFICATIONS") can take a third of the card
+   width, leaving too little for the value beside it — names wrapped onto three
+   lines and longer badges ran past the card edge. Below this width the label
+   takes its own line and the value gets the full width of the card. */
+@media (max-width: 520px) {
+  /* The cards carry their own borders, so the list's padding is dead space. */
+  .applications-list,
+  .courses-list,
+  .documents-list,
+  .users-list-container,
+  .requests-list-container,
+  .recent-table-wrapper {
+    padding: 0;
+  }
+
+  .data-table--stack td {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    text-align: left;
+    gap: 4px 8px;
+  }
+
+  .data-table--stack td::before {
+    flex: 0 0 100%;
+  }
+
+  /* Buttons share the row beneath their label rather than stacking. */
+  .data-table--stack td.col-actions {
+    justify-content: flex-start;
+  }
+
+  .data-table--stack td.col-actions .btn-pdf {
+    margin-left: 0;
   }
 }

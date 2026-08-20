@@ -29,6 +29,7 @@ import Requests from './pages/Requests';
 import Analytics from './pages/Analytics';
 import DataSubjectRequests from './pages/DataSubjectRequests';
 import AuditLogs from './pages/AuditLogs';
+import Help from './pages/Help';
 
 function App() {
   // Always use /admin as base path since we're served from the backend
@@ -71,6 +72,7 @@ function App() {
             <Route path="data-subject-requests" element={<RoleRoute roles={['ADMIN']}><DataSubjectRequests /></RoleRoute>} />
             <Route path="audit-logs" element={<RoleRoute roles={['ADMIN']}><AuditLogs /></RoleRoute>} />
             <Route path="analytics" element={<RoleRoute roles={['ADMIN', 'STAFF']}><Analytics /></RoleRoute>} />
+            <Route path="help" element={<Help />} />
           </Route>
           
           {/* Catch-all route for unmatched paths */}

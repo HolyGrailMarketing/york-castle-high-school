@@ -11,6 +11,8 @@ import { exportSixthFormApplicationToPDF } from '../utils/export';
 import { streamLabel, programmeLabel, needsStreamSelection, csecReadiness } from '../utils/sixthForm';
 import Modal from '../components/Modal';
 import './Applications.css';
+import PageHelp from '../components/PageHelp';
+import Hint from '../components/Hint';
 
 const NOTIFICATION_TYPES: { value: SixthFormNotificationType; label: string }[] = [
   { value: 'INTERVIEW_INVITATION', label: 'Interview Invitation' },
@@ -302,6 +304,7 @@ const SixthFormApplications = () => {
 
   return (
     <div className="applications-page">
+      <PageHelp pageKey="sixth-form" />
       <div className="page-header">
         <h1>Sixth Form Applications</h1>
         <div className="filters">
@@ -329,6 +332,9 @@ const SixthFormApplications = () => {
           not just what is on screen. Each figure jumps to its own bucket. */}
       {readiness && readiness.total > 0 && (
         <div className="readiness-summary">
+          <span className="readiness-summary-label">
+            Cohort progress<Hint term="readiness" />
+          </span>
           <button
             type="button"
             className={`readiness-stat readiness-stat--outstanding${readinessFilter === 'results-outstanding' ? ' is-active' : ''}`}
@@ -356,6 +362,7 @@ const SixthFormApplications = () => {
       <div className="bulk-actions-bar">
         <span className="bulk-actions-count">
           {selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Select applicants to send a notification'}
+          <Hint term="bulk-notification" />
         </span>
         <select
           className="filter-select"
@@ -415,8 +422,8 @@ const SixthFormApplications = () => {
                 <th>Name</th>
                 <th>Email</th>
                 <th>Phone</th>
-                <th>CXC Results</th>
-                <th>Section D</th>
+                <th>CXC Results<Hint term="cxc-results" /></th>
+                <th>Section D<Hint term="section-d" /></th>
                 <th>Notifications</th>
                 <th>Submitted</th>
                 <th className="col-actions">Actions</th>
@@ -645,7 +652,7 @@ const SixthFormApplications = () => {
                   </>
                 )}
 
-                <h4 className="detail-section-heading">Status</h4>
+                <h4 className="detail-section-heading">Status<Hint term="application-status" /></h4>
                 <div><strong>Status:</strong> {selectedApp.status}</div>
                 {selectedApp.notes && <div><strong>Notes:</strong> {selectedApp.notes}</div>}
               </div>
@@ -693,7 +700,7 @@ const SixthFormApplications = () => {
                     <div className="form-field form-field--checkbox">
                       <label>
                         <input type="checkbox" checked={interviewForm.fullyMatriculated} onChange={f('fullyMatriculated')} />
-                        Applicant Fully Matriculated
+                        Applicant Fully Matriculated<Hint term="matriculation" />
                       </label>
                     </div>
 
@@ -735,7 +742,7 @@ const SixthFormApplications = () => {
                     </div>
 
                     <div className="form-field">
-                      <label>Decision <span style={{ color: '#dc3545' }}>*</span></label>
+                      <label>Decision <span style={{ color: '#dc3545' }}>*</span><Hint term="interview-decision" /></label>
                       <select className="form-input" value={interviewForm.decision} onChange={f('decision')}>
                         <option value="">— Select decision —</option>
                         <option value="RECOMMEND">Recommend for Admission</option>
@@ -761,7 +768,7 @@ const SixthFormApplications = () => {
 
             {/* Status actions */}
             <div className="status-actions">
-              <h3>Update Status</h3>
+              <h3>Update Status<Hint term="application-status" /></h3>
               {statusError && <div className="interview-error">{statusError}</div>}
               {!interview && (
                 <div className="interview-warning">

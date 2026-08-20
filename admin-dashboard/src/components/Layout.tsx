@@ -115,6 +115,7 @@ const Layout = () => {
     { path: '/data-subject-requests', label: 'Data Subject Rights',icon: '🔒', roles: ['ADMIN'] },
     { path: '/audit-logs',            label: 'Audit Logs',         icon: '📋', roles: ['ADMIN'] },
     { path: '/analytics',             label: 'Analytics',          icon: '📈', roles: ['ADMIN', 'STAFF'] },
+    { path: '/help',                  label: 'Help & Guide',       icon: '❓', roles: ['ADMIN', 'STAFF', 'TEACHER'] },
   ];
 
   const navItems = role ? allNavItems.filter((item) => item.roles.includes(role)) : [];
@@ -160,7 +161,7 @@ const Layout = () => {
         <header className="header">
           <div className="header-content">
             <div className="header-title">
-              <h1>Admin Dashboard</h1>
+              <h1>{role === 'TEACHER' ? 'Staff Portal' : 'Admin Dashboard'}</h1>
             </div>
             <div className="header-actions">
               {/* Notification Bell — only for roles with Requests access */}

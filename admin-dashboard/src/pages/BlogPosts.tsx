@@ -5,6 +5,7 @@ import Modal from '../components/Modal';
 import Toast from '../components/Toast';
 import { useToast } from '../hooks/useToast';
 import './BlogPosts.css';
+import PageHelp from '../components/PageHelp';
 
 const BlogPosts = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -88,6 +89,7 @@ const BlogPosts = () => {
 
   return (
     <div className="blog-posts-page">
+      <PageHelp pageKey="blog" />
       {toasts.map((toast) => (
         <Toast key={toast.id} message={toast.message} type={toast.type} onClose={() => removeToast(toast.id)} />
       ))}

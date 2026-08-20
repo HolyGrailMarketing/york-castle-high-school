@@ -526,6 +526,11 @@
   .main-content {
     margin-left: 70px;
   }
+
+  /* 30px of gutter each side is a sixth of a phone screen. */
+  .content {
+    padding: 14px;
+  }
   
   .header-title h1 {
     font-size: 16px;
@@ -537,5 +542,30 @@
   
   .logout-btn span {
     display: none;
+  }
+}
+
+/* Small phones: the icon rail is pure overhead once the labels are hidden, and
+   every pixel it gives back goes to the content beside it. */
+@media (max-width: 480px) {
+  .sidebar {
+    width: 56px;
+  }
+
+  .main-content {
+    margin-left: 56px;
+  }
+
+  .sidebar-logo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .nav-item {
+    padding: 12px 4px;
+  }
+
+  .content {
+    padding: 10px;
   }
 }

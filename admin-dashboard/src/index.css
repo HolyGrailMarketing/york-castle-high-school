@@ -76,3 +76,15 @@ img {
   max-width: 100%;
   height: auto;
 }
+
+/* Helper text under a form field. Defined once, globally: it used to be
+   declared in both Users.css and Booklist.css with different sizes and
+   colours, and since page stylesheets are imported globally the winner
+   depended on which route had loaded. */
+.field-hint {
+  display: block;
+  margin-top: 6px;
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.5;
+}
