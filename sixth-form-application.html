@@ -811,8 +811,12 @@ function S_Personal({ data, onChange, onNext, onBack, errors }) {
         </FieldGroup>
 
         <div style={{ display:'grid', gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr', gap:12 }}>
-          <FieldGroup label="Email Address" error={errors.email}>
+          <FieldGroup label="Student's Own Email Address" error={errors.email}>
             <Input value={data.email} onChange={f('email')} type="email" placeholder="your@email.com" inputMode="email"/>
+            <div style={{ font:'400 12px/1.4 Inter', color:'var(--ink-3)' }}>
+              Use the student's own address, not a parent's — this becomes the login for
+              the application, and interview and results notices are sent here.
+            </div>
           </FieldGroup>
           <FieldGroup label="Phone Number" error={errors.phone}>
             <Input value={data.phone} onChange={f('phone')} type="tel" placeholder="876-XXX-XXXX" inputMode="tel"/>
@@ -1769,9 +1773,30 @@ function App() {
     window.scrollTo({ top:0, behavior:'smooth' });
   }
 
-  function tryNext(current, next) {
+  async function tryNext(current, next) {
     const errs = validate(current, data);
     if (Object.keys(errs).length) { setErrors(errs); return; }
+
+    // Tell a repeat applicant here, at screen 3 of 10, rather than letting them
+    // fill in the whole form and hit the duplicate guard at submit. A failure
+    // of the check itself must never block a legitimate applicant — the server
+    // still rejects duplicates on submit.
+    if (current === 'personal') {
+      try {
+        const r = await fetch(`${API_BASE}/sixth-form/check-email?email=${encodeURIComponent(data.email.trim().toLowerCase())}`);
+        if (r.ok && (await r.json()).exists) {
+          setErrors({ email: (
+            <span>
+              An application already exists for this email address.{' '}
+              <a href="signin.html" style={{ color:'var(--rose)', fontWeight:600 }}>Sign in</a>{' '}
+              to view or update it.
+            </span>
+          ) });
+          return;
+        }
+      } catch { /* offline or endpoint down — fall through to the server check */ }
+    }
+
     go(next);
   }
 
@@ -1785,7 +1810,7 @@ function App() {
         firstName:      data.firstName,
         lastName:       data.lastName,
         middleName:     data.middleName || undefined,
-        email:          data.email,
+        email:          data.email.trim().toLowerCase(),
         phone:          data.phone.replace(/\s+/g, '').replace(/[^\d+\-()]/g, ''),
         dateOfBirth:    data.dob,
         address:          data.address + (data.parish ? `, ${data.parish}` : ''),
@@ -1825,6 +1850,10 @@ function App() {
         body: JSON.stringify(payload),
       });
       const body = await res.json().catch(() => ({}));
+      if (res.status === 409) {
+        localStorage.removeItem(STORAGE_KEY);
+        throw new Error('An application already exists for this email address. Sign in to view or update it.');
+      }
       if (!res.ok) {
         const detail = body.details?.map(e => e.msg).join(', ') || body.error || body.message || `Server error ${res.status}`;
         throw new Error(detail);

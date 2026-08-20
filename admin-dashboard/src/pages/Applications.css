@@ -617,6 +617,86 @@
   color: #9ca3af;
 }
 
+/* Interview readiness — whether the applicant has come back with real CXC
+   grades and completed Section D. Orthogonal to both .status-badge and
+   .invited-badge, so again its own hues: green done, amber part-way, red
+   still outstanding. */
+.readiness-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.readiness-badge.readiness-badge--done {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.readiness-badge.readiness-badge--partial {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.readiness-badge.readiness-badge--outstanding {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Cohort-wide progress, counted server-side across every page. Each figure is
+   a button that filters the list to that bucket. */
+.readiness-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.readiness-stat {
+  padding: 8px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #4b5563;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.readiness-stat strong {
+  font-size: 15px;
+  margin-right: 4px;
+}
+
+.readiness-stat--outstanding strong {
+  color: #991b1b;
+}
+
+.readiness-stat--done strong {
+  color: #065f46;
+}
+
+.readiness-stat:hover {
+  border-color: #d4af37;
+}
+
+.readiness-stat.is-active {
+  border-color: #d4af37;
+  background: #faf8f0;
+}
+
+/* Shared note for anything the interviewer still has to collect. */
+.detail-warning-note {
+  margin: 8px 0 0 0;
+  padding: 8px 10px;
+  background: #fdfbf0;
+  border: 1px solid #d4af37;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
 .invite-session-details {
   background: #faf8f0;
   border-left: 4px solid #d4af37;

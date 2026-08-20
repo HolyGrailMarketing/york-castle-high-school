@@ -253,8 +253,19 @@ export const sixthFormUpdateValidation = [
     .custom(val => Array.isArray(val) || (typeof val === 'object' && val !== null))
     .withMessage('CSEC results must be a valid array or object'),
   body('subjectChoices').optional().isObject().withMessage('Subject choices must be a valid object'),
-  // Names which of the account's applications to save when siblings share a login.
-  body('applicationId').optional().isUUID().withMessage('Invalid application reference'),
+];
+
+// The duplicate check must normalise the address exactly as the submit path
+// does — applicationValidation runs .normalizeEmail(), which strips dots and
+// +tags on gmail. Running a different normalisation here would let a repeat
+// applicant past the check only to be rejected at submit, which is the whole
+// problem this check exists to avoid.
+export const sixthFormCheckEmailValidation = [
+  query('email')
+    .isEmail()
+    .normalizeEmail()
+    .isLength({ max: 254 })
+    .withMessage('A valid email address is required'),
 ];
 
 export const sixthFormBulkNotifyValidation = [

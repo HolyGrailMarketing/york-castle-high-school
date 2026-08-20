@@ -145,6 +145,9 @@ model SixthFormApplication {
   @@index([status])
   @@index([submittedAt])
   @@index([userId])
+  // A case-insensitive unique index on lower(email) enforces one application
+  // per applicant. Expression indexes can't be declared here, so it lives in
+  // migrations/20260820140000_sixth_form_unique_email — do not drop it.
 }
 
 model SixthFormNotification {

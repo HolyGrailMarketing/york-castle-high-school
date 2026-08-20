@@ -183,26 +183,6 @@
     .edit-actions { display: flex; gap: 12px; margin-top: 24px; }
     .edit-actions .btn-primary { width: auto; flex: 1; }
 
-    /* Applicant switcher — only rendered when one login owns several applications */
-    .applicant-switcher {
-      background: #fdfbf0; border: 1px solid #d4af37; border-radius: 10px;
-      padding: 14px 16px; margin-bottom: 20px;
-    }
-    .applicant-switcher p {
-      margin: 0 0 10px; font: 400 14px/1.5 -apple-system,sans-serif; color: #7a5a05;
-    }
-    .applicant-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
-    .applicant-tab {
-      padding: 8px 14px; border-radius: 8px; cursor: pointer;
-      border: 1.5px solid #e5e7eb; background: #fff; color: #374151;
-      font: 600 13px/1.3 -apple-system,sans-serif; text-align: left;
-    }
-    .applicant-tab:hover { border-color: #d4af37; }
-    .applicant-tab.active { background: #141417; color: #f0d066; border-color: #141417; }
-    .applicant-tab .tab-note {
-      display: block; font-weight: 400; font-size: 11px; opacity: .75; margin-top: 2px;
-    }
-
     /* Status dashboard */
     .dash-header {
       display: flex; justify-content: space-between; align-items: flex-start;
@@ -362,13 +342,6 @@
           <button class="btn-edit hidden" id="edit-btn">Edit application</button>
           <button class="btn-signout" id="signout-btn">Sign out</button>
         </div>
-      </div>
-
-      <!-- Siblings often apply on one parent's email, so an account can hold
-           more than one application. Shown only in that case. -->
-      <div class="applicant-switcher hidden" id="applicant-switcher">
-        <p>This email address has <strong><span id="applicant-count"></span> applications</strong>. Choose whose application you want to view or update — you will need to complete each one separately.</p>
-        <div class="applicant-tabs" id="applicant-tabs"></div>
       </div>
 
       <!-- Shown instead of the edit button once the application is locked -->
@@ -720,8 +693,6 @@
     }
 
     let currentApp = null;
-    // Every application belonging to this login (siblings may share an email).
-    let allApps = [];
     const EDITABLE_STATUSES = ['PENDING', 'UNDER_REVIEW'];
 
     function show(id) {
@@ -748,54 +719,11 @@
           showError(data.error || 'No application found for this account.');
           return;
         }
-        // Older responses only carried `application`; fall back to that.
-        allApps = data.applications && data.applications.length ? data.applications : [data.application];
-        renderSwitcher();
-        renderDashboard(allApps[0]);
+        renderDashboard(data.application);
         show('view-dashboard');
       } catch {
         showError('Failed to load application. Please check your connection and try again.');
       }
-    }
-
-    // One login can own several applications when siblings apply on a shared
-    // email. Render a chooser only in that case — a single applicant sees nothing.
-    function renderSwitcher() {
-      const wrap = document.getElementById('applicant-switcher');
-      if (allApps.length < 2) {
-        wrap.classList.add('hidden');
-        return;
-      }
-      document.getElementById('applicant-count').textContent = allApps.length;
-      const tabs = document.getElementById('applicant-tabs');
-      tabs.innerHTML = '';
-      allApps.forEach(app => {
-        const name = [app.firstName, app.lastName].filter(Boolean).join(' ');
-        const done = app.subjectChoices && app.subjectChoices.stream;
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'applicant-tab';
-        btn.dataset.id = app.id;
-        // textContent for the name (applicant-supplied), markup only for the note
-        btn.textContent = name;
-        const note = document.createElement('span');
-        note.className = 'tab-note';
-        note.textContent = done ? 'Subject stream complete' : 'Subject stream outstanding';
-        btn.appendChild(note);
-        btn.addEventListener('click', () => {
-          const chosen = allApps.find(a => a.id === app.id);
-          if (chosen) renderDashboard(chosen);
-        });
-        tabs.appendChild(btn);
-      });
-      wrap.classList.remove('hidden');
-      markActiveTab();
-    }
-
-    function markActiveTab() {
-      document.querySelectorAll('.applicant-tab').forEach(t => {
-        t.classList.toggle('active', currentApp && t.dataset.id === currentApp.id);
-      });
     }
 
     function renderDashboard(app) {
@@ -873,10 +801,6 @@
       } else {
         document.getElementById('notes-card').classList.add('hidden');
       }
-
-      // Keep the switcher highlight on whichever application is displayed,
-      // regardless of the order these two are called in.
-      markActiveTab();
     }
 
     // Sign out (both the dashboard button and the nav-bar link)
@@ -966,8 +890,6 @@
       const guardianInfo = { ...(currentApp.guardianInfo || {}), name: v('e-guardianName'), phone: v('e-guardianPhone') };
 
       const payload = {
-        // Names which application to save — an account may own several.
-        applicationId: currentApp.id,
         firstName: v('e-firstName'),
         middleName: v('e-middleName'),
         lastName: v('e-lastName'),
@@ -998,11 +920,7 @@
           const detail = Array.isArray(data.details) && data.details.length ? data.details[0].msg : null;
           throw new Error(detail || data.error || 'Could not save your changes.');
         }
-        // Refresh dashboard data, confirm, then return to the dashboard. Keep
-        // the cached list in step so the switcher's completion note updates too.
-        const idx = allApps.findIndex(a => a.id === data.application.id);
-        if (idx !== -1) allApps[idx] = data.application;
-        renderSwitcher();
+        // Refresh dashboard data, confirm, then return to the dashboard.
         renderDashboard(data.application);
         okEl.classList.remove('hidden');
         okEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

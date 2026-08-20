@@ -614,11 +614,8 @@ export const templates = {
    * the single fixed interview session. Content mirrors the notice shown on
    * sixth-form-application.html's closed-applications screen.
    */
-  sixthFormInterviewInvitation: (name, loginUrl, applicantCount = 1) => {
+  sixthFormInterviewInvitation: (name, loginUrl) => {
     const signInUrl = `${loginUrl}/signin.html`;
-    // Siblings sharing one email address get a single message, so spell out
-    // that the subject selection has to be completed for each of them.
-    const multi = applicantCount > 1;
     const documents = [
       'Copy of your birth certificate',
       'Copy of your TRN',
@@ -646,7 +643,6 @@ export const templates = {
         <p style="margin: 0;">A non-refundable processing fee of <strong>J$2,000</strong> is payable on the day of the interview.</p>
       </div>
       <p>Before your interview, please log in and make sure your <strong>CAPE Subject Stream Selection</strong> is complete on your application — this section was recently added and may still be missing from your submission.</p>
-      ${multi ? `<div class="highlight"><p style="margin: 0;">This email covers all <strong>${applicantCount}</strong> applications submitted with this email address. After signing in you can switch between them, and the subject stream selection must be completed for <strong>each applicant separately</strong>.</p></div>` : ''}
       <p style="text-align: center; margin: 30px 0;">
         <a href="${signInUrl}" class="button" style="display: inline-block; padding: 14px 28px; background: ${schoolColors.secondary}; color: ${schoolColors.charcoal}; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px;">Update My Application</a>
       </p>
@@ -660,7 +656,7 @@ export const templates = {
     return {
       subject: 'Sixth Form Interview Invitation - York Castle High School',
       html: baseTemplate(content, 'Interview Invitation'),
-      text: `You're Invited to Interview\n\nDear ${name},\n\nYou have been invited to interview for the Sixth Form Programme at York Castle High School.\n\nDate: Tuesday, August 25, 2026\nTime: 8:30 a.m.\nLocation: York Castle High School, Brown's Town, St. Ann\n\nPlease bring:\n${textDocs}\n\nA non-refundable processing fee of J$2,000 is payable on the day of the interview.\n\nBefore your interview, please log in at ${signInUrl} and make sure your CAPE Subject Stream Selection is complete on your application.${multi ? `\n\nThis email covers all ${applicantCount} applications submitted with this email address. After signing in you can switch between them, and the subject stream selection must be completed for each applicant separately.` : ''}\n\nWe look forward to meeting you.\n\nBest regards,\nYork Castle High School`,
+      text: `You're Invited to Interview\n\nDear ${name},\n\nYou have been invited to interview for the Sixth Form Programme at York Castle High School.\n\nDate: Tuesday, August 25, 2026\nTime: 8:30 a.m.\nLocation: York Castle High School, Brown's Town, St. Ann\n\nPlease bring:\n${textDocs}\n\nA non-refundable processing fee of J$2,000 is payable on the day of the interview.\n\nBefore your interview, please log in at ${signInUrl} and make sure your CAPE Subject Stream Selection is complete on your application.\n\nWe look forward to meeting you.\n\nBest regards,\nYork Castle High School`,
     };
   },
 

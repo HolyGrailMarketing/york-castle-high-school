@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { Prisma } from '@prisma/client';
 import prisma from '../utils/prisma.js';
 import logger from '../utils/logger.js';
 import { getBaseUrl } from '../utils/helpers.js';
@@ -30,6 +31,54 @@ const isWithinInterviewWindow = (now = Date.now()) =>
   now >= SIXTH_FORM_INTERVIEW_WINDOW.start.getTime() &&
   now <= SIXTH_FORM_INTERVIEW_WINDOW.end.getTime();
 
+// Until interview day every application sits at PENDING, so `status` says
+// nothing useful about an applicant. What staff actually chase is these two:
+// whether the applicant has come back with their real CXC grades, and whether
+// they have completed Section D (the CAPE subject stream selection). Both are
+// derivable from what is already stored, so they need no extra columns.
+
+// The application form saves subjects not yet graded with the sentinel grade
+// `Sitting`; the applicant replaces it via cxc-update.html once results are
+// released. A row still marked `Sitting` is therefore a grade the school does
+// not have. Kept in step with csecReadiness() in the admin dashboard.
+const RESULTS_OUTSTANDING = {
+  OR: [
+    { csecResults: { equals: Prisma.DbNull } },
+    { csecResults: { equals: Prisma.JsonNull } },
+    { csecResults: { equals: [] } },
+    // jsonb @> — true when *any* element of the array carries that grade.
+    { csecResults: { array_contains: [{ grade: 'Sitting' }] } },
+  ],
+};
+
+// Applications submitted before the subject-stream section existed have no
+// `stream` key at all; one saved from the status page with nothing chosen has
+// it as an empty string. Both mean Section D still has to be collected.
+const SECTION_D_OUTSTANDING = {
+  OR: [
+    { NOT: { subjectChoices: { path: ['stream'], not: Prisma.DbNull } } },
+    { subjectChoices: { path: ['stream'], equals: '' } },
+  ],
+};
+
+const READINESS_FILTERS = {
+  'results-outstanding': RESULTS_OUTSTANDING,
+  'section-d-outstanding': SECTION_D_OUTSTANDING,
+  'either-outstanding': { OR: [RESULTS_OUTSTANDING, SECTION_D_OUTSTANDING] },
+  ready: { AND: [{ NOT: RESULTS_OUTSTANDING }, { NOT: SECTION_D_OUTSTANDING }] },
+};
+
+// One application per applicant. Addresses are matched case-insensitively so
+// "John@x.com" and "john@x.com" are the same person, and stored lower-cased so
+// the lower(email) unique index and this lookup always agree.
+const normaliseEmail = (email) => (email || '').trim().toLowerCase();
+
+const findApplicationByEmail = (email) =>
+  prisma.sixthFormApplication.findFirst({
+    where: { email: { equals: email, mode: 'insensitive' } },
+    select: { id: true },
+  });
+
 // Notify staff that a new sixth-form application was submitted. Failures are
 // logged, never thrown, so a notification problem can't break the submission.
 const notifyAdminOfNewSixthForm = async (req, application) => {
@@ -56,7 +105,7 @@ const notifyAdminOfNewSixthForm = async (req, application) => {
 
 export const getSixthFormApplications = async (req, res, next) => {
   try {
-    const { status, search, page = 1 } = req.query;
+    const { status, search, readiness, page = 1 } = req.query;
     // Clamped rather than left uncapped so the admin dashboard's "select all
     // matching this filter" action (which asks for limit = total) can't be
     // used to pull an unbounded result set.
@@ -73,7 +122,26 @@ export const getSixthFormApplications = async (req, res, next) => {
       ];
     }
 
-    const [applications, total] = await Promise.all([
+    // The readiness summary is counted against everything *except* the
+    // readiness filter, so the figures staff are working through stay put
+    // instead of collapsing to the bucket they just clicked.
+    const summaryWhere = { ...where };
+
+    // Nested under AND so it composes with the search clause's own OR.
+    // hasOwn so a query string of `?readiness=constructor` can't reach an
+    // inherited property and end up in the where clause.
+    if (readiness && Object.hasOwn(READINESS_FILTERS, readiness)) {
+      where.AND = [...(where.AND || []), READINESS_FILTERS[readiness]];
+    }
+
+    const [
+      applications,
+      total,
+      resultsOutstanding,
+      sectionDOutstanding,
+      ready,
+      summaryTotal,
+    ] = await Promise.all([
       prisma.sixthFormApplication.findMany({
         where,
         skip,
@@ -94,6 +162,16 @@ export const getSixthFormApplications = async (req, res, next) => {
         orderBy: { submittedAt: 'desc' },
       }),
       prisma.sixthFormApplication.count({ where }),
+      prisma.sixthFormApplication.count({
+        where: { ...summaryWhere, AND: [...(summaryWhere.AND || []), RESULTS_OUTSTANDING] },
+      }),
+      prisma.sixthFormApplication.count({
+        where: { ...summaryWhere, AND: [...(summaryWhere.AND || []), SECTION_D_OUTSTANDING] },
+      }),
+      prisma.sixthFormApplication.count({
+        where: { ...summaryWhere, AND: [...(summaryWhere.AND || []), READINESS_FILTERS.ready] },
+      }),
+      prisma.sixthFormApplication.count({ where: summaryWhere }),
     ]);
 
     res.json({
@@ -103,6 +181,12 @@ export const getSixthFormApplications = async (req, res, next) => {
         limit,
         total,
         pages: Math.ceil(total / limit),
+      },
+      readiness: {
+        total: summaryTotal,
+        resultsOutstanding,
+        sectionDOutstanding,
+        ready,
       },
     });
   } catch (error) {
@@ -145,6 +229,28 @@ export const getSixthFormApplication = async (req, res, next) => {
   }
 };
 
+/**
+ * Does an application already exist for this address?
+ *
+ * The form calls this when the applicant leaves the Personal screen, so
+ * someone who has already applied is told at screen 3 of 10 rather than after
+ * filling the whole form — which is how a batch of duplicate submissions came
+ * to exist before createSixthFormApplication started rejecting them.
+ *
+ * Returns nothing but a boolean: the endpoint is public, so it must not
+ * confirm anything about the applicant beyond what they already typed.
+ */
+export const checkSixthFormEmail = async (req, res, next) => {
+  try {
+    // sixthFormCheckEmailValidation has already validated this and applied the
+    // same normalizeEmail() the submit path uses, so the two agree exactly.
+    const existing = await findApplicationByEmail(normaliseEmail(req.query.email));
+    res.json({ exists: Boolean(existing) });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const createSixthFormApplication = async (req, res, next) => {
   try {
     const now = Date.now();
@@ -176,18 +282,20 @@ export const createSixthFormApplication = async (req, res, next) => {
       subjectChoices,
     } = req.body;
 
-    // Prevent a student from applying twice. One application per applicant,
-    // matched by their account (if signed in) or their email (case-insensitive,
-    // so "John@x.com" and "john@x.com" count as the same person).
-    const duplicate = await prisma.sixthFormApplication.findFirst({
-      where: {
-        OR: [
-          ...(req.user?.id ? [{ userId: req.user.id }] : []),
-          { email: { equals: email, mode: 'insensitive' } },
-        ],
-      },
-      select: { id: true },
-    });
+    const applicantEmail = normaliseEmail(email);
+
+    // Prevent a student from applying twice, matched by their account (if
+    // signed in) or their email. checkSixthFormEmail below runs the same
+    // lookup so the form can say this at the Personal screen rather than
+    // after ten screens of typing.
+    const duplicate = req.user?.id
+      ? await prisma.sixthFormApplication.findFirst({
+          where: {
+            OR: [{ userId: req.user.id }, { email: { equals: applicantEmail, mode: 'insensitive' } }],
+          },
+          select: { id: true },
+        })
+      : await findApplicationByEmail(applicantEmail);
     if (duplicate) {
       return res.status(409).json({
         error: 'An application already exists for this email. Please sign in to view or update your application.',
@@ -202,7 +310,7 @@ export const createSixthFormApplication = async (req, res, next) => {
       // Case-insensitive lookup so a different-cased email doesn't create a
       // duplicate account for an applicant who already has one.
       const existingUser = await prisma.user.findFirst({
-        where: { email: { equals: email, mode: 'insensitive' } },
+        where: { email: { equals: applicantEmail, mode: 'insensitive' } },
       });
       if (existingUser) {
         userId = existingUser.id;
@@ -215,7 +323,7 @@ export const createSixthFormApplication = async (req, res, next) => {
         const hashed = await bcrypt.hash(generatedPassword, 10);
         const newUser = await prisma.user.create({
           data: {
-            email,
+            email: applicantEmail,
             password: hashed,
             name: [firstName, lastName].filter(Boolean).join(' '),
             role: 'STUDENT',
@@ -230,7 +338,7 @@ export const createSixthFormApplication = async (req, res, next) => {
         firstName,
         middleName,
         lastName,
-        email,
+        email: applicantEmail,
         phone,
         dateOfBirth: new Date(dateOfBirth),
         address,
@@ -255,7 +363,7 @@ export const createSixthFormApplication = async (req, res, next) => {
     res.status(201).json({
       message: 'Sixth form application submitted successfully',
       application,
-      ...(generatedPassword && { credentials: { email, password: generatedPassword } }),
+      ...(generatedPassword && { credentials: { email: applicantEmail, password: generatedPassword } }),
     });
   } catch (error) {
     next(error);
@@ -315,12 +423,6 @@ export const updateSixthFormStatus = async (req, res, next) => {
 // (occasionally a few hundred) recipients at a time.
 const NOTIFY_BATCH_SIZE = 5;
 
-// "Kayla", "Kayla and Andre", "Kayla, Andre and Shanice"
-const formatNames = (names) => {
-  if (names.length === 1) return names[0];
-  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
-};
-
 // Send a bulk notification (a fixed template, or an admin-composed custom
 // announcement) to a batch of selected Sixth Form applicants. Unlike the
 // best-effort admin-notification emails elsewhere in this file, sending the
@@ -353,56 +455,34 @@ export const sendSixthFormNotifications = async (req, res, next) => {
     // once up front rather than recomputing it per recipient below.
     const sentSubject = notificationType.build('Applicant', ctx).subject;
 
-    // Siblings routinely apply on one parent's email address. Sending per
-    // application would drop two or three identical messages into that inbox,
-    // so group by address and send once, addressed to every applicant it
-    // covers. Each application is still logged as notified individually.
-    const groups = new Map();
-    applications.forEach((app) => {
-      const key = (app.email || '').trim().toLowerCase();
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(app);
-    });
-    const recipients = [...groups.values()];
-
     let notifiedCount = 0;
-    let emailCount = 0;
     const notifiedIds = [];
 
-    for (let i = 0; i < recipients.length; i += NOTIFY_BATCH_SIZE) {
-      const batch = recipients.slice(i, i + NOTIFY_BATCH_SIZE);
+    for (let i = 0; i < applications.length; i += NOTIFY_BATCH_SIZE) {
+      const batch = applications.slice(i, i + NOTIFY_BATCH_SIZE);
       const results = await Promise.allSettled(
-        batch.map((group) => {
-          const names = group.map(
-            (app) => [app.firstName, app.lastName].filter(Boolean).join(' ') || 'Applicant'
-          );
-          const template = notificationType.build(formatNames(names), {
-            ...ctx,
-            applicantCount: group.length,
-          });
-          return sendEmail(group[0].email, template.subject, template.text, template.html);
+        batch.map((app) => {
+          const name = [app.firstName, app.lastName].filter(Boolean).join(' ') || 'Applicant';
+          const template = notificationType.build(name, ctx);
+          return sendEmail(app.email, template.subject, template.text, template.html);
         })
       );
       results.forEach((result, idx) => {
-        const group = batch[idx];
+        const app = batch[idx];
         if (result.status === 'fulfilled') {
-          // One email covered every application on that address.
-          emailCount += 1;
-          notifiedCount += group.length;
-          group.forEach((app) => notifiedIds.push(app.id));
+          notifiedCount += 1;
+          notifiedIds.push(app.id);
         } else {
           logger.error('Failed to send sixth-form notification', {
-            applicationIds: group.map((app) => app.id),
-            email: group[0].email,
+            applicationId: app.id,
+            email: app.email,
             type,
             error: result.reason?.message,
           });
-          group.forEach((app) => {
-            failed.push({
-              id: app.id,
-              email: app.email,
-              reason: result.reason?.message || 'Failed to send email',
-            });
+          failed.push({
+            id: app.id,
+            email: app.email,
+            reason: result.reason?.message || 'Failed to send email',
           });
         }
       });
@@ -437,18 +517,12 @@ export const sendSixthFormNotifications = async (req, res, next) => {
       type,
       requestedCount: applicationIds.length,
       notifiedCount,
-      emailCount,
       failedCount: failed.length,
     });
 
-    // Mention the email count only when it differs, so the usual send reads
-    // exactly as it did before.
-    const shared = notifiedCount !== emailCount ? ` in ${emailCount} email(s) — addresses shared by siblings received one message covering each applicant.` : '.';
-
     res.json({
-      message: `${notificationType.label} sent to ${notifiedCount} of ${applicationIds.length} selected applicant(s)${shared}`,
+      message: `${notificationType.label} sent to ${notifiedCount} of ${applicationIds.length} selected applicant(s).`,
       notifiedCount,
-      emailCount,
       failed,
     });
   } catch (error) {
@@ -456,13 +530,9 @@ export const sendSixthFormNotifications = async (req, res, next) => {
   }
 };
 
-// Siblings frequently apply using the same parent's email address, which means
-// one login account can own several applications. Return all of them so the
-// portal can offer a choice; `application` stays in the response as the newest
-// one so older clients keep working.
 export const getMyApplication = async (req, res, next) => {
   try {
-    const applications = await prisma.sixthFormApplication.findMany({
+    const application = await prisma.sixthFormApplication.findFirst({
       where: { userId: req.user.id },
       orderBy: { submittedAt: 'desc' },
       include: {
@@ -476,11 +546,11 @@ export const getMyApplication = async (req, res, next) => {
       },
     });
 
-    if (applications.length === 0) {
+    if (!application) {
       return res.status(404).json({ error: 'No application found for this account.' });
     }
 
-    res.json({ application: applications[0], applications });
+    res.json({ application });
   } catch (error) {
     next(error);
   }
@@ -494,15 +564,8 @@ const EDITABLE_STATUSES = ['PENDING', 'UNDER_REVIEW'];
 
 export const updateMyApplication = async (req, res, next) => {
   try {
-    // An account may own several applications (siblings sharing an email), so
-    // the client says which one it is saving. The lookup is always scoped to
-    // req.user.id, so an id belonging to someone else simply isn't found.
-    // Without an id we fall back to the newest, preserving the old behaviour.
-    const { applicationId } = req.body;
     const application = await prisma.sixthFormApplication.findFirst({
-      where: applicationId
-        ? { id: applicationId, userId: req.user.id }
-        : { userId: req.user.id },
+      where: { userId: req.user.id },
       orderBy: { submittedAt: 'desc' },
     });
 
