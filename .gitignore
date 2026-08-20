@@ -77,7 +77,11 @@ backend/logs/
 *.tmp
 *.temp
 
+# TypeScript incremental build cache
+*.tsbuildinfo
 
-
-
-
+# Claude Code: share the launch configs (how to run this project), keep the
+# per-developer bits out. settings.local.json holds one developer's permission
+# grants; scheduled_tasks.lock holds a pid for the machine that wrote it.
+.claude/*
+!.claude/launch.json
