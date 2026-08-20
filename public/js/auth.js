@@ -3,7 +3,10 @@
  * Handles authentication with the backend API
  */
 
-window.API_BASE_URL = window.API_BASE_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3000/api' : '/api');
+// Same origin as the page: the backend serves these pages and the API together,
+// so a relative path is correct on localhost (whatever port) and in production
+// alike. Set window.API_BASE_URL before this script to point somewhere else.
+window.API_BASE_URL = window.API_BASE_URL || '/api';
 
 class Auth {
   constructor() {
