@@ -53,16 +53,21 @@
       background: #f9fafb; border: 1px solid #f3f4f6; border-radius: 8px;
       padding: 10px 12px; color: #374151; text-align: left;
     }
-    .btn-print {
-      margin-top: 14px; padding: 10px 18px;
+    .hidden { display: none !important; }
+    .result-actions { display: flex; gap: 10px; justify-content: center; margin-top: 14px; }
+    .btn-print, .btn-download {
+      padding: 10px 18px;
       background: transparent; color: #141417;
       border: 1.5px solid #d4af37; border-radius: 10px;
       font: 600 13px/1 -apple-system, sans-serif; cursor: pointer;
     }
+    .btn-download { background: #141417; color: #f0d066; border-color: #141417; }
+    .btn-download:hover { background: #d4af37; color: #141417; border-color: #d4af37; }
     @media print {
       body { background: #fff; padding: 0; }
       .card { box-shadow: none; max-width: none; }
-      .field, .btn-primary, .warning, h1 + .subtitle { display: none; }
+      /* The buttons are controls, not part of the printed sheet. */
+      .field, .btn-primary, .warning, h1 + .subtitle, .result-actions { display: none; }
       #result { display: block !important; }
     }
   </style>
@@ -85,7 +90,10 @@
     <div id="result">
       <div id="qr-canvas" style="display: flex; justify-content: center;"></div>
       <div id="encoded-url"></div>
-      <button class="btn-print" id="print-btn">Print</button>
+      <div class="result-actions">
+        <button class="btn-download" id="download-btn">Download PNG</button>
+        <button class="btn-print" id="print-btn">Print</button>
+      </div>
     </div>
   </div>
 
@@ -105,7 +113,8 @@
       // The QR encoder is loaded from a CDN, which school wifi may block. Show
       // the URL either way so staff can still generate the code elsewhere
       // rather than being left with a blank card.
-      if (typeof QRCode === 'undefined') {
+      const canGenerate = typeof QRCode !== 'undefined';
+      if (!canGenerate) {
         container.innerHTML = '<p style="color:#7a5a05; font-size:13px; margin:0; text-align:left;">'
           + 'The QR generator could not load (no internet connection to the CDN). '
           + 'Use the address below with any QR code generator, or open this page again on a connected network.</p>';
@@ -113,8 +122,59 @@
         new QRCode(container, { text: url, width: 260, height: 260, correctLevel: QRCode.CorrectLevel.M });
       }
 
+      // Nothing to save when the encoder never loaded.
+      document.getElementById('download-btn').classList.toggle('hidden', !canGenerate);
       document.getElementById('encoded-url').textContent = url;
       document.getElementById('result').classList.add('show');
+    });
+
+    /**
+     * Render the QR again off-screen at print resolution and return it on a
+     * white canvas with a quiet zone — the blank margin scanners need to find
+     * the code. The on-screen 260px version is for looking at, not for paper.
+     */
+    function buildPrintableQr(url, size) {
+      const holder = document.createElement('div');
+      holder.style.display = 'none';
+      document.body.appendChild(holder);
+      try {
+        new QRCode(holder, { text: url, width: size, height: size, correctLevel: QRCode.CorrectLevel.M });
+        const drawn = holder.querySelector('canvas');
+        if (!drawn) return null; // very old browsers fall back to a table renderer
+
+        const quietZone = Math.round(size * 0.08);
+        const out = document.createElement('canvas');
+        out.width = out.height = size + quietZone * 2;
+        const ctx = out.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, out.width, out.height);
+        ctx.drawImage(drawn, quietZone, quietZone, size, size);
+        return out;
+      } finally {
+        holder.remove();
+      }
+    }
+
+    document.getElementById('download-btn').addEventListener('click', function () {
+      const url = document.getElementById('encoded-url').textContent;
+      if (!url) return;
+
+      const canvas = buildPrintableQr(url, 1024);
+      if (!canvas) {
+        alert('This browser cannot save the QR as an image. Use Print instead.');
+        return;
+      }
+      canvas.toBlob(function (blob) {
+        const href = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = href;
+        a.download = 'york-castle-interview-qr.png';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        // Give the download a moment to start before releasing the blob.
+        setTimeout(function () { URL.revokeObjectURL(href); }, 10000);
+      }, 'image/png');
     });
 
     document.getElementById('print-btn').addEventListener('click', function () {
