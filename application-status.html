@@ -146,6 +146,23 @@
     .field input:disabled { background: #f9fafb; color: #9ca3af; cursor: not-allowed; }
     .field-hint { font: 400 12px/1.4 -apple-system,sans-serif; color: #9ca3af; margin: 6px 0 0; }
     .field-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0 16px; }
+    .checkbox-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+    .checkbox-list label {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border: 1.5px solid #e5e7eb; border-radius: 10px;
+      font: 400 14px/1.3 -apple-system,sans-serif; color: #374151; cursor: pointer;
+      margin-bottom: 0; /* .field label adds 6px, which double-spaces the grid */
+    }
+    /* `.field input` above is written for full-width text inputs. It also matches
+       these checkboxes, stretching each one to 100% and pushing its label to the
+       far right, so opt them back out. */
+    .checkbox-list input[type="checkbox"] {
+      width: auto; flex: 0 0 auto;
+      margin: 0; padding: 0; border-radius: 0;
+      accent-color: #d4af37;
+    }
+    .checkbox-list label.checked { border-color: #d4af37; background: #fdfbf0; }
+    .checkbox-list-empty { font: 400 13px/1.5 -apple-system,sans-serif; color: #9ca3af; }
     .section-heading { font: 700 13px/1 -apple-system,sans-serif; color: #1a1a2e; text-transform: uppercase; letter-spacing: .5px; margin: 28px 0 14px; padding-top: 18px; border-top: 1px solid #f3f4f6; }
     .section-heading:first-of-type { margin-top: 8px; padding-top: 0; border-top: none; }
 
@@ -449,14 +466,45 @@
             <label for="e-positionsHeld">Positions held / achievements</label>
             <textarea id="e-positionsHeld" name="positionsHeld" rows="3"></textarea>
           </div>
+          <h3 class="section-heading">CAPE subject stream selection</h3>
           <div class="field-row">
             <div class="field">
-              <label for="e-firstChoice">First subject choice</label>
-              <input type="text" id="e-firstChoice" name="firstChoice">
+              <label for="e-coreSubject">Core subject</label>
+              <select id="e-coreSubject" name="coreSubject">
+                <option value="">—</option>
+                <option value="Caribbean Studies">Caribbean Studies</option>
+                <option value="Communication Studies">Communication Studies</option>
+              </select>
             </div>
             <div class="field">
-              <label for="e-secondChoice">Second subject choice</label>
-              <input type="text" id="e-secondChoice" name="secondChoice">
+              <label for="e-stream">Stream</label>
+              <select id="e-stream" name="stream">
+                <option value="">—</option>
+                <option value="business">Business &amp; Management</option>
+                <option value="humanities">Arts/Humanities</option>
+                <option value="sciences">Pure &amp; Applied Sciences</option>
+                <option value="engineering">Engineering/Computer Science</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Subjects (select from your chosen stream)</label>
+            <div id="e-streamSubjects" class="checkbox-list"></div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="e-preferredStream">Preferred stream</label>
+              <select id="e-preferredStream" name="preferredStream">
+                <option value="">—</option>
+                <option value="Business">Business</option>
+                <option value="Science">Science</option>
+                <option value="Humanities">Humanities</option>
+                <option value="Technical">Technical</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="e-alternativeStream">Alternative stream (optional)</label>
+              <input type="text" id="e-alternativeStream" name="alternativeStream">
             </div>
           </div>
 
@@ -564,6 +612,58 @@
   <script>
     const API = '/api';
 
+    // Applications submitted before August 2026 chose one of eight curated CAPE
+    // programmes, stored as ids in subjectChoices.firstChoice/secondChoice.
+    // Kept so those applicants still see the choice they actually made.
+    const PROGRAMME_LABELS = {
+      'natural-sciences': 'Natural Sciences',
+      entrepreneurship: 'Entrepreneurship',
+      ict: 'ICT',
+      law: 'Law',
+      'industrial-tech': 'Industrial Technology',
+      tourism: 'Tourism',
+      'visual-communication': 'Visual Communication',
+      sociology: 'Sociology',
+    };
+
+    const STREAMS = {
+      business:    { label: 'Business & Management', subjects: ['Accounting','Economics','Management of Business','Entrepreneurship','Tourism','Logistics & Supply Chain Operations','Integrated Mathematics','Spanish'] },
+      humanities:  { label: 'Arts/Humanities', subjects: ['Sociology','History','Geography','Literatures in English','Law','Art & Design','Integrated Mathematics','Spanish'] },
+      sciences:    { label: 'Pure & Applied Sciences', subjects: ['Biology','Chemistry','Physics','Environmental Science','Agricultural Science','Physical Education & Sport','Pure Mathematics','Spanish'] },
+      engineering: { label: 'Engineering/Computer Science', subjects: ['Information Technology','Computer Science','Digital Media','Animation & Game Design','Electrical & Electronic Technology','Building & Mechanical Engineering','Physics','Art & Design','Pure Mathematics','Spanish'] },
+    };
+
+    // Renders the checkbox list for the currently-selected stream. `selected`
+    // (from the saved application) is only honoured on the initial render —
+    // switching streams afterwards clears the selection, since a previous
+    // stream's subjects don't apply to the newly chosen one.
+    function renderStreamSubjects(streamId, selected) {
+      const container = document.getElementById('e-streamSubjects');
+      const stream = STREAMS[streamId];
+      if (!stream) {
+        container.innerHTML = '<p class="checkbox-list-empty">Choose a stream above to see its subjects.</p>';
+        return;
+      }
+      const checkedSet = new Set(selected || []);
+      container.innerHTML = stream.subjects.map(subject => `
+        <label class="${checkedSet.has(subject) ? 'checked' : ''}">
+          <input type="checkbox" value="${subject}" ${checkedSet.has(subject) ? 'checked' : ''}>
+          ${subject}
+        </label>
+      `).join('');
+      container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener('change', () => cb.closest('label').classList.toggle('checked', cb.checked));
+      });
+    }
+
+    document.getElementById('e-stream').addEventListener('change', function() {
+      renderStreamSubjects(this.value, []);
+    });
+
+    function getCheckedStreamSubjects() {
+      return Array.from(document.querySelectorAll('#e-streamSubjects input[type="checkbox"]:checked')).map(cb => cb.value);
+    }
+
     const STATUS_CONFIG = {
       PENDING:      { label: 'Pending Review',  color: '#92740a', bg: '#fdfbf0', border: '#d4af37', icon: '📋', msg: `You&rsquo;re invited to attend an interview for the Sixth Form Programme.<br><br>
         <strong>Date:</strong> Tuesday, August 25, 2026<br>
@@ -579,7 +679,8 @@
           <li>Your last two school reports</li>
           <li>Two recommendation letters (from a Principal, Teacher, Justice of the Peace, or Minister of Religion)</li>
         </ul><br>
-        A non-refundable processing fee of <strong>J$2,000</strong> is payable on the day of the interview.` },
+        A non-refundable processing fee of <strong>J$2,000</strong> is payable on the day of the interview.<br><br>
+        Before your interview, please use <strong>Update application</strong> below to complete your <strong>CAPE Subject Stream Selection</strong> if you haven't already.` },
       UNDER_REVIEW: { label: 'Under Review',    color: '#141417', bg: '#f6f4ea', border: '#141417', icon: '🔍', msg: 'Our admissions team is currently reviewing your application. You will be contacted soon.' },
       APPROVED:     { label: 'Approved',        color: '#15803d', bg: '#f0fdf4', border: '#22c55e', icon: '✅', msg: 'Congratulations! Your application has been approved. Please check your email for your offer letter and next steps.' },
       REJECTED:     { label: 'Not Successful',  color: '#991b1b', bg: '#fef2f2', border: '#ef4444', icon: '❌', msg: 'We regret to inform you that your application was not successful at this time. Please contact the school for more information.' },
@@ -660,14 +761,28 @@
       msgEl.style.color = cfg.color;
       msgEl.style.borderTopColor = cfg.border;
 
-      // Details grid
+      // Details grid. Applications submitted before the subject-stream section
+      // existed hold a first/second programme choice instead — show whichever
+      // the application actually has, so nobody's choices appear to be missing.
+      const subjectRows = choices.stream
+        ? [
+            { label: 'Core Subject',      value: choices.coreSubject || '—' },
+            { label: 'Stream',            value: (STREAMS[choices.stream] && STREAMS[choices.stream].label) || choices.stream },
+            { label: 'Subjects Selected', value: (choices.streamSubjects || []).join(', ') || '—' },
+            { label: 'Preferred Stream',  value: choices.preferredStream || '—' },
+          ]
+        : [
+            { label: 'Programme Choice', value: PROGRAMME_LABELS[choices.firstChoice] || choices.firstChoice || '—' },
+            { label: 'Second Choice',    value: PROGRAMME_LABELS[choices.secondChoice] || choices.secondChoice || '—' },
+            { label: 'Subject Stream',   value: 'Not yet selected — use Update application' },
+          ];
+
       const rows = [
         { label: 'Full Name',       value: [app.firstName, app.middleName, app.lastName].filter(Boolean).join(' ') },
         { label: 'Email',           value: app.email },
         { label: 'Phone',           value: app.phone },
         { label: 'Date Submitted',  value: fmtDate(app.submittedAt) },
-        { label: 'First Choice',    value: choices.firstChoice  || '—' },
-        { label: 'Second Choice',   value: choices.secondChoice || '—' },
+        ...subjectRows,
         { label: 'Previous School', value: app.previousSchool   || '—' },
         { label: 'Date Reviewed',   value: app.reviewedAt ? fmtDate(app.reviewedAt) : 'Not yet reviewed' },
       ];
@@ -726,8 +841,11 @@
       setVal('e-guardianPhone', guardian.phone);
       setVal('e-previousSchool', app.previousSchool);
       setVal('e-positionsHeld', app.positionsHeld);
-      setVal('e-firstChoice', choices.firstChoice);
-      setVal('e-secondChoice', choices.secondChoice);
+      setVal('e-coreSubject', choices.coreSubject);
+      setVal('e-stream', choices.stream);
+      renderStreamSubjects(choices.stream, choices.streamSubjects);
+      setVal('e-preferredStream', choices.preferredStream);
+      setVal('e-alternativeStream', choices.alternativeStream);
       setVal('e-careerGoals', app.careerGoals);
       setVal('e-strengthsWeaknesses', app.strengthsWeaknesses);
       setVal('e-reasonForAttending', app.reasonForAttending);
@@ -761,7 +879,14 @@
       okEl.classList.add('hidden');
 
       // Preserve any subjectChoices / guardianInfo keys we don't surface in the form
-      const subjectChoices = { ...(currentApp.subjectChoices || {}), firstChoice: v('e-firstChoice'), secondChoice: v('e-secondChoice') };
+      const subjectChoices = {
+        ...(currentApp.subjectChoices || {}),
+        coreSubject: v('e-coreSubject'),
+        stream: v('e-stream'),
+        streamSubjects: getCheckedStreamSubjects(),
+        preferredStream: v('e-preferredStream'),
+        alternativeStream: v('e-alternativeStream'),
+      };
       const guardianInfo = { ...(currentApp.guardianInfo || {}), name: v('e-guardianName'), phone: v('e-guardianPhone') };
 
       const payload = {
@@ -795,7 +920,7 @@
           const detail = Array.isArray(data.details) && data.details.length ? data.details[0].msg : null;
           throw new Error(detail || data.error || 'Could not save your changes.');
         }
-        // Refresh dashboard data, confirm, then return to the dashboard
+        // Refresh dashboard data, confirm, then return to the dashboard.
         renderDashboard(data.application);
         okEl.classList.remove('hidden');
         okEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

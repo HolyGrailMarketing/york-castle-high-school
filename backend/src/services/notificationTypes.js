@@ -8,7 +8,7 @@ import { templates } from './emailTemplates.js';
 export const NOTIFICATION_TYPES = {
   INTERVIEW_INVITATION: {
     label: 'Interview Invitation',
-    build: (name) => templates.sixthFormInterviewInvitation(name),
+    build: (name, ctx) => templates.sixthFormInterviewInvitation(name, ctx.loginUrl),
   },
   CXC_RESULTS_RELEASED: {
     label: 'CXC Results Released',

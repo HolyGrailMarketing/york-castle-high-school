@@ -304,7 +304,7 @@ const Users = () => {
         </div>
       ) : (
         <div className={`users-list-container ${loading ? 'is-loading' : ''}`}>
-          <table className="users-table">
+          <table className="users-table data-table--stack">
             <thead>
               <tr>
                 <th className="col-user">User</th>
@@ -319,7 +319,7 @@ const Users = () => {
             <tbody>
               {users.map((user) => (
                 <tr key={user.id}>
-                  <td className="col-user">
+                  <td data-label="User" className="col-user">
                     <div className="user-cell">
                       <div className="user-avatar" style={{ background: getRoleColor(user.role) }}>
                         {user.name.charAt(0).toUpperCase()}
@@ -327,10 +327,10 @@ const Users = () => {
                       <span className="user-name">{user.name}</span>
                     </div>
                   </td>
-                  <td className="col-email">
+                  <td data-label="Email" className="col-email">
                     <span className="email-text">{user.email}</span>
                   </td>
-                  <td className="col-role">
+                  <td data-label="Role" className="col-role">
                     <span
                       className="role-badge"
                       style={{ backgroundColor: getRoleColor(user.role) }}
@@ -338,7 +338,7 @@ const Users = () => {
                       {user.role}
                     </span>
                   </td>
-                  <td className="col-auth">
+                  <td data-label="Auth" className="col-auth">
                     {user.provider === 'GOOGLE' ? (
                       <span className="provider-badge" title="Google OAuth User">
                         🔐 Google
@@ -347,19 +347,19 @@ const Users = () => {
                       <span className="auth-email">Email</span>
                     )}
                   </td>
-                  <td className="col-phone">
+                  <td data-label="Phone" className="col-phone">
                     {user.phone ? (
                       <span className="user-phone">{user.phone}</span>
                     ) : (
                       <span className="cell-empty">—</span>
                     )}
                   </td>
-                  <td className="col-joined">
+                  <td data-label="Joined" className="col-joined">
                     <span className="date-text">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </span>
                   </td>
-                  <td className="col-actions">
+                  <td data-label="Actions" className="col-actions">
                     <div className="row-actions">
                       <button
                         className="action-btn edit"

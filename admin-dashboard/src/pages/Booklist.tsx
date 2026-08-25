@@ -177,7 +177,7 @@ const Booklist = () => {
               {schoolYear}
               {schoolYear === liveSchoolYear && <span className="live-badge">Live on website</span>}
             </h2>
-            <table className="data-table">
+            <table className="data-table data-table--stack">
               <thead>
                 <tr>
                   <th>Grade</th>
@@ -191,14 +191,14 @@ const Booklist = () => {
               <tbody>
                 {yearEntries.map((entry) => (
                   <tr key={entry.id} className={entry.isPublished ? '' : 'row-unpublished'}>
-                    <td>{entry.gradeLabel}</td>
-                    <td>
+                    <td data-label="Grade">{entry.gradeLabel}</td>
+                    <td data-label="File">
                       <a href={entry.fileUrl} target="_blank" rel="noopener noreferrer">{entry.fileName}</a>
                     </td>
-                    <td>{entry.fileSize ? `${(entry.fileSize / 1024).toFixed(0)} KB` : '—'}</td>
-                    <td>{new Date(entry.updatedAt).toLocaleDateString()}</td>
-                    <td>{entry.isPublished ? 'Published' : 'Hidden'}</td>
-                    <td>
+                    <td data-label="Size">{entry.fileSize ? `${(entry.fileSize / 1024).toFixed(0)} KB` : '—'}</td>
+                    <td data-label="Updated">{new Date(entry.updatedAt).toLocaleDateString()}</td>
+                    <td data-label="Status">{entry.isPublished ? 'Published' : 'Hidden'}</td>
+                    <td data-label="Actions" className="col-actions">
                       <button onClick={() => handleTogglePublished(entry)} className="btn-download">
                         {entry.isPublished ? 'Hide' : 'Publish'}
                       </button>

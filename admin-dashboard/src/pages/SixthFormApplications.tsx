@@ -1,9 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { apiService } from '../services/api';
-import type { SixthFormApplication, SixthFormInterview, SixthFormNotificationType } from '../types';
+import type {
+  SixthFormApplication,
+  SixthFormInterview,
+  SixthFormNotificationType,
+  SixthFormReadiness,
+  SixthFormReadinessFilter,
+} from '../types';
 import { exportSixthFormApplicationToPDF } from '../utils/export';
+import { streamLabel, programmeLabel, needsStreamSelection, csecReadiness } from '../utils/sixthForm';
 import Modal from '../components/Modal';
 import './Applications.css';
+import PageHelp from '../components/PageHelp';
+import Hint from '../components/Hint';
 
 const NOTIFICATION_TYPES: { value: SixthFormNotificationType; label: string }[] = [
   { value: 'INTERVIEW_INVITATION', label: 'Interview Invitation' },
@@ -34,6 +43,19 @@ const DECISION_LABELS: Record<string, string> = {
   DEFER: 'Defer Decision',
 };
 
+// Every application stays PENDING until interview day, so what staff filter on
+// is how ready each applicant is: real CXC grades on file, and Section D done.
+const READINESS_OPTIONS: { value: SixthFormReadinessFilter; label: string }[] = [
+  { value: '', label: 'All applicants' },
+  { value: 'results-outstanding', label: 'CXC results outstanding' },
+  { value: 'section-d-outstanding', label: 'Section D outstanding' },
+  { value: 'either-outstanding', label: 'Either outstanding' },
+  { value: 'ready', label: 'Ready for interview' },
+];
+const READINESS_LABELS: Record<string, string> = Object.fromEntries(
+  READINESS_OPTIONS.filter((o) => o.value).map((o) => [o.value, o.label.toLowerCase()])
+);
+
 const emptyForm = {
   studentName: '',
   fullyMatriculated: false,
@@ -51,6 +73,8 @@ const SixthFormApplications = () => {
   const [loading, setLoading] = useState(true);
   const [selectedApp, setSelectedApp] = useState<SixthFormApplication | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
+  const [readinessFilter, setReadinessFilter] = useState<SixthFormReadinessFilter>('');
+  const [readiness, setReadiness] = useState<SixthFormReadiness | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -85,22 +109,24 @@ const SixthFormApplications = () => {
   const [interviewSaving, setInterviewSaving] = useState(false);
   const [interviewError, setInterviewError] = useState('');
 
-  // Reset to first page whenever the filter changes
+  // Reset to first page whenever a filter changes
   useEffect(() => {
     setPage(1);
-  }, [statusFilter]);
+  }, [statusFilter, readinessFilter]);
 
   useEffect(() => {
     fetchApplications();
-  }, [statusFilter, page]);
+  }, [statusFilter, readinessFilter, page]);
 
   const fetchApplications = async () => {
     setLoading(true);
     try {
       const params: any = { page, limit: PAGE_SIZE };
       if (statusFilter) params.status = statusFilter;
+      if (readinessFilter) params.readiness = readinessFilter;
       const data = await apiService.getSixthFormApplications(params);
       setApplications(data.applications);
+      setReadiness(data.readiness || null);
       setSelectedIds(new Set());
       setBlastMode(false);
       setBlastRecipients(null);
@@ -222,13 +248,16 @@ const SixthFormApplications = () => {
     });
   };
 
-  // Reach beyond the loaded page: select every applicant matching the
-  // current status filter, not just the ones currently on screen.
+  // Reach beyond the loaded page: select every applicant matching the current
+  // filters, not just the ones currently on screen. This is what turns the
+  // readiness filter into a chase-up: filter to "CXC results outstanding",
+  // select all matching, send.
   const selectAllMatching = async () => {
     setBlastLoading(true);
     try {
       const params: any = { page: 1, limit: totalCount };
       if (statusFilter) params.status = statusFilter;
+      if (readinessFilter) params.readiness = readinessFilter;
       const data = await apiService.getSixthFormApplications(params);
       setBlastRecipients(data.applications);
       setBlastMode(true);
@@ -260,15 +289,35 @@ const SixthFormApplications = () => {
     }
   };
 
+  // Names whatever the list is currently narrowed to, for the bulk-select bar.
+  const filterDescription = () => {
+    const parts = [
+      readinessFilter ? READINESS_LABELS[readinessFilter] : '',
+      statusFilter ? statusFilter.replace('_', ' ').toLowerCase() : '',
+    ].filter(Boolean);
+    return parts.length ? parts.join(', ') : 'all applicants';
+  };
+
   if (loading) {
     return <div className="loading">Loading applications...</div>;
   }
 
   return (
     <div className="applications-page">
+      <PageHelp pageKey="sixth-form" />
       <div className="page-header">
         <h1>Sixth Form Applications</h1>
         <div className="filters">
+          <select
+            value={readinessFilter}
+            onChange={(e) => setReadinessFilter(e.target.value as SixthFormReadinessFilter)}
+            className="filter-select"
+            aria-label="Filter by interview readiness"
+          >
+            {READINESS_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
             <option value="">All Statuses</option>
             <option value="PENDING">Pending</option>
@@ -279,9 +328,41 @@ const SixthFormApplications = () => {
         </div>
       </div>
 
+      {/* Counted across every page, so this is the whole cohort's progress —
+          not just what is on screen. Each figure jumps to its own bucket. */}
+      {readiness && readiness.total > 0 && (
+        <div className="readiness-summary">
+          <span className="readiness-summary-label">
+            Cohort progress<Hint term="readiness" />
+          </span>
+          <button
+            type="button"
+            className={`readiness-stat readiness-stat--outstanding${readinessFilter === 'results-outstanding' ? ' is-active' : ''}`}
+            onClick={() => setReadinessFilter(readinessFilter === 'results-outstanding' ? '' : 'results-outstanding')}
+          >
+            <strong>{readiness.resultsOutstanding}</strong> of {readiness.total} still to update CXC results
+          </button>
+          <button
+            type="button"
+            className={`readiness-stat readiness-stat--outstanding${readinessFilter === 'section-d-outstanding' ? ' is-active' : ''}`}
+            onClick={() => setReadinessFilter(readinessFilter === 'section-d-outstanding' ? '' : 'section-d-outstanding')}
+          >
+            <strong>{readiness.sectionDOutstanding}</strong> still to complete Section D
+          </button>
+          <button
+            type="button"
+            className={`readiness-stat readiness-stat--done${readinessFilter === 'ready' ? ' is-active' : ''}`}
+            onClick={() => setReadinessFilter(readinessFilter === 'ready' ? '' : 'ready')}
+          >
+            <strong>{readiness.ready}</strong> ready for interview
+          </button>
+        </div>
+      )}
+
       <div className="bulk-actions-bar">
         <span className="bulk-actions-count">
           {selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Select applicants to send a notification'}
+          <Hint term="bulk-notification" />
         </span>
         <select
           className="filter-select"
@@ -309,14 +390,14 @@ const SixthFormApplications = () => {
             All {applications.length} on this page are selected.
           </span>
           <button className="btn-invite" onClick={selectAllMatching} disabled={blastLoading}>
-            {blastLoading ? 'Selecting…' : `Select all ${totalCount} matching ${statusFilter ? statusFilter.replace('_', ' ').toLowerCase() : 'all statuses'}`}
+            {blastLoading ? 'Selecting…' : `Select all ${totalCount} matching ${filterDescription()}`}
           </button>
         </div>
       )}
       {blastMode && (
         <div className="bulk-actions-bar" style={{ marginTop: -8 }}>
           <span className="bulk-actions-count">
-            All {selectedIds.size} applicants matching {statusFilter ? statusFilter.replace('_', ' ').toLowerCase() : 'all statuses'} are selected.
+            All {selectedIds.size} applicants matching {filterDescription()} are selected.
           </span>
           <button className="pagination-btn" onClick={() => { setBlastMode(false); setBlastRecipients(null); setSelectedIds(new Set()); }}>
             Clear
@@ -341,7 +422,8 @@ const SixthFormApplications = () => {
                 <th>Name</th>
                 <th>Email</th>
                 <th>Phone</th>
-                <th>Status</th>
+                <th>CXC Results<Hint term="cxc-results" /></th>
+                <th>Section D<Hint term="section-d" /></th>
                 <th>Notifications</th>
                 <th>Submitted</th>
                 <th className="col-actions">Actions</th>
@@ -361,10 +443,44 @@ const SixthFormApplications = () => {
                   <td data-label="Name" className="col-name">{[app.firstName, app.middleName, app.lastName].filter(Boolean).join(' ')}</td>
                   <td data-label="Email" className="col-email">{app.email}</td>
                   <td data-label="Phone" className="col-nowrap">{app.phone}</td>
-                  <td data-label="Status" className="col-nowrap">
-                    <span className={`status-badge status-${app.status.toLowerCase().replace('_', '-')}`}>
-                      {app.status.replace('_', ' ')}
-                    </span>
+                  {/* Status is deliberately not a column: nothing moves off
+                      PENDING until interview day, so it would be an identical
+                      badge on every row. It stays in the View modal, where it
+                      is also the place it gets changed. */}
+                  <td data-label="CXC Results" className="col-nowrap">
+                    {(() => {
+                      const r = csecReadiness(app.csecResults);
+                      if (r.updated) {
+                        return (
+                          <span className="readiness-badge readiness-badge--done" title={`${r.total} subject(s) graded`}>
+                            Updated
+                          </span>
+                        );
+                      }
+                      if (r.graded > 0) {
+                        return (
+                          <span
+                            className="readiness-badge readiness-badge--partial"
+                            title={`${r.graded} of ${r.total} subject(s) graded`}
+                          >
+                            {r.pending} sitting
+                          </span>
+                        );
+                      }
+                      return <span className="readiness-badge readiness-badge--outstanding">Not updated</span>;
+                    })()}
+                  </td>
+                  <td data-label="Section D" className="col-nowrap">
+                    {needsStreamSelection(app.subjectChoices) ? (
+                      <span className="readiness-badge readiness-badge--outstanding">Outstanding</span>
+                    ) : (
+                      <span
+                        className="readiness-badge readiness-badge--done"
+                        title={streamLabel(app.subjectChoices?.stream)}
+                      >
+                        {streamLabel(app.subjectChoices?.stream)}
+                      </span>
+                    )}
                   </td>
                   <td data-label="Notifications" className="col-nowrap">
                     {app.notifications && app.notifications.length > 0 ? (
@@ -487,14 +603,39 @@ const SixthFormApplications = () => {
                         </tbody>
                       </table>
                     </div>
+                    {csecReadiness(selectedApp.csecResults).pending > 0 && (
+                      <p className="detail-warning-note">
+                        {csecReadiness(selectedApp.csecResults).pending} subject(s) still marked
+                        &ldquo;Sitting&rdquo; — the applicant has not entered those grades yet.
+                      </p>
+                    )}
                   </div>
                 )}
 
-                <h4 className="detail-section-heading">Programme Choice</h4>
+                <h4 className="detail-section-heading">CAPE Subject Stream Selection</h4>
                 <ul style={{ margin: '4px 0 0 0', paddingLeft: '20px' }}>
-                  {selectedApp.subjectChoices?.firstChoice && <li>1st Choice: {selectedApp.subjectChoices.firstChoice}</li>}
-                  {selectedApp.subjectChoices?.secondChoice && <li>2nd Choice: {selectedApp.subjectChoices.secondChoice}</li>}
+                  {selectedApp.subjectChoices?.coreSubject && <li>Core Subject: {selectedApp.subjectChoices.coreSubject}</li>}
+                  {selectedApp.subjectChoices?.stream && <li>Stream: {streamLabel(selectedApp.subjectChoices.stream)}</li>}
+                  {selectedApp.subjectChoices?.streamSubjects?.length > 0 && (
+                    <li>Subjects: {selectedApp.subjectChoices.streamSubjects.join(', ')}</li>
+                  )}
+                  {selectedApp.subjectChoices?.preferredStream && <li>Preferred Stream: {selectedApp.subjectChoices.preferredStream}</li>}
+                  {selectedApp.subjectChoices?.alternativeStream && <li>Alternative Stream: {selectedApp.subjectChoices.alternativeStream}</li>}
+
+                  {/* Applications submitted before the stream section existed kept a
+                      first/second programme choice — still the only subject preference
+                      on file for those applicants, so show it rather than nothing. */}
+                  {selectedApp.subjectChoices?.firstChoice && (
+                    <li>Programme choice (submitted before subject streams): {programmeLabel(selectedApp.subjectChoices.firstChoice)}
+                      {selectedApp.subjectChoices.secondChoice && `, then ${programmeLabel(selectedApp.subjectChoices.secondChoice)}`}
+                    </li>
+                  )}
                 </ul>
+                {needsStreamSelection(selectedApp.subjectChoices) && (
+                  <p className="detail-warning-note">
+                    Subject stream selection not yet completed — collect Section D at the interview.
+                  </p>
+                )}
 
                 {(selectedApp.reasonForAttending || selectedApp.careerGoals || selectedApp.strengthsWeaknesses) && (
                   <>
@@ -511,7 +652,7 @@ const SixthFormApplications = () => {
                   </>
                 )}
 
-                <h4 className="detail-section-heading">Status</h4>
+                <h4 className="detail-section-heading">Status<Hint term="application-status" /></h4>
                 <div><strong>Status:</strong> {selectedApp.status}</div>
                 {selectedApp.notes && <div><strong>Notes:</strong> {selectedApp.notes}</div>}
               </div>
@@ -559,7 +700,7 @@ const SixthFormApplications = () => {
                     <div className="form-field form-field--checkbox">
                       <label>
                         <input type="checkbox" checked={interviewForm.fullyMatriculated} onChange={f('fullyMatriculated')} />
-                        Applicant Fully Matriculated
+                        Applicant Fully Matriculated<Hint term="matriculation" />
                       </label>
                     </div>
 
@@ -601,7 +742,7 @@ const SixthFormApplications = () => {
                     </div>
 
                     <div className="form-field">
-                      <label>Decision <span style={{ color: '#dc3545' }}>*</span></label>
+                      <label>Decision <span style={{ color: '#dc3545' }}>*</span><Hint term="interview-decision" /></label>
                       <select className="form-input" value={interviewForm.decision} onChange={f('decision')}>
                         <option value="">— Select decision —</option>
                         <option value="RECOMMEND">Recommend for Admission</option>
@@ -627,7 +768,7 @@ const SixthFormApplications = () => {
 
             {/* Status actions */}
             <div className="status-actions">
-              <h3>Update Status</h3>
+              <h3>Update Status<Hint term="application-status" /></h3>
               {statusError && <div className="interview-error">{statusError}</div>}
               {!interview && (
                 <div className="interview-warning">

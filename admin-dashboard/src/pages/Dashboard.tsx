@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { apiService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import './Dashboard.css';
+import PageHelp from '../components/PageHelp';
 
 interface DashboardStats {
   stats: {
@@ -81,15 +82,22 @@ const Dashboard = () => {
     );
   }
 
+  const role = user?.role;
+  const visibleTo = (roles: string[]) => !!role && roles.includes(role);
+  const ALL_STAFF = ['ADMIN', 'STAFF', 'TEACHER'];
+  const OFFICE = ['ADMIN', 'STAFF'];
+
   const quickActions = [
-    { icon: '📝', label: 'Review Applications', path: '/applications', count: stats.stats.pendingApplications },
-    { icon: '🎓', label: 'Sixth Form Apps', path: '/sixth-form' },
-    { icon: '📰', label: 'Manage Blog', path: '/blog' },
-    { icon: '📅', label: 'Manage Events', path: '/events' },
-  ];
+    { icon: '📝', label: 'Review Applications', path: '/applications', count: stats.stats.pendingApplications, roles: ALL_STAFF },
+    { icon: '🎓', label: 'Sixth Form Apps', path: '/sixth-form', roles: ALL_STAFF },
+    { icon: '📰', label: 'Manage Blog', path: '/blog', roles: ALL_STAFF },
+    { icon: '📅', label: 'Manage Events', path: '/events', roles: ALL_STAFF },
+    { icon: '📬', label: 'Open Requests', path: '/requests', roles: OFFICE },
+  ].filter((action) => visibleTo(action.roles));
 
   return (
     <div className="dashboard">
+      <PageHelp pageKey="dashboard" />
       {/* Welcome Section */}
       <section className="welcome-section">
         <div className="welcome-content">
@@ -128,13 +136,15 @@ const Dashboard = () => {
       <section className="stats-section">
         <h2 className="section-title">Overview</h2>
         <div className="stats-grid">
-          <div className="stat-card stat-users">
-            <div className="stat-icon">👥</div>
-            <div className="stat-info">
-              <span className="stat-value">{stats.stats.totalUsers}</span>
-              <span className="stat-label">Total Users</span>
+          {visibleTo(OFFICE) && (
+            <div className="stat-card stat-users">
+              <div className="stat-icon">👥</div>
+              <div className="stat-info">
+                <span className="stat-value">{stats.stats.totalUsers}</span>
+                <span className="stat-label">Total Users</span>
+              </div>
             </div>
-          </div>
+          )}
           <div className="stat-card stat-applications">
             <div className="stat-icon">📋</div>
             <div className="stat-info">
@@ -190,7 +200,7 @@ const Dashboard = () => {
             </Link>
           </div>
           <div className="recent-table-wrapper">
-            <table className="recent-table">
+            <table className="recent-table data-table--stack">
               <thead>
                 <tr>
                   <th>Applicant</th>
@@ -203,20 +213,20 @@ const Dashboard = () => {
               <tbody>
                 {stats.recentApplications.map((app: any) => (
                   <tr key={app.id}>
-                    <td className="applicant-cell">
+                    <td data-label="Applicant" className="applicant-cell">
                       <div className="applicant-avatar">
                         {app.firstName[0]}{app.lastName[0]}
                       </div>
                       <span>{app.firstName} {app.lastName}</span>
                     </td>
-                    <td className="email-cell">{app.email}</td>
-                    <td>Grade {app.gradeApplying}</td>
-                    <td>
+                    <td data-label="Email" className="email-cell">{app.email}</td>
+                    <td data-label="Grade">Grade {app.gradeApplying}</td>
+                    <td data-label="Status">
                       <span className={`status-pill status-${app.status.toLowerCase().replace('_', '-')}`}>
                         {app.status.replace('_', ' ')}
                       </span>
                     </td>
-                    <td className="date-cell">
+                    <td data-label="Submitted" className="date-cell">
                       {new Date(app.submittedAt).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',

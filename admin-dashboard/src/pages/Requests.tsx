@@ -365,7 +365,7 @@ const Requests = () => {
         </div>
       ) : (
         <div className={`requests-list-container ${searching ? 'is-searching' : ''}`}>
-          <table className="requests-table">
+          <table className="requests-table data-table--stack">
             <thead>
               <tr>
                 <th className="col-type">Type</th>
@@ -379,25 +379,25 @@ const Requests = () => {
             <tbody>
               {requests.map((req) => (
                 <tr key={req.id} className="request-row" onClick={() => handleViewRequest(req)}>
-                  <td className="col-type">
+                  <td data-label="Type" className="col-type">
                     <span className="type-badge">
                       <span className="type-icon">{getTypeIcon(req.type)}</span>
                       <span className="type-label">{getDocumentType(req)}</span>
                     </span>
                   </td>
-                  <td className="col-requester">
+                  <td data-label="Requester" className="col-requester">
                     <span className="requester-name">{getRequesterName(req)}</span>
                   </td>
-                  <td className="col-email">
+                  <td data-label="Email" className="col-email">
                     <span className="email-text">
                       {req.user?.email || req.metadata?.studentInfo?.email || '—'}
                     </span>
                   </td>
-                  <td className="col-date">
+                  <td data-label="Date" className="col-date">
                     <span className="date-text">{new Date(req.createdAt).toLocaleDateString()}</span>
                     <span className="time-text">{new Date(req.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   </td>
-                  <td className="col-status">
+                  <td data-label="Status" className="col-status">
                     <span 
                       className="status-badge"
                       style={{ backgroundColor: getStatusColor(req.status) }}
@@ -405,7 +405,7 @@ const Requests = () => {
                       {req.status.replace('_', ' ')}
                     </span>
                   </td>
-                  <td className="col-assignee">
+                  <td data-label="Assigned To" className="col-assignee">
                     {req.assignedTo ? (
                       <span className="assignee-name">{req.assignedTo.name}</span>
                     ) : (

@@ -5,6 +5,7 @@ import Modal from '../components/Modal';
 import Toast from '../components/Toast';
 import { useToast } from '../hooks/useToast';
 import './Events.css';
+import PageHelp from '../components/PageHelp';
 
 const Events = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -103,6 +104,7 @@ const Events = () => {
 
   return (
     <div className="events-page">
+      <PageHelp pageKey="events" />
       {toasts.map((toast) => (
         <Toast key={toast.id} message={toast.message} type={toast.type} onClose={() => removeToast(toast.id)} />
       ))}

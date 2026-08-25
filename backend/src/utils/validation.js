@@ -255,6 +255,19 @@ export const sixthFormUpdateValidation = [
   body('subjectChoices').optional().isObject().withMessage('Subject choices must be a valid object'),
 ];
 
+// The duplicate check must normalise the address exactly as the submit path
+// does — applicationValidation runs .normalizeEmail(), which strips dots and
+// +tags on gmail. Running a different normalisation here would let a repeat
+// applicant past the check only to be rejected at submit, which is the whole
+// problem this check exists to avoid.
+export const sixthFormCheckEmailValidation = [
+  query('email')
+    .isEmail()
+    .normalizeEmail()
+    .isLength({ max: 254 })
+    .withMessage('A valid email address is required'),
+];
+
 export const sixthFormBulkNotifyValidation = [
   body('applicationIds')
     .isArray({ min: 1 })

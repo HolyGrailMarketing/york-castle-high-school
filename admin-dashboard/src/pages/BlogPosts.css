@@ -139,3 +139,10 @@
   padding: 48px;
   color: #6b7280;
 }
+
+@media (max-width: 640px) {
+  .post-actions,
+  .post-meta {
+    flex-wrap: wrap;
+  }
+}

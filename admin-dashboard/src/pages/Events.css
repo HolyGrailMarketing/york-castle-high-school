@@ -16,7 +16,7 @@
 
 .events-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(350px, 100%), 1fr));
   gap: 20px;
 }
 
@@ -154,4 +154,17 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+}
+
+/* This file had no responsive rules: the two-column date row stayed side by
+   side on a phone, and the action buttons kept their desktop width. */
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .event-actions,
+  .event-meta {
+    flex-wrap: wrap;
+  }
 }

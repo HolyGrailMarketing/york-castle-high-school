@@ -13,6 +13,29 @@ This will:
 3. Set up database if needed
 4. Start both backend and frontend servers
 
+## Running from Claude Code
+
+`.claude/launch.json` holds three shared configurations:
+
+| Config | Runs | Use it for |
+|---|---|---|
+| `dev` | Builds the dashboard, then starts the backend, which serves the site, the API and the built dashboard together | Normal work — one server, everything at `/`, `/api` and `/admin` |
+| `backend` | The backend only, no dashboard rebuild | Backend work, when you don't need the dashboard rebuilt each time |
+| `dashboard-vite` | The dashboard's own Vite dev server, with hot reload | Dashboard UI work |
+
+All three use `autoPort`, so they move to a free port if theirs is taken. The
+backend reads `PORT`, so it follows automatically.
+
+`dashboard-vite` proxies `/api` to `http://localhost:3000`. If the backend
+landed on a different port, point the proxy at it:
+
+```bash
+API_PROXY=http://localhost:3100 npm run dev --prefix admin-dashboard
+```
+
+Note that Google sign-in in development builds its callback URL from the port
+the backend is on, so it only works on a port registered in the Google Console.
+
 ## Manual Start
 
 ### Step 1: Install Dependencies

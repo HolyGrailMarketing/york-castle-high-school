@@ -1030,9 +1030,9 @@
     // entries, so a failed request, an empty table, or JS being unavailable all
     // leave the page working exactly as it did before.
     (function () {
-      var API_BASE_URL = window.location.hostname === 'localhost'
-        ? 'http://localhost:3000/api'
-        : '/api';
+      // Same origin as the page, so this works on whatever port the backend
+      // is running on locally, and unchanged in production.
+      var API_BASE_URL = '/api';
 
       var grid = document.getElementById('booklistGrid');
       var yearBadge = document.getElementById('booklistYearBadge');

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { User, Application, SixthFormApplication, SixthFormInterview, Course, BlogPost, Event, Document, BooklistEntry, Request } from '../types';
+import type { User, Application, SixthFormApplication, SixthFormReadiness, SixthFormInterview, Course, BlogPost, Event, Document, BooklistEntry, Request } from '../types';
 
 // Use relative path since everything is served from the same server
 // This works in both development and production when served from backend
@@ -91,7 +91,11 @@ class ApiService {
   // Sixth Form Applications
   async getSixthFormApplications(params?: any) {
     const queryString = params ? '?' + new URLSearchParams(params).toString() : '';
-    return this.request<{ applications: SixthFormApplication[]; pagination: any }>('GET', `/sixth-form${queryString}`);
+    return this.request<{
+      applications: SixthFormApplication[];
+      pagination: any;
+      readiness: SixthFormReadiness;
+    }>('GET', `/sixth-form${queryString}`);
   }
 
   async getSixthFormApplication(id: string) {

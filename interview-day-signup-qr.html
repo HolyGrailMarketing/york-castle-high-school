@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Interview Day Sign-Up QR – Staff Only</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <link href="images/favicon.ico" rel="shortcut icon" type="image/x-icon">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh;
+      background: linear-gradient(135deg, #0e0e10 0%, #17171b 55%, #241d06 100%);
+      font: 400 15px/1.5 -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #1a1a2e;
+      display: flex; align-items: center; justify-content: center;
+      padding: 40px 20px;
+    }
+    .card {
+      width: 100%; max-width: 520px;
+      background: #fff; border-radius: 16px;
+      padding: 32px 28px; box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    }
+    h1 { font: 700 22px/1.3 Georgia, serif; color: #1a1a2e; margin: 0 0 6px; }
+    .subtitle { color: #6b7280; font-size: 14px; margin: 0 0 24px; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font: 600 13px/1 -apple-system, sans-serif; color: #374151; margin-bottom: 6px; }
+    .field input {
+      width: 100%; padding: 12px 14px;
+      border: 1.5px solid #e5e7eb; border-radius: 10px;
+      font: 400 15px/1 -apple-system, sans-serif;
+      outline: none;
+    }
+    .field input:focus { border-color: #d4af37; }
+    .btn-primary {
+      width: 100%; padding: 14px;
+      background: #141417; color: #f0d066;
+      border: 1px solid #141417; border-radius: 10px;
+      font: 600 15px/1 -apple-system, sans-serif;
+      cursor: pointer; margin-top: 4px;
+    }
+    .btn-primary:hover { background: #d4af37; color: #141417; border-color: #d4af37; }
+    .warning {
+      margin-top: 20px; padding: 12px 14px;
+      background: #fefbea; border: 1px solid #f0d48a; border-radius: 10px;
+      color: #7a5a05; font-size: 13px; line-height: 1.5;
+    }
+    #result { display: none; margin-top: 24px; text-align: center; }
+    #result.show { display: block; }
+    #qr-canvas { margin: 0 auto 14px; display: block; border: 1px solid #f3f4f6; border-radius: 10px; }
+    #encoded-url {
+      word-break: break-all; font: 400 12px/1.5 monospace;
+      background: #f9fafb; border: 1px solid #f3f4f6; border-radius: 8px;
+      padding: 10px 12px; color: #374151; text-align: left;
+    }
+    .hidden { display: none !important; }
+    .result-actions { display: flex; gap: 10px; justify-content: center; margin-top: 14px; }
+    .btn-print, .btn-download {
+      padding: 10px 18px;
+      background: transparent; color: #141417;
+      border: 1.5px solid #d4af37; border-radius: 10px;
+      font: 600 13px/1 -apple-system, sans-serif; cursor: pointer;
+    }
+    .btn-download { background: #141417; color: #f0d066; border-color: #141417; }
+    .btn-download:hover { background: #d4af37; color: #141417; border-color: #d4af37; }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .card { box-shadow: none; max-width: none; }
+      /* The buttons are controls, not part of the printed sheet. */
+      .field, .btn-primary, .warning, h1 + .subtitle, .result-actions { display: none; }
+      #result { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Interview Day Sign-Up QR</h1>
+    <p class="subtitle">Staff only — makes a printable QR code pointing walk-in (paper) applicants at the online Sixth Form application. Nothing here is sent anywhere; the QR is generated in your browser.</p>
+
+    <div class="field">
+      <label for="base-url">Application URL</label>
+      <input type="url" id="base-url" placeholder="https://yourschool.org/sixth-form-application.html">
+    </div>
+    <button class="btn-primary" id="generate-btn">Generate QR Code</button>
+
+    <div class="warning">
+      There is no access code — the application form reopens on its own for <strong>Tuesday, August 25, 2026, 6:00 a.m. to 6:00 p.m.</strong> and closes again automatically. The link is safe to print and hand out, but it only works during those hours. Generate and print this in advance so you are not depending on wifi on the day.
+    </div>
+
+    <div id="result">
+      <div id="qr-canvas" style="display: flex; justify-content: center;"></div>
+      <div id="encoded-url"></div>
+      <div class="result-actions">
+        <button class="btn-download" id="download-btn">Download PNG</button>
+        <button class="btn-print" id="print-btn">Print</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@04f46c6a0708418cb7b96fc563eacae0fbf77674/qrcode.min.js" crossorigin="anonymous"></script>
+  <script>
+    document.getElementById('base-url').value = window.location.origin + '/sixth-form-application.html';
+
+    document.getElementById('generate-btn').addEventListener('click', function () {
+      const url = document.getElementById('base-url').value.trim();
+      if (!url) {
+        alert('Enter the application URL.');
+        return;
+      }
+      const container = document.getElementById('qr-canvas');
+      container.innerHTML = '';
+
+      // The QR encoder is loaded from a CDN, which school wifi may block. Show
+      // the URL either way so staff can still generate the code elsewhere
+      // rather than being left with a blank card.
+      const canGenerate = typeof QRCode !== 'undefined';
+      if (!canGenerate) {
+        container.innerHTML = '<p style="color:#7a5a05; font-size:13px; margin:0; text-align:left;">'
+          + 'The QR generator could not load (no internet connection to the CDN). '
+          + 'Use the address below with any QR code generator, or open this page again on a connected network.</p>';
+      } else {
+        new QRCode(container, { text: url, width: 260, height: 260, correctLevel: QRCode.CorrectLevel.M });
+      }
+
+      // Nothing to save when the encoder never loaded.
+      document.getElementById('download-btn').classList.toggle('hidden', !canGenerate);
+      document.getElementById('encoded-url').textContent = url;
+      document.getElementById('result').classList.add('show');
+    });
+
+    /**
+     * Render the QR again off-screen at print resolution and return it on a
+     * white canvas with a quiet zone — the blank margin scanners need to find
+     * the code. The on-screen 260px version is for looking at, not for paper.
+     */
+    function buildPrintableQr(url, size) {
+      const holder = document.createElement('div');
+      holder.style.display = 'none';
+      document.body.appendChild(holder);
+      try {
+        new QRCode(holder, { text: url, width: size, height: size, correctLevel: QRCode.CorrectLevel.M });
+        const drawn = holder.querySelector('canvas');
+        if (!drawn) return null; // very old browsers fall back to a table renderer
+
+        const quietZone = Math.round(size * 0.08);
+        const out = document.createElement('canvas');
+        out.width = out.height = size + quietZone * 2;
+        const ctx = out.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, out.width, out.height);
+        ctx.drawImage(drawn, quietZone, quietZone, size, size);
+        return out;
+      } finally {
+        holder.remove();
+      }
+    }
+
+    document.getElementById('download-btn').addEventListener('click', function () {
+      const url = document.getElementById('encoded-url').textContent;
+      if (!url) return;
+
+      const canvas = buildPrintableQr(url, 1024);
+      if (!canvas) {
+        alert('This browser cannot save the QR as an image. Use Print instead.');
+        return;
+      }
+      canvas.toBlob(function (blob) {
+        const href = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = href;
+        a.download = 'york-castle-interview-qr.png';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        // Give the download a moment to start before releasing the blob.
+        setTimeout(function () { URL.revokeObjectURL(href); }, 10000);
+      }, 'image/png');
+    });
+
+    document.getElementById('print-btn').addEventListener('click', function () {
+      window.print();
+    });
+  </script>
+</body>
+</html>

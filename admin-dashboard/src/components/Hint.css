@@ -1,0 +1,79 @@
+/* Inline "?" that explains a term where it appears. */
+.hint {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+.hint-btn {
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #d1d5db;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: help;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hint-btn:hover { background: #d4af37; color: #1a1a1a; }
+
+.hint-btn:focus-visible {
+  outline: 2px solid #d4af37;
+  outline-offset: 2px;
+}
+
+.hint-bubble {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  width: max-content;
+  max-width: 260px;
+  padding: 10px 12px;
+  background: #1a1a1a;
+  color: #f3f4f6;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: normal;
+  text-transform: none;
+  text-align: left;
+  white-space: normal;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+
+.hint-term {
+  display: block;
+  margin-bottom: 4px;
+  color: #f0d066;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Little arrow pointing back at the "?". */
+.hint-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #1a1a1a;
+}
+
+/* Near the left edge of a table the bubble would otherwise overflow the
+   viewport; nudge it back in on narrow screens. */
+@media (max-width: 768px) {
+  .hint-bubble { max-width: 200px; }
+}

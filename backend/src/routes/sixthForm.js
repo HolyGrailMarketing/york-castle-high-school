@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   getSixthFormApplications,
+  checkSixthFormEmail,
   getSixthFormApplication,
   getMyApplication,
   updateMyApplication,
@@ -12,7 +13,7 @@ import {
 import { getInterview, saveInterview } from '../controllers/interviewController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { publicRequestLimiter, adminLimiter, generalLimiter } from '../middleware/rateLimiter.js';
-import { sixthFormValidation, sixthFormUpdateValidation, sixthFormBulkNotifyValidation, handleValidationErrors, sanitizeBody } from '../utils/validation.js';
+import { sixthFormValidation, sixthFormUpdateValidation, sixthFormBulkNotifyValidation, sixthFormCheckEmailValidation, handleValidationErrors, sanitizeBody } from '../utils/validation.js';
 
 const router = express.Router();
 
@@ -24,6 +25,17 @@ router.get('/my', generalLimiter, authenticate, getMyApplication);
 
 // Update current student's own application (resolved by user id, no IDOR surface)
 router.put('/my', generalLimiter, authenticate, sanitizeBody, sixthFormUpdateValidation, handleValidationErrors, updateMyApplication);
+
+// Has this address already applied? Called by the application form as the
+// applicant leaves the Personal screen, so a repeat applicant is told early
+// instead of after filling in all ten screens. Public, so it returns only a
+// boolean. Declared before '/:id' so 'check-email' isn't captured as an id.
+//
+// Deliberately NOT publicRequestLimiter: that instance allows three requests
+// per IP per hour and is shared with POST '/' below, so a few checks would
+// lock the applicant out of actually submitting — and a whole school shares
+// one address. generalLimiter is a separate budget sized for lookups.
+router.get('/check-email', generalLimiter, sixthFormCheckEmailValidation, handleValidationErrors, checkSixthFormEmail);
 
 // Get single application
 router.get('/:id', generalLimiter, authenticate, getSixthFormApplication);

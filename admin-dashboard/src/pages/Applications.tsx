@@ -5,6 +5,7 @@ import { exportApplications, exportApplicationToPDF } from '../utils/export';
 import { useToast } from '../hooks/useToast';
 import Toast from '../components/Toast';
 import './Applications.css';
+import PageHelp from '../components/PageHelp';
 
 const Applications = () => {
   const [applications, setApplications] = useState<Application[]>([]);
@@ -96,6 +97,7 @@ const Applications = () => {
 
   return (
     <div className="applications-page">
+      <PageHelp pageKey="applications" />
       {toasts.map((toast) => (
         <Toast
           key={toast.id}
@@ -135,7 +137,7 @@ const Applications = () => {
       </div>
 
       <div className="applications-list">
-        <table className="data-table">
+        <table className="data-table data-table--stack">
           <thead>
             <tr>
               <th>Name</th>
@@ -150,17 +152,17 @@ const Applications = () => {
           <tbody>
             {applications.map((app) => (
               <tr key={app.id}>
-                <td>{app.firstName} {app.middleName} {app.lastName}</td>
-                <td>{app.email}</td>
-                <td>{app.phone}</td>
-                <td>Grade {app.gradeApplying}</td>
-                <td>
+                <td data-label="Name" className="col-name">{app.firstName} {app.middleName} {app.lastName}</td>
+                <td data-label="Email" className="col-email">{app.email}</td>
+                <td data-label="Phone">{app.phone}</td>
+                <td data-label="Grade">Grade {app.gradeApplying}</td>
+                <td data-label="Status">
                   <span className={`status-badge status-${app.status.toLowerCase().replace('_', '-')}`}>
                     {app.status.replace('_', ' ')}
                   </span>
                 </td>
-                <td>{new Date(app.submittedAt).toLocaleDateString()}</td>
-                <td>
+                <td data-label="Submitted">{new Date(app.submittedAt).toLocaleDateString()}</td>
+                <td data-label="Actions" className="col-actions">
                   <button onClick={() => setSelectedApp(app)} className="btn-view">View</button>
                   <button onClick={() => handleExportPDF(app)} className="btn-pdf">PDF</button>
                 </td>

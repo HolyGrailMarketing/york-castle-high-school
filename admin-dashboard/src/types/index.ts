@@ -107,6 +107,26 @@ export interface SixthFormNotification {
   sentAt: string;
 }
 
+/** Which readiness bucket the applications list is filtered to. */
+export type SixthFormReadinessFilter =
+  | ''
+  | 'results-outstanding'
+  | 'section-d-outstanding'
+  | 'either-outstanding'
+  | 'ready';
+
+/**
+ * How many applicants are still to act, counted server-side across every page
+ * and ignoring the readiness filter itself so the figures don't move as staff
+ * click through the buckets.
+ */
+export interface SixthFormReadiness {
+  total: number;
+  resultsOutstanding: number;
+  sectionDOutstanding: number;
+  ready: number;
+}
+
 export interface Course {
   id: string;
   name: string;

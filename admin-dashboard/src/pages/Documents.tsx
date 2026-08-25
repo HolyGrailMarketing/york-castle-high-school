@@ -5,6 +5,7 @@ import Modal from '../components/Modal';
 import Toast from '../components/Toast';
 import { useToast } from '../hooks/useToast';
 import './Documents.css';
+import PageHelp from '../components/PageHelp';
 
 const Documents = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -100,6 +101,7 @@ const Documents = () => {
 
   return (
     <div className="documents-page">
+      <PageHelp pageKey="documents" />
       {toasts.map((toast) => (
         <Toast key={toast.id} message={toast.message} type={toast.type} onClose={() => removeToast(toast.id)} />
       ))}
@@ -115,7 +117,7 @@ const Documents = () => {
             <p>No documents uploaded yet. Upload your first document!</p>
           </div>
         ) : (
-          <table className="data-table">
+          <table className="data-table data-table--stack">
             <thead>
               <tr>
                 <th>Title</th>
@@ -130,13 +132,13 @@ const Documents = () => {
             <tbody>
               {documents.map((doc) => (
                 <tr key={doc.id}>
-                  <td>{doc.title}</td>
-                  <td>{doc.category || 'Uncategorized'}</td>
-                  <td>{doc.fileName}</td>
-                  <td>{doc.fileSize ? `${(doc.fileSize / 1024).toFixed(2)} KB` : 'N/A'}</td>
-                  <td>{doc.downloadCount || 0}</td>
-                  <td>{new Date(doc.createdAt).toLocaleDateString()}</td>
-                  <td>
+                  <td data-label="Title" className="col-name">{doc.title}</td>
+                  <td data-label="Category">{doc.category || 'Uncategorized'}</td>
+                  <td data-label="File Name">{doc.fileName}</td>
+                  <td data-label="Size">{doc.fileSize ? `${(doc.fileSize / 1024).toFixed(2)} KB` : 'N/A'}</td>
+                  <td data-label="Downloads">{doc.downloadCount || 0}</td>
+                  <td data-label="Created">{new Date(doc.createdAt).toLocaleDateString()}</td>
+                  <td data-label="Actions" className="col-actions">
                     <button onClick={() => handleDownload(doc.id, doc.fileName)} className="btn-download">Download</button>
                     <button onClick={() => handleDelete(doc.id)} className="btn-delete">Delete</button>
                   </td>
