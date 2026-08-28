@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { apiService } from '../services/api';
 import type {
+  AcceptanceLetterDetails,
   SixthFormApplication,
   SixthFormInterview,
   SixthFormNotificationType,
@@ -8,7 +9,7 @@ import type {
   SixthFormReadinessFilter,
 } from '../types';
 import { exportSixthFormApplicationToPDF } from '../utils/export';
-import { streamLabel, programmeLabel, needsStreamSelection, csecReadiness } from '../utils/sixthForm';
+import { streamLabel, programmeLabel, needsStreamSelection, csecReadiness, formatCollectionWindow } from '../utils/sixthForm';
 import Modal from '../components/Modal';
 import './Applications.css';
 import PageHelp from '../components/PageHelp';
@@ -17,11 +18,39 @@ import Hint from '../components/Hint';
 const NOTIFICATION_TYPES: { value: SixthFormNotificationType; label: string }[] = [
   { value: 'INTERVIEW_INVITATION', label: 'Interview Invitation' },
   { value: 'CXC_RESULTS_RELEASED', label: 'CXC Results Released' },
+  { value: 'ACCEPTANCE_LETTER', label: 'Acceptance Letter' },
+  { value: 'UNSUCCESSFUL_LETTER', label: 'Unsuccessful Letter' },
   { value: 'CUSTOM', label: 'Custom Announcement…' },
 ];
+
+/**
+ * A decision letter only goes to applicants whose decision is on record. The
+ * server enforces this per recipient; the dialog uses the same map to say who
+ * will be skipped before anything is sent.
+ */
+const REQUIRED_STATUS: Partial<Record<SixthFormNotificationType, string>> = {
+  ACCEPTANCE_LETTER: 'APPROVED',
+  UNSUCCESSFUL_LETTER: 'REJECTED',
+};
+
+/**
+ * What this year's acceptance letter says. These prefill the send dialog and
+ * are the only place the 2026 dates live — next year, change them here or just
+ * type over them in the dialog before sending. The server takes whatever the
+ * dialog submits and has no defaults of its own, so the two cannot drift.
+ */
+const ACCEPTANCE_DEFAULTS: AcceptanceLetterDetails = {
+  collectionStart: '2026-09-01',
+  collectionEnd: '2026-09-04',
+  openFrom: '9:00 a.m.',
+  openTo: '3:00 p.m.',
+  cost: '$3,500',
+};
 const NOTIFICATION_TYPE_LABELS: Record<SixthFormNotificationType, string> = {
   INTERVIEW_INVITATION: 'Interview Invitation',
   CXC_RESULTS_RELEASED: 'CXC Results Released',
+  ACCEPTANCE_LETTER: 'Acceptance Letter',
+  UNSUCCESSFUL_LETTER: 'Unsuccessful Letter',
   CUSTOM: 'Custom Announcement',
 };
 
@@ -85,6 +114,7 @@ const SixthFormApplications = () => {
   const selectAllRef = useRef<HTMLInputElement>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [notifyType, setNotifyType] = useState<SixthFormNotificationType | ''>('');
+  const [acceptance, setAcceptance] = useState<AcceptanceLetterDetails>(ACCEPTANCE_DEFAULTS);
   const [notifyModalOpen, setNotifyModalOpen] = useState(false);
   const [notifySending, setNotifySending] = useState(false);
   const [notifyError, setNotifyError] = useState('');
@@ -278,7 +308,8 @@ const SixthFormApplications = () => {
         Array.from(selectedIds),
         notifyType,
         notifyType === 'CUSTOM' ? customSubject : undefined,
-        notifyType === 'CUSTOM' ? customMessage : undefined
+        notifyType === 'CUSTOM' ? customMessage : undefined,
+        notifyType === 'ACCEPTANCE_LETTER' ? acceptance : undefined
       );
       setNotifyResult(result);
       fetchApplications();
@@ -340,14 +371,14 @@ const SixthFormApplications = () => {
             className={`readiness-stat readiness-stat--outstanding${readinessFilter === 'results-outstanding' ? ' is-active' : ''}`}
             onClick={() => setReadinessFilter(readinessFilter === 'results-outstanding' ? '' : 'results-outstanding')}
           >
-            <strong>{readiness.resultsOutstanding}</strong> of {readiness.total} still to update CXC results
+            <strong>{readiness.resultsOutstanding}</strong> of {readiness.total} still to update CXC results<Hint term="cxc-results" />
           </button>
           <button
             type="button"
             className={`readiness-stat readiness-stat--outstanding${readinessFilter === 'section-d-outstanding' ? ' is-active' : ''}`}
             onClick={() => setReadinessFilter(readinessFilter === 'section-d-outstanding' ? '' : 'section-d-outstanding')}
           >
-            <strong>{readiness.sectionDOutstanding}</strong> still to complete Section D
+            <strong>{readiness.sectionDOutstanding}</strong> still to complete Section D<Hint term="section-d" />
           </button>
           <button
             type="button"
@@ -422,8 +453,8 @@ const SixthFormApplications = () => {
                 <th>Name</th>
                 <th>Email</th>
                 <th>Phone</th>
-                <th>CXC Results<Hint term="cxc-results" /></th>
-                <th>Section D<Hint term="section-d" /></th>
+                <th>Status<Hint term="application-status" /></th>
+                <th>Faculty<Hint term="faculty" /></th>
                 <th>Notifications</th>
                 <th>Submitted</th>
                 <th className="col-actions">Actions</th>
@@ -443,44 +474,21 @@ const SixthFormApplications = () => {
                   <td data-label="Name" className="col-name">{[app.firstName, app.middleName, app.lastName].filter(Boolean).join(' ')}</td>
                   <td data-label="Email" className="col-email">{app.email}</td>
                   <td data-label="Phone" className="col-nowrap">{app.phone}</td>
-                  {/* Status is deliberately not a column: nothing moves off
-                      PENDING until interview day, so it would be an identical
-                      badge on every row. It stays in the View modal, where it
-                      is also the place it gets changed. */}
-                  <td data-label="CXC Results" className="col-nowrap">
-                    {(() => {
-                      const r = csecReadiness(app.csecResults);
-                      if (r.updated) {
-                        return (
-                          <span className="readiness-badge readiness-badge--done" title={`${r.total} subject(s) graded`}>
-                            Updated
-                          </span>
-                        );
-                      }
-                      if (r.graded > 0) {
-                        return (
-                          <span
-                            className="readiness-badge readiness-badge--partial"
-                            title={`${r.graded} of ${r.total} subject(s) graded`}
-                          >
-                            {r.pending} sitting
-                          </span>
-                        );
-                      }
-                      return <span className="readiness-badge readiness-badge--outstanding">Not updated</span>;
-                    })()}
+                  {/* Readiness is deliberately not a column: CXC and Section D are
+                      tracked in the cohort-progress figures above, which double as
+                      filters, and both are on each applicant in the View modal. */}
+                  <td data-label="Status" className="col-nowrap">
+                    <span className={`status-badge status-${app.status.toLowerCase().replace('_', '-')}`}>
+                      {app.status.replace('_', ' ')}
+                    </span>
                   </td>
-                  <td data-label="Section D" className="col-nowrap">
-                    {needsStreamSelection(app.subjectChoices) ? (
-                      <span className="readiness-badge readiness-badge--outstanding">Outstanding</span>
-                    ) : (
-                      <span
-                        className="readiness-badge readiness-badge--done"
-                        title={streamLabel(app.subjectChoices?.stream)}
-                      >
-                        {streamLabel(app.subjectChoices?.stream)}
-                      </span>
-                    )}
+                  {/* Only an accepted student has a faculty, so most rows are
+                      empty here — an em dash rather than a blank cell, which
+                      would read as missing data. */}
+                  <td data-label="Faculty" className="col-nowrap">
+                    {app.faculty
+                      ? <span className="faculty-badge">{app.faculty}</span>
+                      : <span className="faculty-badge faculty-badge--none">—</span>}
                   </td>
                   <td data-label="Notifications" className="col-nowrap">
                     {app.notifications && app.notifications.length > 0 ? (
@@ -654,6 +662,10 @@ const SixthFormApplications = () => {
 
                 <h4 className="detail-section-heading">Status<Hint term="application-status" /></h4>
                 <div><strong>Status:</strong> {selectedApp.status}</div>
+                <div>
+                  <strong>Faculty:</strong><Hint term="faculty" />{' '}
+                  {selectedApp.faculty || 'Not placed'}
+                </div>
                 {selectedApp.notes && <div><strong>Notes:</strong> {selectedApp.notes}</div>}
               </div>
             )}
@@ -808,6 +820,14 @@ const SixthFormApplications = () => {
         const alreadyNotified = selectedApps.filter((a) => a.notifications?.some((n) => n.type === notifyType));
         const title = NOTIFICATION_TYPE_LABELS[notifyType];
         const customValid = notifyType !== 'CUSTOM' || (customSubject.trim().length > 0 && customMessage.trim().length > 0);
+        const acceptanceValid =
+          notifyType !== 'ACCEPTANCE_LETTER' ||
+          (Object.values(acceptance).every((v) => v.trim().length > 0) &&
+            acceptance.collectionEnd >= acceptance.collectionStart);
+        // The server drops recipients whose recorded decision does not match the
+        // letter, so say who that will be before anything is sent.
+        const requiredStatus = REQUIRED_STATUS[notifyType];
+        const wrongStatus = requiredStatus ? selectedApps.filter((a) => a.status !== requiredStatus) : [];
         return (
           <Modal
             isOpen={notifyModalOpen}
@@ -847,6 +867,66 @@ const SixthFormApplications = () => {
                       (with their application password, Forgot Password, or
                       Continue with Google) and use the "Update CXC Results"
                       button on their application status page.
+                    </p>
+                  </div>
+                )}
+
+                {notifyType === 'ACCEPTANCE_LETTER' && (() => {
+                  const field = (k: keyof AcceptanceLetterDetails) => ({
+                    value: acceptance[k],
+                    onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+                      setAcceptance((a) => ({ ...a, [k]: e.target.value })),
+                    style: { width: '100%', padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 14 },
+                  });
+                  return (
+                    <div className="invite-session-details">
+                      <h4 className="detail-section-heading">Welcome Package Collection</h4>
+                      <p style={{ fontSize: 13, color: '#6b7280', marginTop: 0 }}>
+                        These go straight into the letter. Change them here for next year's intake —
+                        no other edits are needed.
+                      </p>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                        <div>
+                          <label style={{ display: 'block', fontWeight: 600, fontSize: 13, marginBottom: 4 }}>Collect from</label>
+                          <input type="date" {...field('collectionStart')} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontWeight: 600, fontSize: 13, marginBottom: 4 }}>Collect until</label>
+                          <input type="date" {...field('collectionEnd')} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontWeight: 600, fontSize: 13, marginBottom: 4 }}>Office opens</label>
+                          <input type="text" placeholder="9:00 a.m." maxLength={40} {...field('openFrom')} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontWeight: 600, fontSize: 13, marginBottom: 4 }}>Office closes</label>
+                          <input type="text" placeholder="3:00 p.m." maxLength={40} {...field('openTo')} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontWeight: 600, fontSize: 13, marginBottom: 4 }}>Welcome Package cost</label>
+                          <input type="text" placeholder="$3,500" maxLength={40} {...field('cost')} />
+                        </div>
+                      </div>
+                      {acceptance.collectionEnd < acceptance.collectionStart && (
+                        <div className="interview-warning">The end date is before the start date.</div>
+                      )}
+                      <p style={{ fontSize: 12, color: '#6b7280', marginTop: 6 }}>
+                        The letter will read: &ldquo;please visit the school office between{' '}
+                        <strong>{formatCollectionWindow(acceptance.collectionStart, acceptance.collectionEnd)}</strong>,
+                        between <strong>{acceptance.openFrom} and {acceptance.openTo}</strong>, to collect your Sixth
+                        Form Welcome Package. The cost of the Welcome Package is <strong>{acceptance.cost}</strong>.&rdquo;
+                      </p>
+                    </div>
+                  );
+                })()}
+
+                {notifyType === 'UNSUCCESSFUL_LETTER' && (
+                  <div className="invite-session-details">
+                    <h4 className="detail-section-heading">Preview</h4>
+                    <p>
+                      Thanks the applicant for applying, tells them they were not selected on
+                      this occasion, and wishes them well. It carries no dates, no cost and no
+                      reply-to address, and is addressed &ldquo;Dear Student&rdquo; rather than by name.
                     </p>
                   </div>
                 )}
@@ -896,6 +976,14 @@ const SixthFormApplications = () => {
                     );
                   })}
                 </ul>
+                {wrongStatus.length > 0 && (
+                  <div className="interview-warning">
+                    {wrongStatus.length} of these applicants {wrongStatus.length === 1 ? 'does' : 'do'} not
+                    have the status <strong>{requiredStatus}</strong> and will be skipped — this letter is
+                    only sent to {requiredStatus?.toLowerCase()} applicants. Record their decision first if
+                    they should receive it.
+                  </div>
+                )}
                 {alreadyNotified.length > 0 && notifyType !== 'CUSTOM' && (
                   <div className="interview-warning">
                     {alreadyNotified.length} of these applicants already received "{title}". Sending again will re-send it.
@@ -905,8 +993,8 @@ const SixthFormApplications = () => {
 
                 <div className="modal-footer-actions">
                   <button className="btn-close" onClick={() => setNotifyModalOpen(false)} disabled={notifySending}>Cancel</button>
-                  <button className="btn-approve" onClick={handleSendNotifications} disabled={notifySending || !customValid}>
-                    {notifySending ? 'Sending…' : `Send to ${selectedApps.length}`}
+                  <button className="btn-approve" onClick={handleSendNotifications} disabled={notifySending || !customValid || !acceptanceValid || selectedApps.length === wrongStatus.length}>
+                    {notifySending ? 'Sending…' : `Send to ${selectedApps.length - wrongStatus.length}`}
                   </button>
                 </div>
               </>

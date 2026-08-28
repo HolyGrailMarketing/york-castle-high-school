@@ -1,5 +1,5 @@
 import logoUrl from '../assets/logo.png';
-import { streamLabel, programmeLabel, needsStreamSelection } from './sixthForm';
+import { streamLabel, programmeLabel } from './sixthForm';
 
 /**
  * Export data to CSV format
@@ -335,6 +335,16 @@ export const exportSixthFormApplicationToPDF = (app: any, interview?: any) => {
   // Blank-valued rows are dropped when the section renders, so the stream rows
   // and the legacy programme rows can both be listed — whichever shape this
   // application actually stores is what appears.
+  // Placement first: it is the school's decision and the thing a reader of this
+  // sheet most wants. The subject choices below it are what the applicant asked
+  // for, which is a different question.
+  if (app.faculty) {
+    sections.push({
+      heading: 'Faculty Placement',
+      rows: [{ label: 'Faculty', value: app.faculty }],
+    });
+  }
+
   sections.push({
     heading: 'CAPE Subject Stream Selection',
     rows: [
@@ -345,9 +355,6 @@ export const exportSixthFormApplicationToPDF = (app: any, interview?: any) => {
       { label: 'Alternative Stream', value: app.subjectChoices?.alternativeStream },
       { label: 'Programme Choice (pre-streams)', value: programmeLabel(app.subjectChoices?.firstChoice) },
       { label: 'Second Choice (pre-streams)', value: programmeLabel(app.subjectChoices?.secondChoice) },
-      ...(needsStreamSelection(app.subjectChoices)
-        ? [{ label: 'Note', value: 'Subject stream selection not yet completed — collect Section D at interview.' }]
-        : []),
     ],
   });
 

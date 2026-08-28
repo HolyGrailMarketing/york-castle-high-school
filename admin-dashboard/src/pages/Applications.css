@@ -624,32 +624,24 @@
   color: #9ca3af;
 }
 
-/* Interview readiness — whether the applicant has come back with real CXC
-   grades and completed Section D. Orthogonal to both .status-badge and
-   .invited-badge, so again its own hues: green done, amber part-way, red
-   still outstanding. */
-.readiness-badge {
+/* Faculty placement. Neutral rather than colour-coded: no faculty outranks
+   another, so this deliberately does not borrow the green/amber/red of
+   .status-badge. The dash shown for everyone unplaced is muted further. */
+.faculty-badge {
   display: inline-block;
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 11px;
   font-weight: 600;
   white-space: nowrap;
+  background: #eef2ff;
+  color: #3730a3;
 }
 
-.readiness-badge.readiness-badge--done {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.readiness-badge.readiness-badge--partial {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.readiness-badge.readiness-badge--outstanding {
-  background: #fee2e2;
-  color: #991b1b;
+.faculty-badge.faculty-badge--none {
+  background: transparent;
+  color: #9ca3af;
+  padding-left: 0;
 }
 
 /* Cohort-wide progress, counted server-side across every page. Each figure is

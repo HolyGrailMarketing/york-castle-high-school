@@ -7,3 +7,7 @@ logs/
 dist/
 backups/
 
+# Operational data, not code. The candidate lists and the exclusion list carry
+# students' names and email addresses, and this repository is public. Both are
+# regenerated locally — see scripts/data/README.md.
+scripts/data/

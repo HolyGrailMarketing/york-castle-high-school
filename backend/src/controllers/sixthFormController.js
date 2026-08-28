@@ -11,6 +11,7 @@ import {
 } from '../services/emailService.js';
 import { auditLog } from '../middleware/auditLog.js';
 import { NOTIFICATION_TYPES } from '../services/notificationTypes.js';
+import { readInviteToken } from '../utils/inviteToken.js';
 
 // Sixth Form applications closed on this date. Jamaica does not observe DST,
 // so a fixed -05:00 offset is always correct. Kept in sync with the deadline
@@ -230,6 +231,39 @@ export const getSixthFormApplication = async (req, res, next) => {
 };
 
 /**
+ * Resolve an invite link. Public: the token is the credential, and the form
+ * cannot check a signature in the browser, so it asks here on load.
+ *
+ * Returns { valid: false } rather than an error status for an expired or
+ * tampered token — the form has a specific screen for that, and a 4xx here
+ * would be indistinguishable from the endpoint being broken.
+ */
+export const resolveSixthFormInvite = async (req, res, next) => {
+  try {
+    const invite = readInviteToken(req.query.token);
+    if (!invite) return res.json({ valid: false });
+
+    // An invite already spent is worse than useless: it would walk the student
+    // through ten screens only to 409 at submit. Say so up front.
+    const existing = await findApplicationByEmail(invite.email);
+    if (existing) {
+      return res.json({ valid: false, reason: 'already_applied', email: invite.email });
+    }
+
+    return res.json({
+      valid: true,
+      email: invite.email,
+      firstName: invite.firstName,
+      lastName: invite.lastName,
+      list: invite.list,
+      expiresAt: new Date(invite.exp * 1000).toISOString(),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * Does an application already exist for this address?
  *
  * The form calls this when the applicant leaves the Personal screen, so
@@ -255,9 +289,17 @@ export const createSixthFormApplication = async (req, res, next) => {
   try {
     const now = Date.now();
     if (now > SIXTH_FORM_APPLICATION_DEADLINE.getTime() && !isWithinInterviewWindow(now)) {
-      return res.status(403).json({
-        error: 'Sixth Form applications closed on July 20, 2026 and are no longer being accepted.',
-      });
+      // Candidates interviewed and accepted on August 25 who never submitted the
+      // online form are invited back individually. The token names the address
+      // it was issued to, and only that address may apply on it — otherwise one
+      // leaked link would reopen the form for anybody.
+      const invite = readInviteToken(req.body.inviteToken);
+      if (!invite || invite.email !== normaliseEmail(req.body.email)) {
+        return res.status(403).json({
+          error: 'Sixth Form applications closed on July 20, 2026 and are no longer being accepted.',
+        });
+      }
+      logger.info('Late Sixth Form application accepted on an invite', { email: invite.email });
     }
 
     const {
@@ -436,20 +478,40 @@ export const sendSixthFormNotifications = async (req, res, next) => {
       });
     }
 
-    const { applicationIds, type, subject, message } = req.body;
+    const { applicationIds, type, subject, message, acceptance } = req.body;
     const notificationType = NOTIFICATION_TYPES[type];
 
-    const applications = await prisma.sixthFormApplication.findMany({
+    const found = await prisma.sixthFormApplication.findMany({
       where: { id: { in: applicationIds } },
-      select: { id: true, firstName: true, lastName: true, email: true },
+      select: { id: true, firstName: true, lastName: true, email: true, status: true, faculty: true },
     });
 
-    const foundIds = new Set(applications.map((a) => a.id));
+    const foundIds = new Set(found.map((a) => a.id));
     const failed = applicationIds
       .filter((id) => !foundIds.has(id))
       .map((id) => ({ id, email: null, reason: 'Application not found' }));
 
-    const ctx = { loginUrl: getBaseUrl(req), subject, message };
+    // Telling someone the wrong decision is the one mistake here that cannot be
+    // taken back, so a decision letter's recipients are checked against the
+    // recorded status at the point of sending rather than trusted from whatever
+    // was selected. Mismatches are reported alongside other failures; the rest
+    // still go.
+    let applications = found;
+    const required = notificationType.requiresStatus;
+    if (required) {
+      applications = found.filter((a) => a.status === required);
+      for (const a of found) {
+        if (a.status !== required) {
+          failed.push({
+            id: a.id,
+            email: a.email,
+            reason: `Status is ${a.status}, not ${required} — "${notificationType.label}" not sent`,
+          });
+        }
+      }
+    }
+
+    const ctx = { loginUrl: getBaseUrl(req), subject, message, acceptance };
     // Every recipient gets the same subject for a given send (fixed per
     // preset template, or the admin's own `subject` for a custom one) — build
     // once up front rather than recomputing it per recipient below.
@@ -463,7 +525,7 @@ export const sendSixthFormNotifications = async (req, res, next) => {
       const results = await Promise.allSettled(
         batch.map((app) => {
           const name = [app.firstName, app.lastName].filter(Boolean).join(' ') || 'Applicant';
-          const template = notificationType.build(name, ctx);
+          const template = notificationType.build(name, ctx, app);
           return sendEmail(app.email, template.subject, template.text, template.html);
         })
       );

@@ -132,6 +132,12 @@ model SixthFormApplication {
   csecResults     Json?            // Store CSEC results as JSON
   subjectChoices  Json             // Store subject pool selections
   status          ApplicationStatus @default(PENDING)
+  // The faculty the student has been placed in for September — the school's
+  // decision, set from the final candidate lists once selection is done.
+  // Deliberately not part of `subjectChoices`: everything in there is what the
+  // applicant asked for, and the two are not the same. A student can be placed
+  // in a faculty they did not name.
+  faculty         String?
   notes           String?          @db.Text
   submittedAt     DateTime         @default(now())
   reviewedAt      DateTime?

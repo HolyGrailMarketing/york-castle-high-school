@@ -1,5 +1,6 @@
 import rateLimit from 'express-rate-limit';
 import logger from '../utils/logger.js';
+import { readInviteToken } from '../utils/inviteToken.js';
 
 // Environment-based configuration
 const isProduction = process.env.NODE_ENV === 'production';
@@ -28,7 +29,7 @@ const createRateLimitConfig = (options) => ({
       logger.debug('Rate limit skipped for admin IP', { ip: req.ip });
       return true;
     }
-    return false;
+    return options.skip ? options.skip(req) : false;
   },
   handler: (req, res) => {
     logger.warn('Rate limit exceeded', {
@@ -72,8 +73,36 @@ export const adminLimiter = rateLimit(createRateLimitConfig({
 export const publicRequestLimiter = rateLimit(createRateLimitConfig({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: isProduction ? 3 : 5, // Stricter in production
-  message: 'Too many requests submitted, please try again later.'
+  message: 'Too many requests submitted, please try again later.',
+  // An invited Sixth Form applicant is metered per invite instead — see
+  // invitedApplicationLimiter below. The flag is only ever set on that route.
+  skip: (req) => Boolean(req.sixthFormInvite)
 }));
+
+// Per-invite budget for late Sixth Form applications.
+//
+// publicRequestLimiter allows three submissions per IP per hour, and a whole
+// school shares one address: the fourth invited student to apply from the
+// computer lab would be turned away for an hour, having been told by email to
+// apply today. A valid invite is proof of who is asking, so meter it by the
+// address the invite was issued to. That still stops one link being replayed
+// while leaving classmates independent of each other.
+const perInviteLimiter = rateLimit({
+  ...createRateLimitConfig({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 5,
+    message: 'Too many submissions for this invite, please try again later.'
+  }),
+  keyGenerator: (req) => `sfinvite_${req.sixthFormInvite.email}`
+});
+
+export const invitedApplicationLimiter = (req, res, next) => {
+  const invite = readInviteToken(req.body?.inviteToken);
+  // No invite: leave it to publicRequestLimiter, which does not skip.
+  if (!invite) return next();
+  req.sixthFormInvite = invite;
+  return perInviteLimiter(req, res, next);
+};
 
 // User-based rate limiter (for authenticated requests)
 export const userLimiter = rateLimit({

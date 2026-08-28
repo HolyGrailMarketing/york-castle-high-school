@@ -63,9 +63,10 @@ export const PAGE_HELP: Record<string, PageHelp> = {
     summary: 'Applicants for the CAPE programme, and how ready each one is to be interviewed.',
     roles: ALL_STAFF,
     actions: [
-      { label: 'See who is not ready', detail: 'The CXC Results and Section D columns show what is still missing for each applicant. The figures above the list count the whole cohort, not just this page.' },
+      { label: 'See who is not ready', detail: 'The figures above the list count the whole cohort, not just this page. Click one — "still to update CXC results", "still to complete Section D", "ready for interview" — to filter the list to those applicants.' },
       { label: 'Chase the ones who are missing something', detail: 'Set the readiness filter to "CXC results outstanding", tick the box in the header to select the page, choose "Select all N matching", then pick a notification and Send.' },
       { label: 'Prepare for an interview', detail: 'View shows the full application, including any subjects still to be graded and whether Section D was ever completed.' },
+      { label: 'See where an accepted student is going', detail: 'The Faculty column shows the placement for accepted students; everyone else shows a dash. View has it too, under Status.' },
       { label: 'Record the interview', detail: 'Inside View, the Interview tab holds the rating sheet and the recommendation. It saves against that applicant.' },
     ],
   },
@@ -195,6 +196,12 @@ export const GLOSSARY: GlossaryEntry[] = [
       'The part of the Sixth Form application where the student picks their CAPE stream and subjects. It was added to the form partway through the intake, so applications sent before that have nothing on file — those students must be asked for it at their interview.',
   },
   {
+    term: 'faculty',
+    label: 'Faculty',
+    definition:
+      'The faculty an accepted student has been placed in for September — Business, Humanities, Science or Technical. This is the school\u2019s placement decision, taken from the final candidate lists, and is not the same as the stream the applicant asked for on their application: a student can be placed in a faculty they did not choose. Only accepted students have one.',
+  },
+  {
     term: 'cxc-results',
     label: 'CXC results',
     definition:
@@ -204,7 +211,7 @@ export const GLOSSARY: GlossaryEntry[] = [
     term: 'sitting',
     label: '"N sitting"',
     definition:
-      'That many subjects on the application are still marked as being sat, with no grade yet. The school does not have those results, and the badge turns green once every subject carries a real grade.',
+      'That many subjects on the application are still marked as being sat, with no grade yet. The school does not have those results. View shows which subjects they are, and the cohort figure above the list counts everyone still to come back with real grades.',
   },
   {
     term: 'readiness',
