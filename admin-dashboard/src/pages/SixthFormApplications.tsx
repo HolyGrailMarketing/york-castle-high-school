@@ -5,7 +5,6 @@ import type {
   SixthFormApplication,
   SixthFormInterview,
   SixthFormNotificationType,
-  SixthFormReadiness,
   SixthFormReadinessFilter,
 } from '../types';
 import { exportSixthFormApplicationToPDF } from '../utils/export';
@@ -107,8 +106,9 @@ const SixthFormApplications = () => {
   // would put a request on the wire per keystroke.
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  // Readiness is still filterable from the dropdown; only the cohort-progress
+  // figures that used to sit above the table were removed.
   const [readinessFilter, setReadinessFilter] = useState<SixthFormReadinessFilter>('');
-  const [readiness, setReadiness] = useState<SixthFormReadiness | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -168,7 +168,6 @@ const SixthFormApplications = () => {
       if (debouncedSearch) params.search = debouncedSearch;
       const data = await apiService.getSixthFormApplications(params);
       setApplications(data.applications);
-      setReadiness(data.readiness || null);
       setSelectedIds(new Set());
       setBlastMode(false);
       setBlastRecipients(null);
@@ -373,6 +372,11 @@ const SixthFormApplications = () => {
               <option key={o.value} value={o.value}>{o.label}</option>
             ))}
           </select>
+          {/* The cohort-progress figures carried the explanations for "Section D",
+              "CXC results outstanding" and "ready for interview". Those words now
+              only appear inside this dropdown, where a hint cannot go, so it sits
+              beside it instead. */}
+          <Hint term="readiness" />
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
             <option value="">All Statuses</option>
             <option value="PENDING">Pending</option>
@@ -382,37 +386,6 @@ const SixthFormApplications = () => {
           </select>
         </div>
       </div>
-
-      {/* Counted across every page, so this is the whole cohort's progress —
-          not just what is on screen. Each figure jumps to its own bucket. */}
-      {readiness && readiness.total > 0 && (
-        <div className="readiness-summary">
-          <span className="readiness-summary-label">
-            Cohort progress<Hint term="readiness" />
-          </span>
-          <button
-            type="button"
-            className={`readiness-stat readiness-stat--outstanding${readinessFilter === 'results-outstanding' ? ' is-active' : ''}`}
-            onClick={() => setReadinessFilter(readinessFilter === 'results-outstanding' ? '' : 'results-outstanding')}
-          >
-            <strong>{readiness.resultsOutstanding}</strong> of {readiness.total} still to update CXC results<Hint term="cxc-results" />
-          </button>
-          <button
-            type="button"
-            className={`readiness-stat readiness-stat--outstanding${readinessFilter === 'section-d-outstanding' ? ' is-active' : ''}`}
-            onClick={() => setReadinessFilter(readinessFilter === 'section-d-outstanding' ? '' : 'section-d-outstanding')}
-          >
-            <strong>{readiness.sectionDOutstanding}</strong> still to complete Section D<Hint term="section-d" />
-          </button>
-          <button
-            type="button"
-            className={`readiness-stat readiness-stat--done${readinessFilter === 'ready' ? ' is-active' : ''}`}
-            onClick={() => setReadinessFilter(readinessFilter === 'ready' ? '' : 'ready')}
-          >
-            <strong>{readiness.ready}</strong> ready for interview
-          </button>
-        </div>
-      )}
 
       <div className="bulk-actions-bar">
         <span className="bulk-actions-count">

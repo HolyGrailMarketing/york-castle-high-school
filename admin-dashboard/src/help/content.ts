@@ -63,8 +63,9 @@ export const PAGE_HELP: Record<string, PageHelp> = {
     summary: 'Applicants for the CAPE programme, and how ready each one is to be interviewed.',
     roles: ALL_STAFF,
     actions: [
-      { label: 'See who is not ready', detail: 'The figures above the list count the whole cohort, not just this page. Click one — "still to update CXC results", "still to complete Section D", "ready for interview" — to filter the list to those applicants.' },
+      { label: 'See who is not ready', detail: 'Use the first dropdown to narrow the list to "CXC results outstanding", "Section D outstanding" or "Ready for interview". It filters the whole cohort, not just this page.' },
       { label: 'Chase the ones who are missing something', detail: 'Set the readiness filter to "CXC results outstanding", tick the box in the header to select the page, choose "Select all N matching", then pick a notification and Send.' },
+      { label: 'Find one applicant', detail: 'Type a name or part of an email into the search box. It searches every application, not just this page, and works alongside the two filters.' },
       { label: 'Prepare for an interview', detail: 'View shows the full application, including any subjects still to be graded and whether Section D was ever completed.' },
       { label: 'See where an accepted student is going', detail: 'The Faculty column shows the placement for accepted students; everyone else shows a dash. View has it too, under Status.' },
       { label: 'Record the interview', detail: 'Inside View, the Interview tab holds the rating sheet and the recommendation. It saves against that applicant.' },
@@ -211,7 +212,7 @@ export const GLOSSARY: GlossaryEntry[] = [
     term: 'sitting',
     label: '"N sitting"',
     definition:
-      'That many subjects on the application are still marked as being sat, with no grade yet. The school does not have those results. View shows which subjects they are, and the cohort figure above the list counts everyone still to come back with real grades.',
+      'That many subjects on the application are still marked as being sat, with no grade yet. The school does not have those results. View shows which subjects they are, and the "CXC results outstanding" filter lists everyone still to come back with real grades.',
   },
   {
     term: 'readiness',
