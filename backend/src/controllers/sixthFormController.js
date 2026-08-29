@@ -287,8 +287,9 @@ export const checkSixthFormEmail = async (req, res, next) => {
 
 export const createSixthFormApplication = async (req, res, next) => {
   // Set when this submission came in on a late-applicant invite, so the invite
-  // can be marked as answered once the application actually exists.
-  let acceptedInviteToken = null;
+  // can be marked as answered once the application actually exists — and so the
+  // faculty it was issued for lands on the application.
+  let acceptedInvite = null;
   try {
     const now = Date.now();
     if (now > SIXTH_FORM_APPLICATION_DEADLINE.getTime() && !isWithinInterviewWindow(now)) {
@@ -305,7 +306,7 @@ export const createSixthFormApplication = async (req, res, next) => {
         });
       }
       logger.info('Late Sixth Form application accepted on an invite', { email: invite.email });
-      acceptedInviteToken = invite.token;
+      acceptedInvite = invite;
     }
 
     const {
@@ -402,6 +403,12 @@ export const createSixthFormApplication = async (req, res, next) => {
         reasonForAttending: reasonForAttending || null,
         csecResults: csecResults || null,
         subjectChoices: subjectChoices || {},
+        // An invite is only ever issued to a candidate already placed, and it
+        // carries the faculty the email told them about. Recording it here is
+        // the only chance: nothing else on this request knows it, and leaving
+        // it null means every invited applicant needs a script run before staff
+        // can see where they are going.
+        faculty: acceptedInvite?.faculty || null,
         userId,
       },
     });
@@ -409,7 +416,7 @@ export const createSixthFormApplication = async (req, res, next) => {
     // Best-effort, and after the application exists: an invite left unmarked is
     // a chase-up list that is slightly wrong, whereas failing here would lose an
     // application that was successfully submitted.
-    if (acceptedInviteToken) await markInviteUsed(acceptedInviteToken);
+    if (acceptedInvite) await markInviteUsed(acceptedInvite.token);
 
     await notifyAdminOfNewSixthForm(req, application);
 
