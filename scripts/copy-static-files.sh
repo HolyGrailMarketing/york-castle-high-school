@@ -41,8 +41,25 @@ if [ -f "index.html" ]; then
   [ $? -eq 0 ] && echo "✓ index.html copied" || echo "✗ Failed to copy index.html"
 fi
 
+# Pages that are built and kept in sync, but deliberately NOT published yet.
+# Removing a page's links is not enough on its own - the URL would still resolve
+# and could be found or indexed. Delete the entry here to publish it.
+#
+#   timetable.html - the 2026-2027 timetable is not final; the school does not
+#                    want it visible to students or parents yet.
+UNPUBLISHED="timetable.html"
+
 for html_file in *.html; do
   if [ -f "$html_file" ]; then
+    skip=""
+    for u in $UNPUBLISHED; do
+      [ "$html_file" = "$u" ] && skip="yes"
+    done
+    if [ -n "$skip" ]; then
+      echo "- skipping $html_file (listed in UNPUBLISHED)"
+      rm -f "public/$html_file"
+      continue
+    fi
     cp "$html_file" public/ 2>&1
   fi
 done
