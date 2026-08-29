@@ -32,6 +32,20 @@
       ],
       "port": 5173,
       "autoPort": true
+    },
+    {
+      "name": "static-site",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "--yes",
+        "serve",
+        "--no-clipboard",
+        "-l",
+        "4173",
+        "public"
+      ],
+      "port": 4173,
+      "autoPort": true
     }
   ]
 }
