@@ -11,6 +11,107 @@
   <link href="images/webclip.png" rel="apple-touch-icon">
   <style>
     * { box-sizing: border-box; }
+
+    .status-hero {
+      background: linear-gradient(135deg, #0e0e10 0%, #17171b 55%, #241d06 100%);
+      border-bottom: 3px solid #d4af37;
+      padding: 40px 24px 50px; text-align: center; color: #fff;
+    }
+    .status-hero h1 {
+      font-size: clamp(24px, 4vw, 40px); font-weight: 700; margin: 0 0 10px;
+      font-family: Georgia, serif; color: #f0d066;
+    }
+    .status-hero p { color: rgba(255,255,255,0.7); font-size: 15px; margin: 0; }
+
+    #app { max-width: 680px; margin: 0 auto; padding: 48px 20px 80px; }
+
+    .card {
+      background: #fff; border-radius: 16px; padding: 32px 28px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08); border: 1px solid #f3f4f6;
+    }
+
+    .form-title { font: 700 22px/1.2 Georgia, serif; color: #1a1a2e; margin: 0 0 6px; }
+    .form-subtitle { font: 400 14px/1.5 -apple-system,sans-serif; color: #6b7280; margin: 0 0 28px; }
+
+    .dash-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      flex-wrap: wrap; gap: 12px; margin-bottom: 24px;
+    }
+    .dash-header h2 { font: 700 22px/1.2 Georgia,serif; color: #1a1a2e; margin: 0 0 4px; }
+    .dash-header p { font: 400 14px/1 -apple-system,sans-serif; color: #6b7280; margin: 0; }
+    .dash-actions { display: flex; gap: 10px; align-items: center; }
+
+    .btn-signout {
+      font: 500 13px/1 -apple-system,sans-serif; color: #6b7280;
+      background: none; border: 1.5px solid #e5e7eb; border-radius: 8px;
+      padding: 8px 16px; cursor: pointer; white-space: nowrap; text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      padding: 14px 20px;
+      background: #141417; color: #f0d066;
+      border: 1px solid #141417; border-radius: 10px;
+      font: 600 15px/1 -apple-system,sans-serif; letter-spacing: .2px;
+      cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+    }
+    .btn-primary:hover { background: #d4af37; color: #141417; border-color: #d4af37; }
+    .btn-primary:disabled { background: #9ca3af; color: #fff; border-color: #9ca3af; cursor: not-allowed; }
+
+    .alert {
+      padding: 12px 14px; border-radius: 10px;
+      font: 400 14px/1.5 -apple-system,sans-serif; margin-bottom: 20px;
+    }
+    .alert-error { background: #b91c1c; border: 1px solid #b91c1c; color: #fff; }
+    .alert-success { background: #15803d; border: 1px solid #15803d; color: #fff; }
+
+    .locked-note {
+      background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px;
+      padding: 16px 18px; font: 400 14px/1.5 -apple-system,sans-serif; color: #4b5563;
+    }
+
+    .results-table-head, .result-row {
+      display: grid; grid-template-columns: 1fr 100px 44px; gap: 8px; align-items: center;
+    }
+    .results-table-head {
+      font: 600 11px/1 -apple-system,sans-serif; color: #9ca3af;
+      text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; padding: 0 2px;
+    }
+    .result-row { margin-bottom: 10px; }
+    .result-row select {
+      width: 100%; padding: 12px 14px;
+      border: 1.5px solid #e5e7eb; border-radius: 10px;
+      font: 400 14px/1 -apple-system,sans-serif; outline: none; transition: border-color .15s;
+      background: #fff;
+    }
+    .result-row select:focus { border-color: #d4af37; }
+    .row-remove-btn {
+      width: 44px; height: 44px; border-radius: 10px; border: 1px solid #e5e7eb;
+      background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: #b91c1c; flex-shrink: 0;
+    }
+    .row-remove-btn:hover { background: #b91c1c; border-color: #b91c1c; color: #fff; }
+    .row-remove-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+    .add-row-btn {
+      display: flex; align-items: center; gap: 8px; padding: 12px 0;
+      background: none; border: none; cursor: pointer;
+      font: 600 13px/1 -apple-system,sans-serif; color: #92740a; margin: 4px 0 24px;
+    }
+    .add-row-btn:hover { color: #d4af37; }
+
+    .form-actions { display: flex; gap: 12px; margin-top: 8px; }
+    .form-actions .btn-primary { flex: 1; }
+
+    .contact-prompt {
+      text-align: center; padding-top: 20px;
+      font: 400 14px/1.5 -apple-system,sans-serif; color: #9ca3af;
+    }
+    .contact-prompt a { color: #d4af37; font-weight: 600; text-decoration: none; }
+
+    .hidden { display: none !important; }
+    .loading-msg { text-align: center; padding: 60px 24px; color: #6b7280; font: 400 15px/1 -apple-system,sans-serif; }
+  
   </style>
 </head>
 <body class="body-2">
