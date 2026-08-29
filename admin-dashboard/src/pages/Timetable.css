@@ -1,0 +1,61 @@
+/* Timetable page. Grid-shaped, so it borrows little from the other pages. */
+
+.tt-toolbar {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;
+  margin-bottom: 16px;
+}
+.tt-field { display: flex; flex-direction: column; gap: 4px; }
+.tt-field label { font-size: 12px; font-weight: 600; color: #667085; }
+.tt-field select, .tt-field input {
+  padding: 8px 10px; border: 1px solid #d0d5dd; border-radius: 8px;
+  font: inherit; min-width: 190px; background: #fff;
+}
+.tt-spacer { flex: 1; }
+
+.tt-banner {
+  padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 14px;
+  border: 1px solid transparent;
+}
+.tt-banner.info  { background: #eff8ff; border-color: #b2ddff; color: #175cd3; }
+.tt-banner.warn  { background: #fffaeb; border-color: #fedf89; color: #b54708; }
+.tt-banner.error { background: #fef3f2; border-color: #fecdca; color: #b42318; }
+.tt-banner.ok    { background: #ecfdf3; border-color: #abefc6; color: #067647; }
+
+/* --- grid --- */
+.tt-scroll { overflow-x: auto; }
+table.tt-grid { border-collapse: collapse; width: 100%; min-width: 900px; }
+.tt-grid th, .tt-grid td { border: 1px solid #eaecf0; vertical-align: top; padding: 0; }
+.tt-grid thead th {
+  background: #f9fafb; font-size: 12px; text-transform: uppercase;
+  letter-spacing: .04em; color: #475467; padding: 10px 8px; text-align: center;
+}
+.tt-grid th.tt-time { background: #f9fafb; text-align: left; padding: 10px; width: 120px; white-space: nowrap; }
+.tt-time b { display: block; font-size: 13px; color: #101828; }
+.tt-time span { display: block; font-size: 11px; color: #667085; }
+
+.tt-slot { min-height: 62px; padding: 4px; transition: background .12s ease; }
+.tt-slot.tt-drop { background: #eff8ff; outline: 2px dashed #2e90fa; outline-offset: -3px; }
+.tt-slot.tt-invalid { background: #fef3f2; outline: 2px dashed #f04438; outline-offset: -3px; }
+.tt-row-nonclass td, .tt-row-nonclass th.tt-time { background: #f9fafb; }
+.tt-row-nonclass td { text-align: center; font-size: 12px; color: #667085; padding: 8px; }
+
+.tt-lesson {
+  background: #fff; border: 1px solid #e4e7ec; border-left: 3px solid #7f56d9;
+  border-radius: 6px; padding: 6px 8px; font-size: 12px; cursor: grab;
+}
+.tt-lesson:hover { border-color: #b692f6; }
+.tt-lesson.tt-picked { outline: 2px solid #7f56d9; outline-offset: 1px; }
+.tt-lesson.tt-duty { border-left-color: #f79009; background: #fffcf5; }
+.tt-lesson[draggable='false'] { cursor: default; }
+.tt-lesson b { display: block; color: #101828; font-size: 12.5px; }
+.tt-lesson .tt-meta { color: #667085; margin-top: 2px; line-height: 1.35; }
+.tt-lesson .tt-room {
+  display: inline-block; margin-top: 3px; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; color: #b54708; background: #fffaeb;
+  border-radius: 4px; padding: 1px 5px;
+}
+
+.tt-clashes { margin-top: 16px; }
+.tt-clashes li { font-size: 13px; margin-bottom: 4px; color: #b42318; }
+
+.tt-hint { font-size: 12px; color: #667085; margin: 8px 0 0; }

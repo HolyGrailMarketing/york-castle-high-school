@@ -234,3 +234,90 @@ export interface Request {
   updatedAt: string;
 }
 
+
+// --- Timetable --------------------------------------------------------------
+// Mirrors what /api/timetable and /api/timetable/staff return. The short keys
+// (d/p/n/t/o/r/w/g) come from the public payload, which is sized to be sent to
+// every phone that opens the school timetable page.
+
+export type TimetableStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+
+export interface TimetablePeriod {
+  id: string;
+  label: string;
+  start?: string;
+  end?: string;
+  kind: 'class' | 'break' | 'lunch' | 'registration' | 'other';
+  altStart?: string;
+  altEnd?: string;
+  lunchSitting?: number;
+  registration?: { start: string; end: string };
+}
+
+export interface TimetableLesson {
+  /** Day index into `days`. */
+  d: number;
+  /** Period id, matching TimetablePeriod.id. */
+  p: string;
+  /** Duration in periods. */
+  n: number;
+  /** Display title, e.g. "Maths" or "Pool 4". */
+  t: string;
+  /** The choices inside a pool. */
+  o?: string[];
+  /** 1 when this is a pool rather than a single subject. */
+  b?: number;
+  /** Room. */
+  r?: string;
+  /** Teachers taking it. */
+  w?: string[];
+  /** Groups it belongs to (staff payload only). */
+  g?: string[];
+  /** Lunch duty or CPS rather than a lesson (staff payload only). */
+  duty?: boolean;
+  /** Placement id — staff payload only, and what a move is addressed to. */
+  i?: string;
+}
+
+export interface TimetableYear {
+  name: string;
+  groups: string[];
+  undivided?: boolean;
+}
+
+export interface TimetablePayload {
+  schoolYear: string;
+  generatedAt: string;
+  days: string[];
+  periods: TimetablePeriod[];
+  years: TimetableYear[];
+  lessons: Record<string, TimetableLesson[]>;
+}
+
+export interface TimetableStaffPayload extends TimetablePayload {
+  /** Each teacher's week, including their lunch duty. */
+  teachers: Record<string, TimetableLesson[]>;
+  /** What occupies each room. */
+  rooms: Record<string, TimetableLesson[]>;
+  version: { id: string; label: string; status: TimetableStatus; publishedAt: string | null };
+}
+
+export interface TimetableVersion {
+  id: string;
+  schoolYear: string;
+  label: string;
+  status: TimetableStatus;
+  publishedAt: string | null;
+  createdAt: string;
+  notes?: string | null;
+  _count?: { activities: number };
+}
+
+export interface TimetableClash {
+  kind: 'teacher' | 'group' | 'room';
+  who: string;
+  day: string;
+  period: string;
+  periodId?: string;
+  activities: { id: string; subject: string }[];
+}

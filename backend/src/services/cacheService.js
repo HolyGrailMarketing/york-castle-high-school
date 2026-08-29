@@ -77,6 +77,7 @@ const CACHE_KEYS = {
   events: (publicOnly = true) => `events:${publicOnly}`,
   documents: (category) => `documents:${category || 'all'}`,
   booklist: (schoolYear) => `booklist:${schoolYear || 'current'}`,
+  timetable: (scope) => `timetable:${scope || 'public'}`,
   userProfile: (userId) => `user_profile:${userId}`,
   applicationsList: (filters) => `applications:${JSON.stringify(filters)}`,
   analytics: (type) => `analytics:${type}`,
@@ -192,6 +193,16 @@ export const invalidateBooklistCache = (schoolYear) => {
 /**
  * Cache blog posts data
  */
+export const timetableCacheKey = (scope) => CACHE_KEYS.timetable(scope);
+
+// Drop both the public and staff views, because a single placement move changes
+// them together - an admin edit should show on the next request, not after the
+// TTL.
+export const invalidateTimetableCache = () => {
+  const keys = [CACHE_KEYS.timetable('public'), CACHE_KEYS.timetable('staff')];
+  return keys.map((key) => deleteCache(key)).every(Boolean);
+};
+
 export const getBlogPostsCache = (published = true) => {
   return getCache(CACHE_KEYS.blogPosts(published));
 };

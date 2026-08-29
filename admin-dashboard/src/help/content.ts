@@ -136,6 +136,21 @@ export const PAGE_HELP: Record<string, PageHelp> = {
     ],
   },
 
+  timetable: {
+    key: 'timetable',
+    title: 'Timetable',
+    summary: 'The school timetable — by class, by teacher, or by room — and where staff timetables and lunch duty live.',
+    roles: ALL_STAFF,
+    actions: [
+      { label: 'Look up a class', detail: 'Leave "View" on "By class" and pick the class. This is the same week the website shows.' },
+      { label: 'Look up a teacher', detail: 'Set "View" to "By teacher" and pick a name. You get their whole week, including lunch duty, which is marked in amber. This is not on the public website.' },
+      { label: 'See what is in a room', detail: 'Set "View" to "By room". Only the four labs are recorded at the moment — ordinary classrooms are not in the timetable yet.' },
+      { label: 'Move a lesson', detail: 'Drag it to another slot, or click the lesson and then click where it should go. A move that would double-book a teacher, a class or a room is refused and tells you who clashes.' },
+      { label: 'Check the whole week', detail: '"Check for clashes" scans every placement in the version and lists anything double-booked.' },
+      { label: 'Publish', detail: 'Publishing makes a version the official one. The public website updates on the next deploy, not instantly — ask whoever deploys the site to run the timetable export.' },
+    ],
+  },
+
   requests: {
     key: 'requests',
     title: 'Requests',

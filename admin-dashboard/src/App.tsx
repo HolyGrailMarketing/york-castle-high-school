@@ -25,6 +25,7 @@ import Events from './pages/Events';
 import Courses from './pages/Courses';
 import Documents from './pages/Documents';
 import Booklist from './pages/Booklist';
+import Timetable from './pages/Timetable';
 import Requests from './pages/Requests';
 import Analytics from './pages/Analytics';
 import DataSubjectRequests from './pages/DataSubjectRequests';
@@ -68,6 +69,9 @@ function App() {
             <Route path="courses" element={<Courses />} />
             <Route path="documents" element={<Documents />} />
             <Route path="booklist" element={<RoleRoute roles={['ADMIN', 'STAFF']}><Booklist /></RoleRoute>} />
+            {/* Wider than Booklist on purpose: teachers look up their own week
+                and their lunch duty here. Editing is gated inside the page. */}
+            <Route path="timetable" element={<RoleRoute roles={['ADMIN', 'STAFF', 'TEACHER']}><Timetable /></RoleRoute>} />
             <Route path="requests" element={<RoleRoute roles={['ADMIN', 'STAFF']}><Requests /></RoleRoute>} />
             <Route path="data-subject-requests" element={<RoleRoute roles={['ADMIN']}><DataSubjectRequests /></RoleRoute>} />
             <Route path="audit-logs" element={<RoleRoute roles={['ADMIN']}><AuditLogs /></RoleRoute>} />

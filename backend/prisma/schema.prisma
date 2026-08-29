@@ -373,6 +373,8 @@ model Teacher {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  timetableLinks TimetableTeacher[]
+
   @@index([department])
   @@index([isActive])
 }
@@ -461,3 +463,142 @@ model AuditLog {
   @@index([createdAt])
 }
 
+
+// ---------------------------------------------------------------------------
+// Timetable
+//
+// The school's master timetable, imported from the FET .fet file that has been
+// the only source until now. Moving it here is what lets the office edit a
+// lesson without a round-trip through FET on someone's desktop.
+//
+// The published version is exported back out to data/timetable-public.json by
+// scripts/timetable/export-from-db.js; timetable.html is pre-rendered from that
+// file at build time, so the public page keeps working with JavaScript off.
+// ---------------------------------------------------------------------------
+
+enum TimetableStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model TimetableVersion {
+  id          String          @id @default(uuid())
+  schoolYear  String          // e.g. "2026-2027"
+  label       String          // what an admin calls this draft
+  status      TimetableStatus @default(DRAFT)
+  publishedAt DateTime?
+  createdBy   String?
+  sourceFile  String?         // the .fet it was imported from, if any
+  notes       String?         @db.Text
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  periods    TimetablePeriod[]
+  groups     TimetableGroup[]
+  teachers   TimetableTeacher[]
+  rooms      TimetableRoom[]
+  activities TimetableActivity[]
+
+  @@index([schoolYear])
+  @@index([status])
+  // Only one PUBLISHED version per school year. Enforced in the controller too,
+  // because Prisma cannot express a partial unique index.
+  @@index([schoolYear, status])
+}
+
+model TimetablePeriod {
+  id          String  @id @default(uuid())
+  versionId   String
+  version     TimetableVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  key         String  // "p1", "break" - stable id used by placements
+  label       String  // "Period 1"
+  sortOrder   Int
+  startTime   String? // 24-hour "08:20"; null for a period with no recorded time
+  endTime     String?
+  altStart    String? // the shortened-morning bell, where the school runs one
+  altEnd      String?
+  kind        String  // class | break | lunch | registration | other
+  lunchSitting Int?
+  // Some periods carry a registration window inside them - Period 6 runs
+  // 13:40-14:50 with registration for its first ten minutes. Without these the
+  // exported payload loses that detail.
+  regStart    String?
+  regEnd      String?
+  unused      Boolean @default(false) // in the grid but never scheduled
+  sourceLabel String? // the original FET "hour" name; the join key back to FET
+
+  @@unique([versionId, key])
+  @@index([versionId, sortOrder])
+}
+
+model TimetableGroup {
+  id        String  @id @default(uuid())
+  versionId String
+  version   TimetableVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  name      String  // "7Y", or "11" where the year is not divided
+  yearName  String  // "7"
+  undivided Boolean @default(false)
+  sortOrder Int     @default(0)
+
+  @@unique([versionId, name])
+  @@index([versionId, yearName])
+}
+
+model TimetableTeacher {
+  id        String  @id @default(uuid())
+  versionId String
+  version   TimetableVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  name      String  // the FET spelling, e.g. "Gordon   M" - the join key
+  teacherId String? // optional link to the site's own Teacher record
+  teacher   Teacher? @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+
+  @@unique([versionId, name])
+  @@index([teacherId])
+}
+
+model TimetableRoom {
+  id        String  @id @default(uuid())
+  versionId String
+  version   TimetableVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  name      String
+
+  @@unique([versionId, name])
+}
+
+model TimetableActivity {
+  id           String  @id @default(uuid())
+  versionId    String
+  version      TimetableVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  sourceId     String? // the FET <Id>, kept so a re-import can be matched up
+  subject      String
+  duration     Int     @default(1) // in periods
+  isActive     Boolean @default(true)
+  // Lunch duty and CPS: staff roster entries, not lessons. Excluded from the
+  // public payload and from every class timetable.
+  staffOnly    Boolean @default(false)
+  room         String?
+  // Plain arrays rather than join tables, matching Teacher.subjects. Clash
+  // detection runs in JavaScript over a whole version, so join tables would add
+  // a lot of code for no query benefit.
+  teacherNames String[]
+  groupNames   String[]
+
+  placement TimetablePlacement?
+
+  @@index([versionId])
+  @@index([versionId, staffOnly])
+}
+
+model TimetablePlacement {
+  id         String  @id @default(uuid())
+  versionId  String
+  activityId String  @unique
+  activity   TimetableActivity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  day        String  // "Monday"
+  periodKey  String  // matches TimetablePeriod.key
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([versionId, day, periodKey])
+}

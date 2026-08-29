@@ -24,6 +24,8 @@
     "timetable:parse": "node scripts/timetable/parse-fet.js",
     "timetable:build": "node scripts/timetable/build-public.js",
     "timetable:page": "node scripts/timetable/build-page.js",
+    "timetable:import": "cd backend && node scripts/timetable-import.js",
+    "timetable:export": "cd backend && node scripts/timetable-export.js",
     "timetable:verify": "python3 scripts/timetable/verify-against-fet-export.py"
   },
   "keywords": [

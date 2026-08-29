@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { User, Application, SixthFormApplication, SixthFormReadiness, SixthFormInterview, AcceptanceLetterDetails, Course, BlogPost, Event, Document, BooklistEntry, Request } from '../types';
+import type { User, Application, SixthFormApplication, SixthFormReadiness, SixthFormInterview, AcceptanceLetterDetails, Course, BlogPost, Event, Document, BooklistEntry, Request, TimetableStaffPayload, TimetableVersion, TimetableClash } from '../types';
 
 // Use relative path since everything is served from the same server
 // This works in both development and production when served from backend
@@ -282,6 +282,38 @@ class ApiService {
 
   async getUserAnalytics() {
     return this.request('GET', '/analytics/users');
+  }
+
+  // --- Timetable ------------------------------------------------------------
+  // The staff view carries the per-teacher and per-room timetables and the
+  // lunch-duty roster - the half that never reaches the public page.
+
+  async getStaffTimetable(params?: { versionId?: string; year?: string }) {
+    const q = new URLSearchParams(params as Record<string, string>).toString();
+    return this.request<TimetableStaffPayload>('GET', `/timetable/staff${q ? `?${q}` : ''}`);
+  }
+
+  async getTimetableVersions() {
+    return this.request<{ versions: TimetableVersion[] }>('GET', '/timetable/versions');
+  }
+
+  async createTimetableVersion(data: { schoolYear: string; label: string; cloneFrom?: string }) {
+    return this.request<{ version: TimetableVersion }>('POST', '/timetable/versions', data);
+  }
+
+  /** Move one lesson. Rejected with 409 and the reasons if it would clash. */
+  async moveTimetablePlacement(id: string, data: { day: string; periodKey: string; force?: boolean }) {
+    return this.request<{ placement: { id: string; day: string; periodKey: string }; clashes: TimetableClash[] }>(
+      'PUT', `/timetable/placements/${id}`, data);
+  }
+
+  async validateTimetableVersion(id: string) {
+    return this.request<{ versionId: string; placements: number; clashes: TimetableClash[]; ok: boolean }>(
+      'POST', `/timetable/validate/${id}`);
+  }
+
+  async publishTimetableVersion(id: string) {
+    return this.request<{ message: string; versionId: string }>('POST', `/timetable/publish/${id}`);
   }
 }
 

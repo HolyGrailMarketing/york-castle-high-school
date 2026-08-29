@@ -26,6 +26,7 @@
 import fs from 'fs';
 import path from 'path';
 import { PERIODS, isStaffRosterSubject } from './periods.js';
+import { findClashes } from '../../backend/src/timetable/clashes.js';
 
 // --- tiny XML helpers -------------------------------------------------------
 // The .fet is machine-written, flat, and never uses attributes or CDATA, so
@@ -194,58 +195,10 @@ export function parseFet(xml) {
 
 // --- validation -------------------------------------------------------------
 
-/**
- * Replays every placement across the slots it occupies and reports anyone
- * booked twice. A multi-period activity occupies consecutive periods, so a
- * 2-period lesson starting at Period 1 also fills Period 2.
- */
-export function findClashes(data) {
-  const slots = new Map();
-  const key = (day, index) => `${day}|${index}`;
-
-  for (const p of data.placements) {
-    for (let k = 0; k < p.duration; k += 1) {
-      const index = p.periodIndex + k;
-      if (index >= data.periods.length) continue;
-      const id = key(p.day, index);
-      if (!slots.has(id)) slots.set(id, []);
-      slots.get(id).push(p);
-    }
-  }
-
-  const clashes = [];
-  for (const [id, entries] of slots) {
-    const [day, index] = id.split('|');
-    const period = data.periods[Number(index)];
-    const seen = { teacher: new Map(), group: new Map(), room: new Map() };
-
-    for (const p of entries) {
-      for (const t of new Set(p.teachers)) push(seen.teacher, t, p);
-      for (const g of new Set(p.groups)) push(seen.group, g, p);
-      if (p.room) push(seen.room, p.room, p);
-    }
-
-    for (const kind of ['teacher', 'group', 'room']) {
-      for (const [who, list] of seen[kind]) {
-        if (list.length > 1) {
-          clashes.push({
-            kind,
-            who,
-            day,
-            period: period.label,
-            activities: list.map((p) => ({ id: p.activityId, subject: p.subject })),
-          });
-        }
-      }
-    }
-  }
-  return clashes;
-
-  function push(map, k, v) {
-    if (!map.has(k)) map.set(k, []);
-    map.get(k).push(v);
-  }
-}
+// Lives in clashes.js so the importer, the API and the editor share one
+// implementation; re-exported here because this module's CLI and existing
+// callers use it.
+export { findClashes } from '../../backend/src/timetable/clashes.js';
 
 // --- cli --------------------------------------------------------------------
 
