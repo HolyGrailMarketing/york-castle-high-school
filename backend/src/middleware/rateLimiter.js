@@ -1,6 +1,6 @@
 import rateLimit from 'express-rate-limit';
 import logger from '../utils/logger.js';
-import { readInviteToken } from '../utils/inviteToken.js';
+import { readInvite } from '../utils/inviteToken.js';
 
 // Environment-based configuration
 const isProduction = process.env.NODE_ENV === 'production';
@@ -96,8 +96,9 @@ const perInviteLimiter = rateLimit({
   keyGenerator: (req) => `sfinvite_${req.sixthFormInvite.email}`
 });
 
-export const invitedApplicationLimiter = (req, res, next) => {
-  const invite = readInviteToken(req.body?.inviteToken);
+export const invitedApplicationLimiter = async (req, res, next) => {
+  // A database lookup, so only ever done when a token is actually presented.
+  const invite = req.body?.inviteToken ? await readInvite(req.body.inviteToken) : null;
   // No invite: leave it to publicRequestLimiter, which does not skip.
   if (!invite) return next();
   req.sixthFormInvite = invite;

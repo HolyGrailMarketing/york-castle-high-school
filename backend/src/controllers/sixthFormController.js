@@ -11,7 +11,7 @@ import {
 } from '../services/emailService.js';
 import { auditLog } from '../middleware/auditLog.js';
 import { NOTIFICATION_TYPES } from '../services/notificationTypes.js';
-import { readInviteToken } from '../utils/inviteToken.js';
+import { readInvite, markInviteUsed } from '../utils/inviteToken.js';
 
 // Sixth Form applications closed on this date. Jamaica does not observe DST,
 // so a fixed -05:00 offset is always correct. Kept in sync with the deadline
@@ -240,7 +240,7 @@ export const getSixthFormApplication = async (req, res, next) => {
  */
 export const resolveSixthFormInvite = async (req, res, next) => {
   try {
-    const invite = readInviteToken(req.query.token);
+    const invite = await readInvite(req.query.token);
     if (!invite) return res.json({ valid: false });
 
     // An invite already spent is worse than useless: it would walk the student
@@ -255,8 +255,8 @@ export const resolveSixthFormInvite = async (req, res, next) => {
       email: invite.email,
       firstName: invite.firstName,
       lastName: invite.lastName,
-      list: invite.list,
-      expiresAt: new Date(invite.exp * 1000).toISOString(),
+      faculty: invite.faculty,
+      expiresAt: invite.expiresAt.toISOString(),
     });
   } catch (error) {
     next(error);
@@ -286,6 +286,9 @@ export const checkSixthFormEmail = async (req, res, next) => {
 };
 
 export const createSixthFormApplication = async (req, res, next) => {
+  // Set when this submission came in on a late-applicant invite, so the invite
+  // can be marked as answered once the application actually exists.
+  let acceptedInviteToken = null;
   try {
     const now = Date.now();
     if (now > SIXTH_FORM_APPLICATION_DEADLINE.getTime() && !isWithinInterviewWindow(now)) {
@@ -293,13 +296,16 @@ export const createSixthFormApplication = async (req, res, next) => {
       // online form are invited back individually. The token names the address
       // it was issued to, and only that address may apply on it — otherwise one
       // leaked link would reopen the form for anybody.
-      const invite = readInviteToken(req.body.inviteToken);
+      // The limiter ahead of this already resolved it; re-read rather than trust
+      // middleware ordering, so the rule holds wherever this handler is reached.
+      const invite = req.sixthFormInvite || (await readInvite(req.body.inviteToken));
       if (!invite || invite.email !== normaliseEmail(req.body.email)) {
         return res.status(403).json({
           error: 'Sixth Form applications closed on July 20, 2026 and are no longer being accepted.',
         });
       }
       logger.info('Late Sixth Form application accepted on an invite', { email: invite.email });
+      acceptedInviteToken = invite.token;
     }
 
     const {
@@ -399,6 +405,11 @@ export const createSixthFormApplication = async (req, res, next) => {
         userId,
       },
     });
+
+    // Best-effort, and after the application exists: an invite left unmarked is
+    // a chase-up list that is slightly wrong, whereas failing here would lose an
+    // application that was successfully submitted.
+    if (acceptedInviteToken) await markInviteUsed(acceptedInviteToken);
 
     await notifyAdminOfNewSixthForm(req, application);
 

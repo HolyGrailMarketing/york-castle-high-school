@@ -169,6 +169,34 @@ model SixthFormNotification {
   @@index([type])
 }
 
+// A one-time link letting a named candidate past the closed application form.
+//
+// The token is a random string looked up here rather than a signed JWT: signing
+// requires the signer and the verifier to share a secret, and the scripts that
+// issue invites run on a staff machine while verification happens in
+// production. They already share this database, so the database is the thing to
+// trust. It also makes an invite revocable and lets us see who has responded,
+// neither of which a stateless token allows.
+model SixthFormInvite {
+  id         String    @id @default(uuid())
+  token      String    @unique
+  email      String
+  firstName  String
+  lastName   String
+  faculty    String?
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  createdBy  String?
+  // When an application was submitted on this invite. Recorded for chasing up
+  // the ones who have not responded; it is not what stops a second application
+  // — the unique index on lower(email) does that.
+  usedAt     DateTime?
+  revokedAt  DateTime?
+
+  @@index([email])
+  @@index([expiresAt])
+}
+
 model SixthFormInterview {
   id                    String               @id @default(uuid())
   applicationId         String               @unique
