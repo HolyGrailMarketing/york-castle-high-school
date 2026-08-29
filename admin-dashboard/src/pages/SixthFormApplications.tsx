@@ -102,6 +102,11 @@ const SixthFormApplications = () => {
   const [loading, setLoading] = useState(true);
   const [selectedApp, setSelectedApp] = useState<SixthFormApplication | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
+  // What the user is typing, and the settled value the queries actually use.
+  // Everything downstream reads debouncedSearch: keying a fetch off searchTerm
+  // would put a request on the wire per keystroke.
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [readinessFilter, setReadinessFilter] = useState<SixthFormReadinessFilter>('');
   const [readiness, setReadiness] = useState<SixthFormReadiness | null>(null);
   const [page, setPage] = useState(1);
@@ -139,14 +144,20 @@ const SixthFormApplications = () => {
   const [interviewSaving, setInterviewSaving] = useState(false);
   const [interviewError, setInterviewError] = useState('');
 
-  // Reset to first page whenever a filter changes
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Reset to first page whenever a filter changes, or page 2 of the old results
+  // shows as empty against the new ones.
   useEffect(() => {
     setPage(1);
-  }, [statusFilter, readinessFilter]);
+  }, [statusFilter, readinessFilter, debouncedSearch]);
 
   useEffect(() => {
     fetchApplications();
-  }, [statusFilter, readinessFilter, page]);
+  }, [statusFilter, readinessFilter, debouncedSearch, page]);
 
   const fetchApplications = async () => {
     setLoading(true);
@@ -154,6 +165,7 @@ const SixthFormApplications = () => {
       const params: any = { page, limit: PAGE_SIZE };
       if (statusFilter) params.status = statusFilter;
       if (readinessFilter) params.readiness = readinessFilter;
+      if (debouncedSearch) params.search = debouncedSearch;
       const data = await apiService.getSixthFormApplications(params);
       setApplications(data.applications);
       setReadiness(data.readiness || null);
@@ -285,9 +297,13 @@ const SixthFormApplications = () => {
   const selectAllMatching = async () => {
     setBlastLoading(true);
     try {
+      // Must carry every filter the visible list carries. Leave the search out
+      // and a bulk send goes to everyone matching only the dropdowns, while the
+      // screen shows a narrowed list — and this path sends the decision letters.
       const params: any = { page: 1, limit: totalCount };
       if (statusFilter) params.status = statusFilter;
       if (readinessFilter) params.readiness = readinessFilter;
+      if (debouncedSearch) params.search = debouncedSearch;
       const data = await apiService.getSixthFormApplications(params);
       setBlastRecipients(data.applications);
       setBlastMode(true);
@@ -339,6 +355,14 @@ const SixthFormApplications = () => {
       <div className="page-header">
         <h1>Sixth Form Applications</h1>
         <div className="filters">
+          <input
+            type="text"
+            placeholder="Search by name or email…"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+            aria-label="Search applicants by name or email"
+          />
           <select
             value={readinessFilter}
             onChange={(e) => setReadinessFilter(e.target.value as SixthFormReadinessFilter)}
