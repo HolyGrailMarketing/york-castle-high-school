@@ -1,0 +1,370 @@
+/*
+ * Site navigation styles - the single source for the header used by the modern
+ * pages (index, signin, booklist, timetable, parent-portal and the rest).
+ *
+ * These rules previously existed twice: inside css/homepage-redesign.css, and as
+ * a hand-copied page-scoped block in eight separate pages. That copy existed
+ * because homepage-redesign.css also carries 22 `.footer-*` rules, and pages
+ * still using the old Webflow footer could not load it without those rules
+ * fighting their markup. Splitting the navbar into its own file is what lets any
+ * page take the nav without inheriting a footer style it does not want.
+ *
+ * The `!important` markers are load-bearing on pages that also load the Webflow
+ * stylesheet (booklist), which sets competing rules for the same elements. They
+ * are redundant but harmless on pages that do not.
+ *
+ * Injected into pages by scripts/build-partials.js alongside partials/site-nav.html.
+ */
+
+/* Site navbar - copied verbatim from css/homepage-redesign.css so this page
+     matches the homepage exactly, instead of the legacy Webflow nav markup it
+     had before. Kept as a page-scoped copy rather than linking that stylesheet
+     directly: it also defines footer, container-23, and menu-button rules for
+     the REDESIGNED footer, which would collide with this page's still-legacy
+     Webflow footer further down. Only the navbar section is reproduced here.
+     If the homepage navbar changes, re-copy from that file's .site-header
+     block through its mobile-menu-toggle responsive rules. */
+  /* The homepage-redesign copy of .hero-section only touches position/width,
+     but the older Webflow stylesheet also loaded on this page separately sets
+     .hero-section { height: 100%; min-height: 770px } for ITS OWN full-bleed
+     slider component - height:100% resolves against the viewport here and
+     was pushing everything below the header down by a full screen's height.
+     Neutralizing both since this page has no hero image for that to matter. */
+  .hero-section { position: relative !important; width: 100% !important; height: auto !important; min-height: 0 !important; }
+  .site-header {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    z-index: 1000 !important;
+    background: transparent !important;
+    display: block !important;
+  }
+  .top-bar {
+    background: var(--ychs-charcoal, #1a1a1a) !important;
+    padding: 8px 0 !important;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2) !important;
+    display: block !important;
+    position: relative !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  .top-bar-container {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 0 20px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 20px !important;
+    position: relative !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .top-bar-left { display: flex; align-items: center; gap: 15px; flex: 1; }
+  .top-bar-link {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    font-size: 14px !important;
+    transition: color 0.2s ease !important;
+    background: transparent !important;
+    border: none !important;
+  }
+  .top-bar-link:hover { color: var(--ychs-gold, #d4af37); text-decoration: none; }
+  .top-bar-icon { font-size: 14px; }
+  .top-bar-divider { color: rgba(255, 255, 255, 0.3); font-size: 14px; }
+  .top-bar-right { flex-shrink: 0; }
+  .btn-login {
+    background: var(--ychs-gold, #d4af37) !important;
+    color: var(--ychs-black, #0a0a0a) !important;
+    border: none !important;
+    padding: 6px 14px !important;
+    border-radius: 4px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+    cursor: pointer !important;
+    transition: background 0.2s ease !important;
+    white-space: nowrap !important;
+  }
+  .btn-login:hover { background: var(--ychs-gold-dark, #b8941f); color: var(--ychs-black, #0a0a0a); text-decoration: none; }
+  .main-nav {
+    background: var(--ychs-charcoal, #1a1a1a) !important;
+    padding: 0 !important;
+    display: block !important;
+    position: relative !important;
+    width: 100% !important;
+    margin: 0 !important;
+    border: none !important;
+  }
+  .nav-container {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 0 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 40px !important;
+    position: relative !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .nav-logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; }
+  .logo-image { width: 125px; height: auto; display: block; }
+  .nav-menu {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0 !important;
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex: 1 !important;
+    justify-content: flex-end !important;
+    position: relative !important;
+    float: none !important;
+    background: transparent !important;
+  }
+  .nav-item {
+    color: #ffffff !important;
+    text-decoration: none !important;
+    padding: 36px 20px !important;
+    display: block !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    border-bottom: 3px solid transparent !important;
+    transition: all 0.2s ease !important;
+    position: relative !important;
+    margin: 0 !important;
+    float: none !important;
+    background: transparent !important;
+  }
+  .nav-item:hover, .nav-item.active { color: #ffffff; border-bottom-color: var(--ychs-gold, #d4af37); text-decoration: none; }
+  .nav-item.active { border-bottom-color: var(--ychs-gold, #d4af37); }
+  .nav-dropdown { position: relative; }
+  .dropdown-btn {
+    background: none !important;
+    border: none !important;
+    color: #ffffff !important;
+    padding: 36px 20px !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    border-bottom: 3px solid transparent !important;
+    transition: all 0.2s ease !important;
+    font-family: inherit !important;
+    margin: 0 !important;
+    width: 100% !important;
+    text-align: left !important;
+  }
+  .dropdown-btn:hover, .nav-dropdown:hover .dropdown-btn { color: #ffffff; border-bottom-color: var(--ychs-gold, #d4af37); }
+  .dropdown-arrow { width: 12px; height: 12px; transition: transform 0.2s ease; }
+  .nav-dropdown:hover .dropdown-arrow { transform: rotate(180deg); }
+  .dropdown-menu {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    background: var(--ychs-charcoal, #1a1a1a) !important;
+    min-width: 220px !important;
+    padding: 10px 0 !important;
+    margin: 0 !important;
+    list-style: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transform: translateY(-10px) !important;
+    transition: all 0.2s ease !important;
+    z-index: 1000 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+    display: block !important;
+    float: none !important;
+  }
+  .nav-dropdown:hover .dropdown-menu { opacity: 1 !important; visibility: visible !important; transform: translateY(0) !important; }
+  .dropdown-menu-wide { min-width: 400px; display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  .dropdown-item {
+    display: block !important;
+    color: #ffffff !important;
+    padding: 12px 20px !important;
+    text-decoration: none !important;
+    font-size: 14px !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    transition: all 0.2s ease !important;
+    border-bottom: none !important;
+    background: transparent !important;
+    margin: 0 !important;
+  }
+  .dropdown-item:hover { background: rgba(212, 175, 55, 0.1); color: var(--ychs-gold, #d4af37); text-decoration: none; }
+  .mobile-menu-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    gap: 5px;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.2s ease;
+  }
+  .mobile-menu-toggle:focus { outline: 2px solid rgba(212, 175, 55, 0.5); outline-offset: 2px; }
+  .mobile-menu-toggle:active { background: rgba(255, 255, 255, 0.05); }
+  .mobile-menu-toggle span { display: block; width: 24px; height: 2px; background: #ffffff; transition: all 0.3s ease; border-radius: 1px; }
+  .mobile-menu-toggle[aria-expanded="true"] span:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+  .mobile-menu-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+  .mobile-menu-toggle[aria-expanded="true"] span:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+
+  @media (max-width: 990px) and (min-width: 769px) {
+    .nav-item, .dropdown-btn { padding: 30px 16px; }
+  }
+  @media (max-width: 991px) {
+    .nav-container { padding: 0 12px; gap: 12px; }
+    .nav-menu {
+      position: fixed !important;
+      top: 0 !important;
+      right: -100% !important;
+      left: auto !important;
+      width: 85vw !important;
+      max-width: 280px !important;
+      height: 100vh !important;
+      /* The legacy Webflow stylesheet still loaded on this page has its own,
+         unrelated .nav-menu { max-height: 220px } at <=479px (see the earlier
+         .w-nav-menu height fix above) - same class name, different component.
+         homepage-redesign.css never had to guard against that collision since
+         no other page mixes the two stylesheets. Neutralized here only. */
+      max-height: none !important;
+      background: var(--ychs-charcoal, #1a1a1a) !important;
+      flex-direction: column !important;
+      align-items: stretch !important;
+      justify-content: flex-start !important;
+      flex: none !important;
+      gap: 0 !important;
+      padding: 70px 0 20px !important;
+      transition: right 0.3s ease;
+      box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
+      overflow-y: auto;
+      overflow-x: hidden;
+      z-index: 1001;
+    }
+    .nav-menu[aria-expanded="true"] { right: 0 !important; }
+    .nav-item, .dropdown-btn { padding: 12px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); text-align: left; font-size: 13px; }
+    .nav-item.active { border-bottom: 1px solid rgba(255, 255, 255, 0.1); border-left: 3px solid var(--ychs-gold, #d4af37); }
+    .dropdown-menu {
+      position: static;
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      box-shadow: none;
+      background: rgba(0, 0, 0, 0.2);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .nav-dropdown:hover .dropdown-menu, .nav-dropdown[aria-expanded="true"] .dropdown-menu { max-height: 500px; }
+    .dropdown-menu-wide { grid-template-columns: 1fr; }
+    .dropdown-item { font-size: 12px !important; padding: 11px 16px !important; min-height: 40px; display: flex !important; align-items: center !important; }
+    .mobile-menu-toggle { display: flex; min-width: 44px; min-height: 44px; }
+    .nav-item:focus, .dropdown-btn:focus { background: rgba(212, 175, 55, 0.1); }
+    .nav-item:active, .dropdown-btn:active { background: rgba(212, 175, 55, 0.05); }
+  }
+  @media (max-width: 768px) {
+    .top-bar { padding: 6px 0 !important; }
+    .top-bar-container { padding: 0 10px; gap: 10px; flex-wrap: nowrap; }
+    .top-bar-left { flex: 1 1 auto; min-width: 0; flex-direction: column; align-items: flex-start; gap: 4px; }
+    .top-bar-link { font-size: 11px; gap: 3px; max-width: 100%; }
+    .top-bar-link span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .top-bar-divider { display: none; }
+    .btn-login { padding: 5px 12px; font-size: 11px; }
+    .nav-container { padding: 0 10px; gap: 10px; }
+    .logo-image { width: 90px; }
+    .nav-menu { width: 80vw; max-width: 260px; }
+    .nav-item, .dropdown-btn { padding: 10px 14px; font-size: 12px; }
+    .dropdown-item { padding: 10px 14px !important; font-size: 11px !important; min-height: 38px; display: flex !important; align-items: center !important; }
+  }
+  @media (max-width: 480px) {
+    .top-bar { padding: 5px 0 !important; }
+    .top-bar-container { padding: 0 8px; gap: 6px; }
+    .top-bar-left { gap: 6px; }
+    .top-bar-link { font-size: 10px; gap: 2px; }
+    .top-bar-right { flex-shrink: 0; }
+    .btn-login { padding: 4px 10px; font-size: 10px; }
+    .nav-container { padding: 0 8px; gap: 8px; }
+    .logo-image { width: 75px; }
+    .mobile-menu-toggle { width: 40px; height: 40px; gap: 4px; }
+    .mobile-menu-toggle span { width: 20px; height: 2px; }
+    .nav-menu { width: 75vw; max-width: 240px; padding: 60px 0 15px; }
+    .nav-item, .dropdown-btn { padding: 10px 12px; font-size: 11px; letter-spacing: 0.5px; }
+    .dropdown-item { padding: 10px 12px !important; font-size: 10px !important; min-height: 36px; display: flex !important; align-items: center !important; }
+    .dropdown-arrow { width: 10px; height: 10px; }
+  }
+
+/* Dimmed overlay behind the open mobile menu. Six pages carried this and index
+   did not; adopting it here upgrades the rest rather than stripping it from them. */
+.nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; }
+.nav-backdrop.open { display: block; }
+
+/* --- defensive reset for pages that also load the Webflow theme -------------
+ *
+ * booklist still needs york-castle-high-school.webflow.css for its own content,
+ * and that stylesheet reaches into the shared header and footer with rules that
+ * were written for the old markup. Eleven of them match elements in the shared
+ * chrome; these are the ones that actually break layout:
+ *
+ *   a              padding: 0 18px    squashed 15 links, incl. a 20px social
+ *                                     icon left with 4px inside its 40px button
+ *   .footer-column margin-top: -134px pulled every footer column up over the
+ *                                     one above it, overlapping the text
+ *   .nav-menu      float: right       fights the flex nav
+ *   ul / ol / li   padding + margins  indented the footer link lists
+ *   h4 / p         margins            uneven footer headings
+ *
+ * Everything here is wrapped in :where(), which contributes NO specificity. Each
+ * rule therefore ties with the bare Webflow selector it is undoing and wins only
+ * because this file loads last - while every class-based rule in
+ * homepage-redesign.css still overrides it exactly as it would normally. Pages
+ * that do not load the Webflow theme are unaffected, since this only resets
+ * properties that stylesheet sets.
+ */
+:where(.site-header, .footer-redesign, .nav-backdrop) a {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+:where(.site-header, .footer-redesign) :is(ul, ol) {
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-left: 0;
+}
+
+:where(.site-header, .footer-redesign) li { margin-bottom: 0; }
+
+:where(.site-header, .footer-redesign) :is(h1, h2, h3, h4, h5, h6) {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+:where(.site-header, .footer-redesign) p { margin-top: 0; }
+
+/* Class-level collisions: same specificity as the Webflow rule they undo, so
+   they win on load order, and they touch only properties homepage-redesign.css
+   does not set for these elements. */
+:where(.footer-redesign) .footer-column {
+  margin-top: 0;
+  padding-right: 0;
+}
+
+:where(.site-header) .nav-menu { float: none; }
+

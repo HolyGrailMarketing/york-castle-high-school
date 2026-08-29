@@ -26,6 +26,14 @@ else
   echo "✗ admin-dashboard/dist not found - admin dashboard may not be built"
 fi
 
+# Rebuild generated page regions before copying, so a deploy cannot ship a
+# stale shared nav/footer or an out-of-date timetable.
+echo "Rebuilding shared nav and footer..."
+node scripts/build-partials.js || echo "! build-partials failed"
+if [ -f "data/timetable-public.json" ]; then
+  node scripts/timetable/build-page.js || echo "! timetable build-page failed"
+fi
+
 # Copy static HTML files
 echo "Copying HTML files..."
 if [ -f "index.html" ]; then
@@ -83,6 +91,7 @@ if [ -d "documents" ]; then
 else
   echo "✗ documents/ directory not found"
 fi
+
 
 # Verify what was copied
 echo ""

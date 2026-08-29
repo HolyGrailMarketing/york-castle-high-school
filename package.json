@@ -19,7 +19,12 @@
     "start:production": "NODE_ENV=production cd backend && npm start",
     "db:migrate": "cd backend && npm run prisma:migrate",
     "db:seed": "cd backend && npm run prisma:seed",
-    "db:studio": "cd backend && npm run prisma:studio"
+    "db:studio": "cd backend && npm run prisma:studio",
+    "site:partials": "node scripts/build-partials.js",
+    "timetable:parse": "node scripts/timetable/parse-fet.js",
+    "timetable:build": "node scripts/timetable/build-public.js",
+    "timetable:page": "node scripts/timetable/build-page.js",
+    "timetable:verify": "python3 scripts/timetable/verify-against-fet-export.py"
   },
   "keywords": [
     "school",
