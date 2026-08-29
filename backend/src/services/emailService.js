@@ -6,6 +6,48 @@ import { templates } from './emailTemplates.js';
 let resend = null;
 let emailConfigured = false;
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Resend accepts two requests a second. Everything that sends goes through one
+ * queue for the whole process, so a bulk run and a password reset cannot
+ * collide into a rate-limit rejection.
+ *
+ * This exists because they did. A bulk send fired five requests at a time with
+ * no pacing; Resend rejected the excess with 429, and because the SDK reports
+ * API errors in its return value rather than by throwing, every rejection was
+ * recorded as a successful send. 98 emails were reported delivered that were
+ * never accepted — 30 invitations and 68 acceptance letters — and nothing in
+ * the logs or the database said otherwise.
+ */
+// 600ms rather than the 500ms the 2/second limit strictly allows: the first
+// send in a burst does not wait, so a tighter interval leaves the opening
+// window fractionally over the limit. The margin costs a minute across a full
+// cohort and removes the class of failure entirely.
+const MIN_SEND_INTERVAL_MS = 600;
+const MAX_SEND_ATTEMPTS = 5;
+
+let sendQueue = Promise.resolve();
+let lastSendStartedAt = 0;
+
+/** Run `fn` no sooner than MIN_SEND_INTERVAL_MS after the previous send began. */
+const paced = (fn) => {
+  const run = sendQueue.then(async () => {
+    const wait = MIN_SEND_INTERVAL_MS - (Date.now() - lastSendStartedAt);
+    if (wait > 0) await sleep(wait);
+    lastSendStartedAt = Date.now();
+    return fn();
+  });
+  // Keep the queue alive when a send rejects, or every later send inherits it.
+  sendQueue = run.then(() => {}, () => {});
+  return run;
+};
+
+const isRateLimited = (error) =>
+  error?.statusCode === 429 ||
+  error?.name === 'rate_limit_exceeded' ||
+  /rate.?limit|too many requests/i.test(error?.message || '');
+
 export const initEmailService = () => {
   const apiKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.EMAIL_FROM;
@@ -45,28 +87,38 @@ export const sendEmail = async (to, subject, text, html) => {
     throw error;
   }
 
-  try {
-    const result = await resend.emails.send({
-      from: fromEmail,
-      to,
-      subject,
-      text,
-      html,
-    });
+  const payload = { from: fromEmail, to, subject, text, html };
 
-    logger.info('Email sent successfully via Resend', {
-      to,
-      subject,
-      emailId: result.data?.id,
-    });
+  for (let attempt = 1; attempt <= MAX_SEND_ATTEMPTS; attempt += 1) {
+    let result;
+    try {
+      result = await paced(() => resend.emails.send(payload));
+    } catch (error) {
+      // A thrown error is a transport failure rather than an API rejection.
+      logger.error('Failed to send email via Resend', { to, subject, error: error.message });
+      throw error;
+    }
 
-    return result;
-  } catch (error) {
-    logger.error('Failed to send email via Resend', {
-      to,
-      subject,
-      error: error.message,
-    });
+    // The SDK reports API errors in `result.error` instead of throwing, so this
+    // check is the only thing standing between a rejected send and a log line
+    // claiming success. Treat a missing id the same way: no id, no email.
+    if (!result?.error && result?.data?.id) {
+      logger.info('Email sent successfully via Resend', { to, subject, emailId: result.data.id });
+      return result;
+    }
+
+    const reason = result?.error?.message || 'Resend returned no email id';
+
+    if (isRateLimited(result?.error) && attempt < MAX_SEND_ATTEMPTS) {
+      const backoff = MIN_SEND_INTERVAL_MS * 2 ** attempt;
+      logger.warn('Rate limited by Resend, retrying', { to, attempt, backoff });
+      await sleep(backoff);
+      continue;
+    }
+
+    logger.error('Failed to send email via Resend', { to, subject, error: reason, attempt });
+    const error = new Error(`Resend rejected the email: ${reason}`);
+    error.resendError = result?.error;
     throw error;
   }
 };

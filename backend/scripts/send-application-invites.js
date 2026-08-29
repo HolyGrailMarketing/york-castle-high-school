@@ -51,7 +51,14 @@ const baseArg = process.argv.find((a) => a.startsWith('--base='))?.split('=')[1]
 /** Matches getBaseUrl()'s production result, which is what sent emails already use. */
 const BASE_URL = baseArg || process.env.FRONTEND_URL || process.env.APP_URL || 'https://yorkcastlehighschool.org';
 
-/** Send concurrency, matching NOTIFY_BATCH_SIZE in sixthFormController.js. */
+/**
+ * Send concurrency, matching NOTIFY_BATCH_SIZE in sixthFormController.js.
+ *
+ * Pacing is not this script's job: sendEmail runs every send through one
+ * process-wide queue at Resend's two-a-second limit, and retries the rejections
+ * that pacing alone cannot prevent. Batching here only bounds how many
+ * templates are rendered at once.
+ */
 const BATCH_SIZE = 5;
 
 /** The date the invite link stops working, worded for the email. */

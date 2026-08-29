@@ -540,6 +540,10 @@ export const sendSixthFormNotifications = async (req, res, next) => {
           return sendEmail(app.email, template.subject, template.text, template.html);
         })
       );
+      // `sendEmail` now throws when Resend rejects a send, so a fulfilled promise
+      // really does mean the email was accepted. Before it did not: rejections
+      // resolved successfully and were logged here as notified, which recorded
+      // 68 acceptance letters that were never sent.
       results.forEach((result, idx) => {
         const app = batch[idx];
         if (result.status === 'fulfilled') {
