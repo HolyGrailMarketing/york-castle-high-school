@@ -88,6 +88,9 @@ export interface SixthFormApplication {
   reasonForAttending?: string;
   csecResults?: any;
   subjectChoices: any;
+  /** Faculty the student has been placed in. The school's decision — distinct
+   *  from subjectChoices, which is what the applicant asked for. */
+  faculty?: string;
   status: ApplicationStatus;
   notes?: string;
   submittedAt: string;
@@ -99,7 +102,16 @@ export interface SixthFormApplication {
   user?: User;
 }
 
-export type SixthFormNotificationType = 'INTERVIEW_INVITATION' | 'CXC_RESULTS_RELEASED' | 'CUSTOM';
+export type SixthFormNotificationType = 'INTERVIEW_INVITATION' | 'CXC_RESULTS_RELEASED' | 'ACCEPTANCE_LETTER' | 'UNSUCCESSFUL_LETTER' | 'CUSTOM';
+
+/** Everything on the acceptance letter that changes from one intake to the next. */
+export interface AcceptanceLetterDetails {
+  collectionStart: string; // YYYY-MM-DD
+  collectionEnd: string;   // YYYY-MM-DD
+  openFrom: string;
+  openTo: string;
+  cost: string;
+}
 
 export interface SixthFormNotification {
   type: SixthFormNotificationType;

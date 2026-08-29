@@ -276,8 +276,33 @@ export const sixthFormBulkNotifyValidation = [
     .isUUID()
     .withMessage('Each applicationId must be a valid UUID'),
   body('type')
-    .isIn(['INTERVIEW_INVITATION', 'CXC_RESULTS_RELEASED', 'CUSTOM'])
+    .isIn(['INTERVIEW_INVITATION', 'CXC_RESULTS_RELEASED', 'ACCEPTANCE_LETTER', 'UNSUCCESSFUL_LETTER', 'CUSTOM'])
     .withMessage('Invalid notification type'),
+  // The acceptance letter carries next year's collection window, office hours
+  // and package cost. They are required rather than defaulted: a wrong date
+  // reaches every school-leaver at once, so the sender must state it each time.
+  body('acceptance.collectionStart')
+    .if(body('type').equals('ACCEPTANCE_LETTER'))
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .withMessage('Collection start date is required (YYYY-MM-DD)'),
+  body('acceptance.collectionEnd')
+    .if(body('type').equals('ACCEPTANCE_LETTER'))
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .withMessage('Collection end date is required (YYYY-MM-DD)')
+    .custom((value, { req }) => value >= req.body.acceptance?.collectionStart)
+    .withMessage('Collection end date must not be before the start date'),
+  body('acceptance.openFrom')
+    .if(body('type').equals('ACCEPTANCE_LETTER'))
+    .trim().isLength({ min: 1, max: 40 })
+    .withMessage('Opening time is required'),
+  body('acceptance.openTo')
+    .if(body('type').equals('ACCEPTANCE_LETTER'))
+    .trim().isLength({ min: 1, max: 40 })
+    .withMessage('Closing time is required'),
+  body('acceptance.cost')
+    .if(body('type').equals('ACCEPTANCE_LETTER'))
+    .trim().isLength({ min: 1, max: 40 })
+    .withMessage('Welcome Package cost is required'),
   body('subject')
     .if(body('type').equals('CUSTOM'))
     .trim()

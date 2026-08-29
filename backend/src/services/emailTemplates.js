@@ -192,6 +192,31 @@ const baseTemplate = (content, title) => `
 </html>
 `;
 
+/**
+ * Render a collection window as one phrase: "September 1-4, 2026", or
+ * "August 31 - September 4, 2026" when it straddles two months.
+ *
+ * Dates arrive as plain 'YYYY-MM-DD' and are split by hand rather than passed
+ * through `new Date()`. Parsed as a Date, '2026-09-01' is UTC midnight, and
+ * formatting that in Jamaica's -05:00 would print August 31 - the school would
+ * send every school-leaver the wrong day.
+ */
+const formatCollectionWindow = (startISO, endISO) => {
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+  const parse = (iso) => {
+    const [y, m, d] = String(iso).split('-').map(Number);
+    return { y, m: MONTHS[m - 1], d };
+  };
+  const a = parse(startISO);
+  const b = parse(endISO);
+  if (a.m === b.m && a.y === b.y) {
+    return a.d === b.d ? `${a.m} ${a.d}, ${a.y}` : `${a.m} ${a.d}\u2013${b.d}, ${b.y}`;
+  }
+  if (a.y === b.y) return `${a.m} ${a.d} \u2013 ${b.m} ${b.d}, ${b.y}`;
+  return `${a.m} ${a.d}, ${a.y} \u2013 ${b.m} ${b.d}, ${b.y}`;
+};
+
 export const templates = {
   /**
    * Application status update email
@@ -614,6 +639,124 @@ export const templates = {
    * the single fixed interview session. Content mirrors the notice shown on
    * sixth-form-application.html's closed-applications screen.
    */
+  /**
+   * Late-applicant invite - sent to candidates who were interviewed and accepted
+   * on August 25 but never submitted the online application. `inviteUrl` carries
+   * a signed token tied to this one address, so the link must not be forwarded.
+   */
+  /**
+   * Acceptance letter - sent in bulk once selection is final. Every date, time
+   * and the package cost come from the sender, so next year's intake is a
+   * matter of typing new dates into the send dialog rather than a code change.
+   */
+  /**
+   * Sent to applicants who were not selected. Deliberately carries no dates or
+   * figures - there is nothing here that changes between intakes.
+   *
+   * The wording is the school's own and is reproduced as written, including
+   * the neutral "Dear Student" salutation and the Sixth Form Team sign-off,
+   * which differ from the other templates on purpose.
+   */
+  sixthFormUnsuccessful: () => {
+    const content = `
+      <h2 style="color: ${schoolColors.secondary}; margin-top: 0;">Your Sixth Form Application</h2>
+      <p>Dear Student,</p>
+      <p>Thank you for your interest in the York Castle High School Sixth Form Programme and for participating in the application process.</p>
+      <p>Although you were not selected for admission at this time, we encourage you to remain focused and continue pursuing your goals. Remember, this is not the end of your journey, but an opportunity to explore other paths to success.</p>
+      <p>We wish you all the very best in your future endeavours. Keep striving and never give up on your dreams!</p>
+      <p>The Sixth Form Team<br><strong>York Castle High School</strong></p>
+    `;
+
+    return {
+      subject: 'An Update on Your Sixth Form Application - York Castle High School',
+      html: baseTemplate(content, 'Your Sixth Form Application'),
+      text: `Your Sixth Form Application\n\nDear Student,\n\nThank you for your interest in the York Castle High School Sixth Form Programme and for participating in the application process.\n\nAlthough you were not selected for admission at this time, we encourage you to remain focused and continue pursuing your goals. Remember, this is not the end of your journey, but an opportunity to explore other paths to success.\n\nWe wish you all the very best in your future endeavours. Keep striving and never give up on your dreams!\n\nThe Sixth Form Team\nYork Castle High School`,
+    };
+  },
+
+  sixthFormAcceptanceLetter: (name, d = {}, faculty = null) => {
+    const window = formatCollectionWindow(d.collectionStart, d.collectionEnd);
+    const hours = `${d.openFrom} and ${d.openTo}`;
+    // Placement is the school's decision and does not always match what the
+    // student asked for, so say it plainly rather than leaving them to assume.
+    const placed = faculty ? ` in the <strong>${faculty}</strong> faculty` : '';
+    const placedText = faculty ? ` in the ${faculty} faculty` : '';
+
+    const content = `
+      <h2 style="color: ${schoolColors.secondary}; margin-top: 0;">Congratulations!</h2>
+      <p>Dear ${name},</p>
+      <p>We are pleased to inform you that you have been accepted into the York Castle High School Sixth Form Programme${placed}.</p>
+      <p>If you have decided to accept your offer, please visit the school office to collect your Sixth Form Welcome Package.</p>
+      <div class="highlight">
+        ${faculty ? `<p style="margin-top: 0;"><strong>Faculty:</strong> ${faculty}</p>` : ''}
+        <p${faculty ? '' : ' style="margin-top: 0;"'}><strong>Collect between:</strong> ${window}</p>
+        <p><strong>Office hours:</strong> ${hours}</p>
+        <p style="margin-bottom: 0;"><strong>Cost of the Welcome Package:</strong> ${d.cost}</p>
+      </div>
+      <p>We look forward to welcoming you to the York Castle High School Sixth Form family and wish you every success as you begin this exciting new chapter! &#127891;</p>
+      <p>If you have any questions, please contact our admissions office at <a href="mailto:yorkcastle.high.san@moey.gov.jm" style="color: ${schoolColors.secondary}; text-decoration: none;">yorkcastle.high.san@moey.gov.jm</a> or call us at <a href="tel:+1876975-2217" style="color: ${schoolColors.secondary}; text-decoration: none;">+1 876 975-2217</a>.</p>
+      <p>Congratulations once again, and welcome to Sixth Form!</p>
+      <p>Best regards,<br><strong>York Castle High School</strong><br><span style="color: ${schoolColors.textLight}; font-size: 14px;">Admissions Office</span></p>
+    `;
+
+    return {
+      subject: 'Congratulations - You Have Been Accepted into Sixth Form',
+      html: baseTemplate(content, 'Sixth Form Acceptance'),
+      text: `Congratulations!\n\nDear ${name},\n\nWe are pleased to inform you that you have been accepted into the York Castle High School Sixth Form Programme${placedText}.\n\nIf you have decided to accept your offer, please visit the school office between ${window}, between ${hours}, to collect your Sixth Form Welcome Package.\n\nThe cost of the Welcome Package is ${d.cost}.\n\nWe look forward to welcoming you to the York Castle High School Sixth Form family and wish you every success as you begin this exciting new chapter!\n\nIf you have any questions, contact admissions at yorkcastle.high.san@moey.gov.jm or +1 876 975-2217.\n\nCongratulations once again, and welcome to Sixth Form!\n\nBest regards,\nYork Castle High School`,
+    };
+  },
+
+  /**
+   * Sent to candidates who were accepted at the August 25 interview but never
+   * submitted the online application.
+   *
+   * It carries the acceptance and the call to apply together, because these
+   * students cannot be reached any other way: the bulk ACCEPTANCE_LETTER
+   * resolves recipients from SixthFormApplication and refuses anyone who is not
+   * APPROVED, and with no application row there is nothing for it to find.
+   *
+   * `inviteUrl` carries a token signed for this one address, so the link must
+   * not be forwarded.
+   */
+  sixthFormAcceptanceInvite: (name, inviteUrl, faculty, applyByText, d = {}, applyByShort = null) => {
+    const window = formatCollectionWindow(d.collectionStart, d.collectionEnd);
+    // Placement does not always match what the student asked for, so name it.
+    const placed = faculty ? ` in the <strong>${faculty}</strong> faculty` : '';
+    const placedText = faculty ? ` in the ${faculty} faculty` : '';
+
+    const content = `
+      <h2 style="color: ${schoolColors.secondary}; margin-top: 0;">Congratulations!</h2>
+      <p>Dear ${name},</p>
+      <p>We are pleased to inform you that, following your interview on Tuesday, August 25, you have been accepted into the York Castle High School Sixth Form Programme${placed}.</p>
+      <p><strong>We do not yet have your online application.</strong> The form has closed to the public, so we have opened it just for you. Please complete it before <strong>${applyByText}</strong> — your place cannot be confirmed without it.</p>
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="${inviteUrl}" class="button" style="display: inline-block; padding: 14px 28px; background: ${schoolColors.secondary}; color: ${schoolColors.charcoal}; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px;">Complete My Application</a>
+      </p>
+      <p>If the button does not work, copy and paste this address into your browser:</p>
+      <p style="word-break: break-all; font-size: 13px; color: ${schoolColors.textLight};">${inviteUrl}</p>
+      <p>This link is for you alone and will only work for this email address, so please do not forward it. It takes about 15 minutes to complete.</p>
+      <h3 style="color: ${schoolColors.charcoal}; font-size: 16px; margin: 28px 0 8px;">Collecting your Welcome Package</h3>
+      <p style="margin-top: 0;">If you have decided to accept your offer, please visit the school office to collect your Sixth Form Welcome Package.</p>
+      <div class="highlight">
+        <p style="margin-top: 0;"><strong>Collect between:</strong> ${window}</p>
+        <p><strong>Office hours:</strong> ${d.openFrom} and ${d.openTo}</p>
+        <p style="margin-bottom: 0;"><strong>Cost of the Welcome Package:</strong> ${d.cost}</p>
+      </div>
+      <p>We look forward to welcoming you to the York Castle High School Sixth Form family and wish you every success as you begin this exciting new chapter! &#127891;</p>
+      <p>If you have any questions, please contact our admissions office at <a href="mailto:yorkcastle.high.san@moey.gov.jm" style="color: ${schoolColors.secondary}; text-decoration: none;">yorkcastle.high.san@moey.gov.jm</a> or call us at <a href="tel:+1876975-2217" style="color: ${schoolColors.secondary}; text-decoration: none;">+1 876 975-2217</a>.</p>
+      <p>Congratulations once again, and welcome to Sixth Form!</p>
+      <p>Best regards,<br><strong>York Castle High School</strong><br><span style="color: ${schoolColors.textLight}; font-size: 14px;">Admissions Office</span></p>
+    `;
+
+    return {
+      // The full weekday-and-year date is right in the body but too long for an
+      // inbox list, where anything past roughly sixty characters is cut off.
+      subject: `Congratulations - Complete Your Sixth Form Application by ${applyByShort || applyByText}`,
+      html: baseTemplate(content, 'Welcome to Sixth Form'),
+      text: `Congratulations!\n\nDear ${name},\n\nFollowing your interview on Tuesday, August 25, you have been accepted into the York Castle High School Sixth Form Programme${placedText}.\n\nWE DO NOT YET HAVE YOUR ONLINE APPLICATION. The form has closed to the public, so we have opened it just for you. Please complete it before ${applyByText} - your place cannot be confirmed without it.\n\nComplete your application here:\n${inviteUrl}\n\nThis link is for you alone and will only work for this email address, so please do not forward it. It takes about 15 minutes to complete.\n\nCOLLECTING YOUR WELCOME PACKAGE\n\nIf you have decided to accept your offer, please visit the school office to collect your Sixth Form Welcome Package.\n\nCollect between: ${window}\nOffice hours: ${d.openFrom} and ${d.openTo}\nCost of the Welcome Package: ${d.cost}\n\nWe look forward to welcoming you to the York Castle High School Sixth Form family and wish you every success as you begin this exciting new chapter!\n\nIf you have any questions, contact admissions at yorkcastle.high.san@moey.gov.jm or +1 876 975-2217.\n\nCongratulations once again, and welcome to Sixth Form!\n\nBest regards,\nYork Castle High School`,
+    };
+  },
+
   sixthFormInterviewInvitation: (name, loginUrl) => {
     const signInUrl = `${loginUrl}/signin.html`;
     const documents = [

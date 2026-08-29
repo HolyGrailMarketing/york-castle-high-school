@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { User, Application, SixthFormApplication, SixthFormReadiness, SixthFormInterview, Course, BlogPost, Event, Document, BooklistEntry, Request } from '../types';
+import type { User, Application, SixthFormApplication, SixthFormReadiness, SixthFormInterview, AcceptanceLetterDetails, Course, BlogPost, Event, Document, BooklistEntry, Request } from '../types';
 
 // Use relative path since everything is served from the same server
 // This works in both development and production when served from backend
@@ -106,12 +106,18 @@ class ApiService {
     return this.request<{ application: SixthFormApplication }>('PUT', `/sixth-form/${id}/status`, { status, notes });
   }
 
-  async sendSixthFormNotifications(applicationIds: string[], type: string, subject?: string, message?: string) {
+  async sendSixthFormNotifications(
+    applicationIds: string[],
+    type: string,
+    subject?: string,
+    message?: string,
+    acceptance?: AcceptanceLetterDetails
+  ) {
     return this.request<{
       message: string;
       notifiedCount: number;
       failed: { id: string; email: string | null; reason: string }[];
-    }>('POST', '/sixth-form/notifications', { applicationIds, type, subject, message });
+    }>('POST', '/sixth-form/notifications', { applicationIds, type, subject, message, acceptance });
   }
 
   async getInterview(applicationId: string) {

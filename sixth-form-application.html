@@ -180,6 +180,12 @@ const isInterviewDay = () => {
   const now = Date.now();
   return now >= INTERVIEW_WINDOW.start.getTime() && now <= INTERVIEW_WINDOW.end.getTime();
 };
+// Candidates accepted at the August 25 interview who never submitted online are
+// invited back individually. Unlike interview day this is not a window everyone
+// shares: the form stays closed to the public and only opens for a link signed
+// for one address. Must stay in sync with INVITE_EXPIRY in
+// backend/src/utils/inviteToken.js, which sets the same moment on the token.
+const LATE_APPLICATION_DEADLINE = new Date('2026-09-04T23:59:59-05:00');
 
 const PARISHES = [
   'Clarendon','Hanover','Kingston','Manchester','Portland',
@@ -520,16 +526,18 @@ function FieldGroup({ label, error, children }) {
   );
 }
 
-function Input({ value, onChange, placeholder, type='text', ...rest }) {
+function Input({ value, onChange, placeholder, type='text', locked=false, ...rest }) {
   return (
     <input type={type} value={value} onChange={onChange} placeholder={placeholder}
+      readOnly={locked}
       style={{
-        display:'block', width:'100%', background:'var(--paper)',
+        display:'block', width:'100%', background: locked ? 'var(--cream)' : 'var(--paper)',
+        cursor: locked ? 'not-allowed' : 'auto',
         border:'1px solid var(--line)', borderRadius:12,
         padding:'13px 14px', font:'500 15px/1.3 Inter, sans-serif',
         color:'var(--ink)', outline:'none', transition:'border-color .12s, box-shadow .12s',
       }}
-      onFocus={e => { e.target.style.borderColor='var(--primary)'; e.target.style.boxShadow='0 0 0 3px rgba(26,20,16,0.1)'; }}
+      onFocus={e => { if (locked) return; e.target.style.borderColor='var(--primary)'; e.target.style.boxShadow='0 0 0 3px rgba(26,20,16,0.1)'; }}
       onBlur={e => { e.target.style.borderColor='var(--line)'; e.target.style.boxShadow='none'; }}
       {...rest}
     />
@@ -589,7 +597,38 @@ function InfoBox({ tone='neutral', icon, children }) {
 }
 
 /* ─── SCREEN 1: Landing ──────────────────────────────────────── */
-function S_Landing({ onStart, draft }) {
+/**
+ * Banner for a late applicant arriving on an invite link. They were told by
+ * email that this link is theirs alone and closes on a date — repeat both here,
+ * where they can act on them, rather than making them go back to the email.
+ */
+function InviteBanner({ invite }) {
+  if (!invite) return null;
+  const closes = LATE_APPLICATION_DEADLINE.toLocaleDateString('en-JM', {
+    weekday:'long', day:'numeric', month:'long', timeZone:'America/Jamaica',
+  });
+  return (
+    <div style={{
+      background:'var(--paper)', border:'1px solid var(--line)', borderLeft:'4px solid var(--primary)',
+      borderRadius:12, padding:'16px 18px', margin:'0 0 24px', width:'100%', textAlign:'left',
+    }}>
+      <div style={{ font:'700 14px/1.4 Inter', color:'var(--ink)', marginBottom:6 }}>
+        Welcome{invite.firstName ? `, ${invite.firstName}` : ''} — this form is open for you
+      </div>
+      <div style={{ font:'400 13px/1.6 Inter', color:'var(--ink-2)' }}>
+        You were accepted at the August 25 interview{invite.list ? ` on the ${invite.list} stream` : ''},
+        but we do not have your online application yet. Applications are closed to everyone else, so
+        please complete yours by <strong style={{ color:'var(--ink)' }}>{closes}</strong>.
+        <br/>
+        Your application will be filed under <strong style={{ color:'var(--ink)' }}>{invite.email}</strong>,
+        which is why that field cannot be edited. This link only works for that address, so please
+        do not forward it.
+      </div>
+    </div>
+  );
+}
+
+function S_Landing({ onStart, draft, invite }) {
   const isDesktop = useIsDesktop();
   const requirements = [
     'Minimum 5 CSEC passes including English A and Mathematics',
@@ -621,7 +660,7 @@ function S_Landing({ onStart, draft }) {
           <div style={{ display:'flex', gap:16, alignItems:'center', position:'relative' }}>
             <Pill tone="gold"><Icon name="calendar" size={10}/>{isInterviewDay() ? 'Interview Day — Walk-in Application' : 'Applications Open'}</Pill>
             <span style={{ font:'400 13px/1 Inter', opacity:0.55 }}>
-              Academic Year 2026–2027{isInterviewDay() ? '' : ' · Deadline: July 20, 2026'}
+              Academic Year 2026–2027{isInterviewDay() || invite ? '' : ' · Deadline: July 20, 2026'}
             </span>
           </div>
         </div>
@@ -630,6 +669,7 @@ function S_Landing({ onStart, draft }) {
         <div style={{ display:'flex', gap:0, flex:1 }}>
           {/* Left: requirements + CTA */}
           <div style={{ flex:'0 0 55%', padding:'48px 56px', borderRight:'1px solid var(--line)', display:'flex', flexDirection:'column' }}>
+            <InviteBanner invite={invite}/>
             <div style={{ font:'600 11px/1 Inter', letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--ink-3)', marginBottom:20 }}>Entry Requirements</div>
             <div style={{ display:'flex', flexDirection:'column', gap:16, marginBottom:40 }}>
               {requirements.map((r, i) => (
@@ -705,11 +745,12 @@ function S_Landing({ onStart, draft }) {
           <div style={{ font:'700 28px/1.15 Fraunces, serif', marginBottom:8, position:'relative' }}>Sixth Form<br/>Application</div>
           <div style={{ font:'400 15px/1.5 Inter', opacity:0.8, position:'relative' }}>York Castle High School · CAPE Programme<br/>Academic Year 2026–2027</div>
           <div style={{ display:'flex', gap:8, marginTop:20, position:'relative', flexWrap:'wrap' }}>
-            <Pill tone="gold"><Icon name="calendar" size={10}/>{isInterviewDay() ? 'Interview Day — Walk-in' : 'Applications Open'}</Pill>
-            {!isInterviewDay() && <span style={{ font:'500 11px/1 Inter', opacity:0.6, alignSelf:'center' }}>Deadline: July 20, 2026</span>}
+            <Pill tone="gold"><Icon name="calendar" size={10}/>{isInterviewDay() ? 'Interview Day — Walk-in' : invite ? 'Invited Applicant' : 'Applications Open'}</Pill>
+            {!isInterviewDay() && !invite && <span style={{ font:'500 11px/1 Inter', opacity:0.6, alignSelf:'center' }}>Deadline: July 20, 2026</span>}
           </div>
         </div>
         <div style={{ padding:'24px 20px 0', display:'flex', flexDirection:'column', gap:12 }}>
+          <InviteBanner invite={invite}/>
           <div style={{ font:'600 11px/1 Inter', letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--ink-3)' }}>Entry Requirements</div>
           {requirements.map((r, i) => (
             <div key={i} style={{ display:'flex', gap:10, alignItems:'flex-start', font:'500 13px/1.5 Inter', color:'var(--ink-2)' }}>
@@ -786,7 +827,7 @@ function S_Overview({ onNext, onBack }) {
 }
 
 /* ─── SCREEN 3: Personal ─────────────────────────────────────── */
-function S_Personal({ data, onChange, onNext, onBack, errors }) {
+function S_Personal({ data, onChange, onNext, onBack, errors, invite }) {
   const isDesktop = useIsDesktop();
   const f = (field) => (e) => onChange(field, e.target.value);
   const p = isDesktop ? '36px 48px 48px' : '20px 20px 32px';
@@ -814,10 +855,13 @@ function S_Personal({ data, onChange, onNext, onBack, errors }) {
 
         <div style={{ display:'grid', gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr', gap:12 }}>
           <FieldGroup label="Student's Own Email Address" error={errors.email}>
-            <Input value={data.email} onChange={f('email')} type="email" placeholder="your@email.com" inputMode="email"/>
+            <Input value={data.email} onChange={f('email')} type="email" placeholder="your@email.com" inputMode="email" locked={!!invite}/>
             <div style={{ font:'400 12px/1.4 Inter', color:'var(--ink-3)' }}>
-              Use the student's own address, not a parent's — this becomes the login for
-              the application, and interview and results notices are sent here.
+              {invite
+                ? <>This is the address your invitation was sent to, so it cannot be changed here.
+                    If it is wrong, contact the admissions office and we will send you a new link.</>
+                : <>Use the student's own address, not a parent's — this becomes the login for
+                    the application, and interview and results notices are sent here.</>}
             </div>
           </FieldGroup>
           <FieldGroup label="Phone Number" error={errors.phone}>
@@ -1589,8 +1633,36 @@ function S_Status({ data, credentials }) {
 }
 
 /* ─── SCREEN: Applications Closed ────────────────────────────── */
-function S_Closed() {
+/** Shown for the moment between arriving on an invite link and hearing back. */
+function S_ResolvingInvite() {
+  return (
+    <Shell>
+      <div style={{ minHeight:'60vh', display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}>
+        <div style={{ font:'500 15px/1.5 Inter', color:'var(--ink-2)', textAlign:'center' }}>
+          Checking your invitation…
+        </div>
+      </div>
+    </Shell>
+  );
+}
+
+function S_Closed({ invite }) {
   const isDesktop = useIsDesktop();
+  // A student who followed an invite that has lapsed needs to know that is what
+  // happened, and that there is someone to call. The public "closed" notice
+  // would read as though they had never been accepted at all.
+  const notice = !invite?.invalid ? null
+    : invite.reason === 'already_applied'
+      ? <>Your application has already been submitted — there is nothing more to do.{' '}
+          <a href="signin.html" style={{ color:'var(--ink)', fontWeight:600 }}>Sign in</a>{' '}
+          to view it.</>
+    : invite.reason === 'network'
+      ? <>We could not check your invitation link just now. Please check your connection and
+          reload the page.</>
+      : <>Your invitation link has expired or is not valid. If you were accepted at interview,
+          please contact the admissions office at{' '}
+          <a href="mailto:yorkcastle.high.san@moey.gov.jm" style={{ color:'var(--ink)', fontWeight:600 }}>yorkcastle.high.san@moey.gov.jm</a>{' '}
+          or call 876-975-2217 and we will send you a new one.</>;
   const documents = [
     'Copy of your birth certificate',
     'Copy of your TRN',
@@ -1642,7 +1714,7 @@ function S_Closed() {
                 Notice
               </div>
               <div style={{ font:'500 14px/1.6 Inter', color:'var(--ink-2)' }}>
-                Applications for the Sixth Form Programme closed on <strong style={{ color:'var(--ink)' }}>July 20, 2026</strong>. Thank you to everyone who applied — we look forward to meeting you.
+                {notice || <>Applications for the Sixth Form Programme closed on <strong style={{ color:'var(--ink)' }}>July 20, 2026</strong>. Thank you to everyone who applied — we look forward to meeting you.</>}
               </div>
             </div>
 
@@ -1761,8 +1833,43 @@ function App() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [credentials, setCredentials] = useState(null);
+  // undefined = still resolving, null = no invite in the URL, object = the answer.
+  const [invite, setInvite] = useState(undefined);
 
   useEffect(() => { saveDraft(data); }, [data]);
+
+  // The form is closed to the public, so an invited applicant arrives with a
+  // signed token in the URL. Only the server can check the signature, so ask it.
+  useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get('invite');
+    if (!token) { setInvite(null); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch(`${API_BASE}/sixth-form/invite?token=${encodeURIComponent(token)}`);
+        const body = await r.json();
+        if (cancelled) return;
+        setInvite(body.valid ? { ...body, token } : { invalid:true, reason: body.reason });
+      } catch {
+        // The link is probably fine and the network is not. Say so rather than
+        // showing the generic closed screen, which would read as a rejection.
+        if (!cancelled) setInvite({ invalid:true, reason:'network' });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Pin the application to the invited address. The lists and the applications
+  // diverged on email once already; this is what stops it happening again.
+  useEffect(() => {
+    if (!invite || invite.invalid) return;
+    setData(d => ({
+      ...d,
+      email:     invite.email,
+      firstName: d.firstName || invite.firstName || '',
+      lastName:  d.lastName  || invite.lastName  || '',
+    }));
+  }, [invite]);
 
   const change = useCallback((field, value) => {
     setData(d => ({ ...d, [field]: value }));
@@ -1803,6 +1910,7 @@ function App() {
   }
 
   async function handleSubmit() {
+    const invited = invite && !invite.invalid;
     const errs = validate('review', data);
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setSubmitting(true);
@@ -1812,7 +1920,11 @@ function App() {
         firstName:      data.firstName,
         lastName:       data.lastName,
         middleName:     data.middleName || undefined,
-        email:          data.email.trim().toLowerCase(),
+        // For an invited applicant the address comes from the signed token, not
+        // the field. The field is read-only, but readOnly only stops typing —
+        // the server would reject a substituted address with a bare "closed"
+        // error after ten screens of work, so never let it get that far.
+        email:          invited ? invite.email : data.email.trim().toLowerCase(),
         phone:          data.phone.replace(/\s+/g, '').replace(/[^\d+\-()]/g, ''),
         dateOfBirth:    data.dob,
         address:          data.address + (data.parish ? `, ${data.parish}` : ''),
@@ -1845,6 +1957,9 @@ function App() {
           alternativeStream: data.alternativeStream || undefined,
         },
       };
+      // Present only for a late applicant; the server re-verifies it and checks
+      // it was issued to the address being applied with.
+      if (invited) payload.inviteToken = invite.token;
       console.log('[YCHS submit payload]', JSON.stringify(payload, null, 2));
       const res = await fetch(`${API_BASE}/sixth-form`, {
         method:'POST',
@@ -1881,13 +1996,17 @@ function App() {
   };
 
   function renderScreen() {
-    if (Date.now() > APPLICATION_DEADLINE.getTime() && !isInterviewDay()) {
-      return <S_Closed/>;
+    const invited = invite && !invite.invalid;
+    if (Date.now() > APPLICATION_DEADLINE.getTime() && !isInterviewDay() && !invited) {
+      // Still asking the server about the token — showing "closed" here would
+      // tell an invited applicant they had been turned away.
+      if (invite === undefined) return <S_ResolvingInvite/>;
+      return <S_Closed invite={invite}/>;
     }
     switch (screen) {
-      case 'landing':   return <S_Landing onStart={() => go('overview')} draft={data}/>;
+      case 'landing':   return <S_Landing onStart={() => go('overview')} draft={data} invite={invite && !invite.invalid ? invite : null}/>;
       case 'overview':   return <S_Overview onNext={() => go('personal')} onBack={() => go('landing')}/>;
-      case 'personal':   return <S_Personal data={data} onChange={change} onNext={() => tryNext('personal','guardian')} onBack={() => go('overview')} errors={errors}/>;
+      case 'personal':   return <S_Personal data={data} onChange={change} onNext={() => tryNext('personal','guardian')} onBack={() => go('overview')} errors={errors} invite={invite && !invite.invalid ? invite : null}/>;
       case 'guardian':   return <S_Guardian data={data} onChange={change} onNext={() => go('academic')} onBack={() => go('personal')} errors={errors}/>;
       case 'academic':   return <S_Academic data={data} onChange={change} onNext={() => tryNext('academic','csec')} onBack={() => go('guardian')} errors={errors}/>;
       case 'csec':       return <S_CXC data={data} {...csecProps} onNext={() => tryNext('csec','subjects')} onBack={() => go('academic')} errors={errors}/>;

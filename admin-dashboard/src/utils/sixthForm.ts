@@ -72,3 +72,34 @@ export const csecReadiness = (csecResults: any): CsecReadiness => {
     updated: rows.length > 0 && pending === 0,
   };
 };
+
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'];
+
+/**
+ * Render a collection window as one phrase: "September 1–4, 2026", or
+ * "August 31 – September 4, 2026" when it straddles two months.
+ *
+ * Mirrors formatCollectionWindow in backend/src/services/emailTemplates.js,
+ * which is what actually composes the email. This copy exists only to preview
+ * the sentence in the send dialog, so if the two ever drift the cost is a
+ * slightly wrong preview, never a wrong letter.
+ *
+ * Dates are split by hand rather than passed through `new Date()`: parsed as a
+ * Date, '2026-09-01' is UTC midnight, which prints as August 31 anywhere west
+ * of Greenwich.
+ */
+export const formatCollectionWindow = (startISO: string, endISO: string): string => {
+  const parse = (iso: string) => {
+    const [y, m, d] = String(iso).split('-').map(Number);
+    return { y, m: MONTHS[m - 1], d };
+  };
+  const a = parse(startISO);
+  const b = parse(endISO);
+  if (!a.m || !b.m) return '';
+  if (a.m === b.m && a.y === b.y) {
+    return a.d === b.d ? `${a.m} ${a.d}, ${a.y}` : `${a.m} ${a.d}–${b.d}, ${b.y}`;
+  }
+  if (a.y === b.y) return `${a.m} ${a.d} – ${b.m} ${b.d}, ${b.y}`;
+  return `${a.m} ${a.d}, ${a.y} – ${b.m} ${b.d}, ${b.y}`;
+};

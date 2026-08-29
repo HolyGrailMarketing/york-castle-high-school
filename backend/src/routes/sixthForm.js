@@ -2,6 +2,7 @@ import express from 'express';
 import {
   getSixthFormApplications,
   checkSixthFormEmail,
+  resolveSixthFormInvite,
   getSixthFormApplication,
   getMyApplication,
   updateMyApplication,
@@ -12,7 +13,7 @@ import {
 } from '../controllers/sixthFormController.js';
 import { getInterview, saveInterview } from '../controllers/interviewController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
-import { publicRequestLimiter, adminLimiter, generalLimiter } from '../middleware/rateLimiter.js';
+import { publicRequestLimiter, invitedApplicationLimiter, adminLimiter, generalLimiter } from '../middleware/rateLimiter.js';
 import { sixthFormValidation, sixthFormUpdateValidation, sixthFormBulkNotifyValidation, sixthFormCheckEmailValidation, handleValidationErrors, sanitizeBody } from '../utils/validation.js';
 
 const router = express.Router();
@@ -37,11 +38,16 @@ router.put('/my', generalLimiter, authenticate, sanitizeBody, sixthFormUpdateVal
 // one address. generalLimiter is a separate budget sized for lookups.
 router.get('/check-email', generalLimiter, sixthFormCheckEmailValidation, handleValidationErrors, checkSixthFormEmail);
 
+// Resolve a late-applicant invite link. Public — the token is the credential.
+// Declared before '/:id' so 'invite' isn't captured as an id, same as
+// 'check-email' above.
+router.get('/invite', generalLimiter, resolveSixthFormInvite);
+
 // Get single application
 router.get('/:id', generalLimiter, authenticate, getSixthFormApplication);
 
 // Create sixth form application - strict rate limiting
-router.post('/', publicRequestLimiter, sanitizeBody, sixthFormValidation, handleValidationErrors, createSixthFormApplication);
+router.post('/', invitedApplicationLimiter, publicRequestLimiter, sanitizeBody, sixthFormValidation, handleValidationErrors, createSixthFormApplication);
 
 // Update application status (admin/staff only)
 router.put('/:id/status', adminLimiter, authenticate, authorize('ADMIN', 'STAFF', 'TEACHER'), updateSixthFormStatus);
