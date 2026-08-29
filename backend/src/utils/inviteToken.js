@@ -1,72 +1,93 @@
-import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+import prisma from './prisma.js';
 import logger from './logger.js';
 
 /**
- * Invite tokens for late Sixth Form applicants.
+ * Invite links for late Sixth Form applicants.
  *
  * Candidates who were interviewed and accepted on August 25 but never submitted
- * the online application need a way past the closed form. A signed token in the
- * link carries who the invite is for, so the form can open for exactly those
- * people and stay shut to everyone else — no shared code to hand out, leak, or
- * remember to revoke.
+ * the online application need a way past the closed form. Each gets a link
+ * naming them, so the form can open for exactly those people and stay shut to
+ * everyone else — no shared code to hand out, leak, or remember to revoke.
  *
- * Modelled on the password-reset token in authController.js: the claims travel
- * inside the signature, so nothing is stored and no schema changes.
- *
- * Single use is a side effect rather than a mechanism. The moment an
- * application exists for the address, the lower(email) unique index and the 409
- * in createSixthFormApplication make the link useless. There is nothing to
- * expire early or clean up afterwards.
+ * The token is a random string checked against the database rather than a
+ * signed one. Signing needs the issuer and the verifier to hold the same
+ * secret, and they do not: invites are issued by a script on a staff machine
+ * and verified in production, which run different JWT_SECRETs. Both already
+ * talk to this database, so that is what they can agree on. It also buys
+ * revocation and a record of who has responded, neither of which a stateless
+ * token gives you.
  */
 
 // Jamaica does not observe DST, so a fixed -05:00 offset is always correct.
 // Kept in sync with LATE_APPLICATION_DEADLINE in sixth-form-application.html.
 export const INVITE_EXPIRY = new Date('2026-09-04T23:59:59-05:00');
 
-/** Namespaced so an invite can never be presented as a session or reset token. */
-const inviteSecret = () => {
-  if (!process.env.JWT_SECRET) {
-    throw new Error('JWT_SECRET is not configured');
-  }
-  return `${process.env.JWT_SECRET}|sfinvite`;
-};
-
 export const normaliseInviteEmail = (s) => (s || '').toLowerCase().trim();
 
-/**
- * `exp` is an absolute moment, not a duration: every invite dies when the late
- * window closes, whether it was minted on the first send or a chase-up a week
- * later. Nobody gets a quietly longer deadline than the email told them.
- */
-export const signInviteToken = ({ email, firstName, lastName, list }, expiry = INVITE_EXPIRY) =>
-  jwt.sign(
-    {
-      email: normaliseInviteEmail(email),
-      firstName,
-      lastName,
-      list,
-      type: 'sixth_form_invite',
-      exp: Math.floor(expiry.getTime() / 1000),
-    },
-    inviteSecret()
-  );
+/** 32 random bytes: long enough that guessing one is not a strategy. */
+const newToken = () => crypto.randomBytes(32).toString('base64url');
 
-/** Throws if the signature, type or expiry does not hold. */
-export const verifyInviteToken = (token) => {
-  if (!token) throw new Error('Invite token is required');
-  const payload = jwt.verify(token, inviteSecret());
-  if (payload.type !== 'sixth_form_invite') {
-    throw new Error('Not an invite token');
-  }
-  return payload;
+/**
+ * Issue an invite. Re-issuing for an address revokes whatever came before, so
+ * a corrected or re-sent email always leaves exactly one live link per student.
+ */
+export const createInvite = async (
+  { email, firstName, lastName, faculty },
+  { expiresAt = INVITE_EXPIRY, createdBy = null } = {}
+) => {
+  const normalised = normaliseInviteEmail(email);
+  const token = newToken();
+
+  await prisma.$transaction([
+    prisma.sixthFormInvite.updateMany({
+      where: { email: normalised, revokedAt: null, usedAt: null },
+      data: { revokedAt: new Date() },
+    }),
+    prisma.sixthFormInvite.create({
+      data: { token, email: normalised, firstName, lastName, faculty, expiresAt, createdBy },
+    }),
+  ]);
+
+  return token;
 };
 
-/** Non-throwing form for the places that only care whether it holds. */
-export const readInviteToken = (token) => {
-  try {
-    return verifyInviteToken(token);
-  } catch (error) {
-    logger.warn('Sixth Form invite token rejected', { reason: error.message });
+/**
+ * Resolve a token. Returns null for anything that is not a live invite —
+ * unknown, expired, or revoked — so callers cannot accidentally treat a dead
+ * link as a good one.
+ */
+export const readInvite = async (token) => {
+  if (!token || typeof token !== 'string') return null;
+
+  const invite = await prisma.sixthFormInvite.findUnique({ where: { token } });
+  if (!invite) {
+    logger.warn('Sixth Form invite token not recognised');
     return null;
+  }
+  if (invite.revokedAt) {
+    logger.warn('Sixth Form invite token revoked', { email: invite.email });
+    return null;
+  }
+  if (invite.expiresAt.getTime() < Date.now()) {
+    logger.warn('Sixth Form invite token expired', { email: invite.email });
+    return null;
+  }
+  return invite;
+};
+
+/**
+ * Record that an application came in on this invite. Reporting only — what
+ * actually stops a second application is the unique index on lower(email), so a
+ * student whose submission fails partway is never locked out of retrying.
+ */
+export const markInviteUsed = async (token) => {
+  try {
+    await prisma.sixthFormInvite.updateMany({
+      where: { token, usedAt: null },
+      data: { usedAt: new Date() },
+    });
+  } catch (error) {
+    logger.error('Could not mark Sixth Form invite as used', { error: error.message });
   }
 };

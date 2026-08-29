@@ -41,7 +41,7 @@ dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 const { templates } = await import('../src/services/emailTemplates.js');
 const { sendEmail, isEmailConfigured, initEmailService } = await import('../src/services/emailService.js');
-const { signInviteToken, INVITE_EXPIRY } = await import('../src/utils/inviteToken.js');
+const { createInvite, INVITE_EXPIRY } = await import('../src/utils/inviteToken.js');
 
 const prisma = new PrismaClient();
 const apply = process.argv.includes('--apply');
@@ -142,15 +142,25 @@ async function main() {
     console.log('');
   }
 
-  const recipients = sendable.map((cand) => {
-    const token = signInviteToken({
-      email: cand.email,
-      firstName: cand.firstname,
-      lastName: cand.surname,
-      list: cand.list,
+  // Invites are rows, not signatures, so they are only created for real when
+  // sending. A dry run shows a placeholder rather than filling the table with
+  // links nobody will ever receive.
+  const recipients = [];
+  for (const cand of sendable) {
+    const token = apply
+      ? await createInvite(
+          { email: cand.email, firstName: cand.firstname, lastName: cand.surname, faculty: cand.list },
+          { createdBy: 'send-application-invites' }
+        )
+      : null;
+    recipients.push({
+      cand,
+      token,
+      url: token
+        ? `${BASE_URL}/sixth-form-application.html?invite=${encodeURIComponent(token)}`
+        : `${BASE_URL}/sixth-form-application.html?invite=<created on --apply>`,
     });
-    return { cand, url: `${BASE_URL}/sixth-form-application.html?invite=${encodeURIComponent(token)}` };
-  });
+  }
 
   console.log(`TO INVITE — ${recipients.length}`);
   console.log('─'.repeat(72));
@@ -186,6 +196,9 @@ async function main() {
     expiresAt: INVITE_EXPIRY.toISOString(),
     acceptance: ACCEPTANCE,
     recipients: recipients.map((r) => ({ ...r.cand, inviteUrl: r.url })),
+    note: apply
+      ? 'Links are live. Anyone holding one can apply as that address until it expires.'
+      : 'Dry run - no invites were created, so these links do not exist.',
     blocked: blocked.map(({ cand, problem }) => ({ ...cand, problem })),
   }, null, 2));
   console.log(`\nRun log (includes every invite link) written to:\n  ${logPath}`);
@@ -237,7 +250,8 @@ async function main() {
 
   console.log(`\nSent ${sent} invite(s).`);
   if (failed.length > 0) {
-    console.log(`${failed.length} failed — their links are in the run log and can be sent by hand.`);
+    console.log(`${failed.length} failed. Their invites exist and their links are in the run log,`);
+    console.log('so they can be passed on by hand, or re-run to issue fresh ones.');
   }
   console.log('');
 

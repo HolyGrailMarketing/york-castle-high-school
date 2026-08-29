@@ -616,7 +616,7 @@ function InviteBanner({ invite }) {
         Welcome{invite.firstName ? `, ${invite.firstName}` : ''} — this form is open for you
       </div>
       <div style={{ font:'400 13px/1.6 Inter', color:'var(--ink-2)' }}>
-        You were accepted at the August 25 interview{invite.list ? ` on the ${invite.list} stream` : ''},
+        You were accepted at the August 25 interview{invite.faculty ? ` into the ${invite.faculty} faculty` : ''},
         but we do not have your online application yet. Applications are closed to everyone else, so
         please complete yours by <strong style={{ color:'var(--ink)' }}>{closes}</strong>.
         <br/>
