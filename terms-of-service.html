@@ -11,6 +11,13 @@
   <link href="images/favicon.ico" rel="shortcut icon" type="image/x-icon">
   <link href="images/webclip.png" rel="apple-touch-icon">
   <style>
+    /* The shared nav sits in a .hero-section wrapper meant to reserve its
+       space, but site-nav.css gives that wrapper height:auto and the header
+       is absolute, so it contributes no height and the wrapper collapses to
+       zero - dropping the header on top of the heading below. No hero image
+       here for it to float over, so put it back in flow. */
+    .site-header { position: relative !important; background: #1a1a1a !important; }
+
     .policy-hero {
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
       padding: 100px 24px 60px;

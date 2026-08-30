@@ -20,6 +20,23 @@
   <link href="css/site-nav.css" rel="stylesheet" type="text/css">
 
   <style>
+    /* The shared nav sits in a .hero-section wrapper meant to reserve its
+       space, but site-nav.css gives that wrapper height:auto and the header
+       is absolute, so it contributes no height and the wrapper collapses to
+       zero - dropping the header on top of the heading below. No hero image
+       here for it to float over, so put it back in flow. */
+    .site-header { position: relative !important; background: #1a1a1a !important; }
+
+    /* This is the only one of the policy pages still loading the Webflow
+       stylesheet, which paints body black. Everything below is designed for a
+       light page - charcoal h1, #666 body copy, white cards - so it was
+       rendering near-black text on black, and the inherited near-white body
+       colour left the rights descriptions invisible on their white cards.
+       The colour is scoped to the page's own content so the shared header and
+       footer keep inheriting their own. */
+    body { background: #f8f9fa; }
+    .request-form-container { color: #333; }
+
     .request-form-container {
       max-width: 800px;
       margin: 0 auto;
