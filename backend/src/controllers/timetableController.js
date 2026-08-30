@@ -1,6 +1,7 @@
 import prisma from '../utils/prisma.js';
 import logger from '../utils/logger.js';
 import { invalidateTimetableCache } from '../services/cacheService.js';
+import { createAuditLog } from '../middleware/auditLog.js';
 
 // The payload shaping and the clash check are shared with the build pipeline, so
 // the API, the importer and the pre-rendered page can never disagree about what
@@ -67,8 +68,61 @@ const toParsedShape = (version) => {
   };
 };
 
-const loadVersion = (where) =>
-  prisma.timetableVersion.findFirst({ where, orderBy: { publishedAt: 'desc' }, include: versionInclude });
+const loadVersion = (where, orderBy = { publishedAt: 'desc' }) =>
+  prisma.timetableVersion.findFirst({ where, orderBy, include: versionInclude });
+
+const EDIT_ROLES = ['ADMIN', 'STAFF'];
+
+/**
+ * The version a placement belongs to, with everything that makes it editable
+ * checked. Shared by move and swap so the two cannot drift apart on which
+ * versions are writable.
+ *
+ * TimetablePlacement.versionId has no foreign key - the placement rows are
+ * written in bulk by the importer and the cloner - so a version that has been
+ * deleted leaves the row pointing at nothing. Hence the null check.
+ */
+const loadForEdit = async (placementId) => {
+  const placement = await prisma.timetablePlacement.findUnique({
+    where: { id: placementId }, include: { activity: true },
+  });
+  if (!placement) return { status: 404, message: 'Placement not found' };
+
+  const version = await loadVersion({ id: placement.versionId });
+  if (!version) return { status: 404, message: 'The version this lesson belongs to no longer exists' };
+
+  if (version.status === 'ARCHIVED') {
+    return { status: 409, message: 'This version is archived and cannot be edited' };
+  }
+  // The published timetable is the one students are reading. Changes belong in
+  // a draft, which is then published as a whole.
+  if (version.status === 'PUBLISHED') {
+    return {
+      status: 409,
+      message: 'This version is published and cannot be edited directly. Make a draft to change it.',
+    };
+  }
+  return { placement, version };
+};
+
+/**
+ * Where a lesson may legally sit. Classes belong in teaching periods; lunch
+ * duty and the CPS meetings are staff roster entries and deliberately live in
+ * the lunch and registration slots, so they are exempt.
+ */
+const periodRefusal = (version, periodKey, activity) => {
+  const period = version.periods.find((p) => p.key === periodKey);
+  if (!period) return `Unknown period "${periodKey}"`;
+  if (!activity.staffOnly && period.kind !== 'class') {
+    return `"${period.label}" is not a teaching period, so a lesson cannot go there`;
+  }
+  return null;
+};
+
+// `force` skips the clash check. Restricted to ADMIN: it is the escape hatch
+// from "a broken timetable never reaches students", and the editor never sends
+// it at all.
+const forceAllowed = (req) => Boolean(req.body?.force) && req.user?.role === 'ADMIN';
 
 // --- public -----------------------------------------------------------------
 
@@ -98,10 +152,19 @@ export const getPublicTimetable = async (req, res, next) => {
  */
 export const getStaffTimetable = async (req, res, next) => {
   try {
-    const where = req.query.versionId
-      ? { id: req.query.versionId }
-      : { status: 'PUBLISHED', ...(req.query.year ? { schoolYear: req.query.year } : {}) };
-    const version = await loadVersion(where);
+    const year = req.query.year ? { schoolYear: req.query.year } : {};
+    let version;
+    if (req.query.versionId) {
+      version = await loadVersion({ id: req.query.versionId });
+    } else {
+      // Whoever can edit opens the work in progress; whoever can only read gets
+      // the official timetable. A teacher looking up their own week should not
+      // be shown a half-finished draft.
+      if (EDIT_ROLES.includes(req.user?.role)) {
+        version = await loadVersion({ status: 'DRAFT', ...year }, { createdAt: 'desc' });
+      }
+      version ||= await loadVersion({ status: 'PUBLISHED', ...year });
+    }
     if (!version) return res.status(404).json({ message: 'No timetable found' });
 
     // The editor moves lessons by placement id, so the staff view carries them.
@@ -180,6 +243,9 @@ export const createVersion = async (req, res, next) => {
       return v;
     }, { timeout: 120000 });
 
+    await createAuditLog('create', 'TimetableVersion', created.id, req.user?.id, req.user?.email, {
+      schoolYear, label, clonedFrom: cloneFrom ?? null,
+    }, req.ip, req.get('User-Agent'));
     res.status(201).json({ version: created });
   } catch (error) {
     next(error);
@@ -193,18 +259,12 @@ export const movePlacement = async (req, res, next) => {
     const { day, periodKey } = req.body;
     if (!DAYS.includes(day)) return res.status(400).json({ message: `day must be one of ${DAYS.join(', ')}` });
 
-    const existing = await prisma.timetablePlacement.findUnique({
-      where: { id }, include: { activity: true },
-    });
-    if (!existing) return res.status(404).json({ message: 'Placement not found' });
+    const loaded = await loadForEdit(id);
+    if (loaded.status) return res.status(loaded.status).json({ message: loaded.message });
+    const { placement: existing, version } = loaded;
 
-    const version = await loadVersion({ id: existing.versionId });
-    if (version.status === 'ARCHIVED') {
-      return res.status(409).json({ message: 'This version is archived and cannot be edited' });
-    }
-    if (!version.periods.some((p) => p.key === periodKey)) {
-      return res.status(400).json({ message: `Unknown period "${periodKey}"` });
-    }
+    const refusal = periodRefusal(version, periodKey, existing.activity);
+    if (refusal) return res.status(400).json({ message: refusal });
 
     // Check the move against the version as it would be afterwards, using the
     // same clash rules the importer and the editor use.
@@ -215,16 +275,93 @@ export const movePlacement = async (req, res, next) => {
     const clashes = findClashes({ periods: data.periods, placements: after })
       .filter((c) => c.activities.some((a) => a.id === existing.activityId));
 
-    if (clashes.length && !req.body.force) {
+    if (clashes.length && !forceAllowed(req)) {
       return res.status(409).json({ message: 'That move would clash', clashes });
     }
 
     const updated = await prisma.timetablePlacement.update({
       where: { id }, data: { day, periodKey },
     });
-    invalidateTimetableCache();
+    invalidateTimetableCache(version.schoolYear);
     logger.info('Timetable placement moved', { id, day, periodKey, by: req.user?.id });
+    await createAuditLog('update', 'TimetablePlacement', id, req.user?.id, req.user?.email, {
+      subject: existing.activity.subject,
+      from: { day: existing.day, periodKey: existing.periodKey },
+      to: { day, periodKey },
+      versionId: version.id,
+      forced: clashes.length > 0,
+    }, req.ip, req.get('User-Agent'));
     res.json({ placement: updated, clashes });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Exchange two lessons' slots.
+ *
+ * Its own endpoint rather than two moves, because the halfway state of a
+ * two-step swap has both lessons in one slot - the clash check would refuse the
+ * first step, so a swap is simply not expressible as a pair of moves.
+ */
+export const swapPlacements = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { withId } = req.body;
+    if (!withId) return res.status(400).json({ message: 'withId is required' });
+    if (withId === id) return res.status(400).json({ message: 'A lesson cannot swap with itself' });
+
+    const [a, b] = await Promise.all([loadForEdit(id), loadForEdit(withId)]);
+    for (const loaded of [a, b]) {
+      if (loaded.status) return res.status(loaded.status).json({ message: loaded.message });
+    }
+    if (a.version.id !== b.version.id) {
+      return res.status(400).json({ message: 'Both lessons must be in the same timetable version' });
+    }
+
+    const { version } = a;
+    const refusals = [
+      periodRefusal(version, b.placement.periodKey, a.placement.activity),
+      periodRefusal(version, a.placement.periodKey, b.placement.activity),
+    ].filter(Boolean);
+    if (refusals.length) return res.status(400).json({ message: refusals[0] });
+
+    const indexOf = (key) => version.periods.findIndex((x) => x.key === key);
+    const data = toParsedShape(version);
+    const after = data.placements.map((p) => {
+      if (p.activityId === a.placement.activityId) {
+        return { ...p, day: b.placement.day, periodId: b.placement.periodKey, periodIndex: indexOf(b.placement.periodKey) };
+      }
+      if (p.activityId === b.placement.activityId) {
+        return { ...p, day: a.placement.day, periodId: a.placement.periodKey, periodIndex: indexOf(a.placement.periodKey) };
+      }
+      return p;
+    });
+    const moved = [a.placement.activityId, b.placement.activityId];
+    const clashes = findClashes({ periods: data.periods, placements: after })
+      .filter((c) => c.activities.some((x) => moved.includes(x.id)));
+
+    if (clashes.length && !forceAllowed(req)) {
+      return res.status(409).json({ message: 'That swap would clash', clashes });
+    }
+
+    await prisma.$transaction([
+      prisma.timetablePlacement.update({
+        where: { id }, data: { day: b.placement.day, periodKey: b.placement.periodKey },
+      }),
+      prisma.timetablePlacement.update({
+        where: { id: withId }, data: { day: a.placement.day, periodKey: a.placement.periodKey },
+      }),
+    ]);
+    invalidateTimetableCache(version.schoolYear);
+    logger.info('Timetable placements swapped', { id, withId, by: req.user?.id });
+    await createAuditLog('update', 'TimetablePlacement', id, req.user?.id, req.user?.email, {
+      swappedWith: withId,
+      subjects: [a.placement.activity.subject, b.placement.activity.subject],
+      versionId: version.id,
+      forced: clashes.length > 0,
+    }, req.ip, req.get('User-Agent'));
+    res.json({ swapped: [id, withId], clashes });
   } catch (error) {
     next(error);
   }
@@ -258,7 +395,7 @@ export const publishVersion = async (req, res, next) => {
     if (!version) return res.status(404).json({ message: 'Version not found' });
 
     const clashes = findClashes(toParsedShape(version));
-    if (clashes.length && !req.body?.force) {
+    if (clashes.length && !forceAllowed(req)) {
       return res.status(409).json({ message: `Cannot publish: ${clashes.length} clash(es)`, clashes });
     }
 
@@ -272,8 +409,17 @@ export const publishVersion = async (req, res, next) => {
         data: { status: 'PUBLISHED', publishedAt: new Date() },
       }),
     ]);
-    invalidateTimetableCache();
+    invalidateTimetableCache(version.schoolYear);
     logger.info('Timetable published', { id: version.id, by: req.user?.id });
+    // Publishing archives whatever was published before it, so it is recorded
+    // like the other irreversible admin actions rather than in the log alone.
+    await createAuditLog('update', 'TimetableVersion', version.id, req.user?.id, req.user?.email, {
+      action: 'publish',
+      schoolYear: version.schoolYear,
+      label: version.label,
+      archivedPrevious: true,
+      forced: clashes.length > 0,
+    }, req.ip, req.get('User-Agent'));
 
     res.json({
       message: 'Published. The public page updates on the next deploy — ' +

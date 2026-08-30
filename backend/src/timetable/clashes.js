@@ -20,6 +20,9 @@
  *   periods:    [{ ... }]                  order matters; index is the slot number
  *   placements: [{ day, periodIndex, duration, teachers[], groups[], room,
  *                  activityId, subject }]
+ *
+ * Reported kinds are 'teacher', 'group' and 'room' - two things in one slot -
+ * plus 'fit', for a multi-period lesson that runs off the end of the day.
  */
 
 /**
@@ -35,15 +38,29 @@ export function findClashes({ periods, placements }) {
     map.get(k).push(v);
   };
 
+  const clashes = [];
+
   for (const p of placements) {
     for (let k = 0; k < (p.duration || 1); k += 1) {
       const index = p.periodIndex + k;
-      if (index >= periods.length) continue;
+      // A lesson longer than the day has left is not "clash-free" - it has
+      // nowhere to put its second half. Skipping the slot silently made a
+      // double period in the last slot look fine.
+      if (index >= periods.length) {
+        clashes.push({
+          kind: 'fit',
+          who: p.subject,
+          day: p.day,
+          period: periods[p.periodIndex]?.label ?? String(p.periodId ?? p.periodIndex),
+          periodId: periods[p.periodIndex]?.id ?? p.periodId,
+          activities: [{ id: p.activityId, subject: p.subject }],
+        });
+        break;
+      }
       push(slots, `${p.day}|${index}`, p);
     }
   }
 
-  const clashes = [];
   for (const [id, entries] of slots) {
     if (entries.length < 2) continue;          // nothing can collide on its own
     const [day, index] = id.split('|');

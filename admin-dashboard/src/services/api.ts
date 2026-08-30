@@ -307,6 +307,16 @@ class ApiService {
       'PUT', `/timetable/placements/${id}`, data);
   }
 
+  /**
+   * Exchange two lessons' slots. One request rather than two moves: the
+   * halfway state of a two-step swap double-books a slot, so the clash check
+   * would refuse the first step.
+   */
+  async swapTimetablePlacements(id: string, withId: string) {
+    return this.request<{ swapped: string[]; clashes: TimetableClash[] }>(
+      'POST', `/timetable/placements/${id}/swap`, { withId });
+  }
+
   async validateTimetableVersion(id: string) {
     return this.request<{ versionId: string; placements: number; clashes: TimetableClash[]; ok: boolean }>(
       'POST', `/timetable/validate/${id}`);

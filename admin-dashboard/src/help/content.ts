@@ -145,9 +145,10 @@ export const PAGE_HELP: Record<string, PageHelp> = {
       { label: 'Look up a class', detail: 'Leave "View" on "By class" and pick the class. This is the same week the website shows.' },
       { label: 'Look up a teacher', detail: 'Set "View" to "By teacher" and pick a name. You get their whole week, including lunch duty, which is marked in amber. This is not on the public website.' },
       { label: 'See what is in a room', detail: 'Set "View" to "By room". Only the four labs are recorded at the moment — ordinary classrooms are not in the timetable yet.' },
-      { label: 'Move a lesson', detail: 'Drag it to another slot, or click the lesson and then click where it should go. A move that would double-book a teacher, a class or a room is refused and tells you who clashes.' },
-      { label: 'Check the whole week', detail: '"Check for clashes" scans every placement in the version and lists anything double-booked.' },
-      { label: 'Publish', detail: 'Publishing makes a version the official one. The public website updates on the next deploy, not instantly — ask whoever deploys the site to run the timetable export.' },
+      { label: 'Make a change', detail: 'The published timetable cannot be edited — it is what students are reading. Choose "New draft", copying the lessons from the current timetable, and make your changes in that.' },
+      { label: 'Move a lesson', detail: 'In a draft, drag it to another slot, or click the lesson and then click where it should go. Dropping it onto another lesson swaps the two. A move that would double-book a teacher, a class or a room is refused and tells you who clashes.' },
+      { label: 'Check the whole week', detail: '"Check for clashes" scans every lesson in the draft and lists anything double-booked. Choose a clash in the list to jump to it in the grid.' },
+      { label: 'Publish', detail: 'Publishing makes your draft the official timetable and archives the one it replaces. The public website updates on the next deploy, not instantly — ask whoever deploys the site to run the timetable export.' },
     ],
   },
 
@@ -252,6 +253,42 @@ export const GLOSSARY: GlossaryEntry[] = [
     label: 'Interview decision',
     definition:
       'The interviewer’s recommendation: Recommend for Admission, Do Not Recommend, or Defer if a decision cannot be made yet. It records what the panel thought; it does not by itself admit the student.',
+  },
+  {
+    term: 'timetable-version',
+    label: 'Draft, Published, Archived',
+    definition:
+      'A timetable version is one whole week of lessons. A Draft is a working copy that only staff can see — it is where every change is made. Published is the official timetable, the one the website and every student sees; it cannot be edited directly. Publishing a draft makes it the published one and archives whichever was published before, so Archived versions are simply previous timetables, kept for reference.',
+  },
+  {
+    term: 'timetable-duty',
+    label: 'Duty (the amber entries)',
+    definition:
+      'A staff commitment that is not a lesson — lunch duty, and the CPS meetings that sit in the morning registration slot. They appear on a teacher\u2019s week in amber because they are the only record the school has of the duty roster, and they never appear on a class timetable or on the public website.',
+  },
+  {
+    term: 'timetable-pool',
+    label: 'Pool (option block)',
+    definition:
+      'One slot where a year group splits across several subjects at the same time and each student takes one of them — shown as "Pool 4" with the choices listed underneath, rather than as a single subject. Moving a pool moves every subject in it together.',
+  },
+  {
+    term: 'timetable-cps',
+    label: 'CPS',
+    definition:
+      'The staff meetings that appear on a teacher\u2019s week as CPS-Maths, CPS-Lan or CPS-Hum \u2014 departmental time, not a lesson with students. They sit in the morning registration slot, which is why that row sometimes shows real entries instead of a single band across the week. Like lunch duty, they never appear on a class timetable or on the public website.',
+  },
+  {
+    term: 'timetable-lunch-sitting',
+    label: 'Lunch sitting',
+    definition:
+      'Lunch runs in two shifts so the dining hall is not overwhelmed. Period 4 is the first sitting and Period 5 the second: a class eating in one of them is still timetabled for the other, so both remain full teaching periods. Whichever sitting a class has, the lunch duty covering it shows in amber on the supervising teacher\u2019s week.',
+  },
+  {
+    term: 'timetable-undivided',
+    label: 'Undivided year',
+    definition:
+      'A year group that is not split into form classes for timetabling. Years 7 to 10 are divided into Y, O, R, K and S, so they appear as 7Y, 7O and so on. Years 11, 12 and 13 are undivided and appear as a single entry \u2014 11, 12, 13 \u2014 because the whole year is timetabled together and students separate by subject choice instead.',
   },
   {
     term: 'bulk-notification',

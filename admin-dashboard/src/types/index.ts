@@ -314,7 +314,8 @@ export interface TimetableVersion {
 }
 
 export interface TimetableClash {
-  kind: 'teacher' | 'group' | 'room';
+  /** 'fit' is a multi-period lesson running off the end of the day. */
+  kind: 'teacher' | 'group' | 'room' | 'fit';
   who: string;
   day: string;
   period: string;

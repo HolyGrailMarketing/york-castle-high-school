@@ -77,7 +77,7 @@ const CACHE_KEYS = {
   events: (publicOnly = true) => `events:${publicOnly}`,
   documents: (category) => `documents:${category || 'all'}`,
   booklist: (schoolYear) => `booklist:${schoolYear || 'current'}`,
-  timetable: (scope) => `timetable:${scope || 'public'}`,
+  timetable: (scope, schoolYear) => `timetable:${scope || 'public'}:${schoolYear || 'current'}`,
   userProfile: (userId) => `user_profile:${userId}`,
   applicationsList: (filters) => `applications:${JSON.stringify(filters)}`,
   analytics: (type) => `analytics:${type}`,
@@ -191,15 +191,22 @@ export const invalidateBooklistCache = (schoolYear) => {
 };
 
 /**
- * Cache blog posts data
+ * Cache timetable data
  */
-export const timetableCacheKey = (scope) => CACHE_KEYS.timetable(scope);
+// Scoped by school year as well as by view: /api/timetable takes a `year`
+// query, so keying on the scope alone served whichever year was asked for
+// first to everyone else for the whole TTL.
+export const timetableCacheKey = (scope, schoolYear) => CACHE_KEYS.timetable(scope, schoolYear);
 
 // Drop both the public and staff views, because a single placement move changes
 // them together - an admin edit should show on the next request, not after the
-// TTL.
-export const invalidateTimetableCache = () => {
-  const keys = [CACHE_KEYS.timetable('public'), CACHE_KEYS.timetable('staff')];
+// TTL. The unqualified "current" keys go too, since a request without a year
+// resolves to whichever version is published.
+export const invalidateTimetableCache = (schoolYear) => {
+  const keys = ['public', 'staff'].flatMap((scope) => [
+    CACHE_KEYS.timetable(scope),
+    ...(schoolYear ? [CACHE_KEYS.timetable(scope, schoolYear)] : []),
+  ]);
   return keys.map((key) => deleteCache(key)).every(Boolean);
 };
 

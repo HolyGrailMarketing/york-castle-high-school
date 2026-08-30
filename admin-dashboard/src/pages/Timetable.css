@@ -1,4 +1,17 @@
-/* Timetable page. Grid-shaped, so it borrows little from the other pages. */
+/* Timetable page. Grid-shaped, so it borrows little from the other pages.
+   Everything here is tt- or .timetable- prefixed: page stylesheets are imported
+   globally, so a bare .page or .btn would collide with another page's. */
+
+.timetable-page { padding: 24px; }
+
+/* Own header rather than the shared .page-header: that class is defined in seven
+   page stylesheets with different margins and wrapping, all imported globally, so
+   which one applied here depended on route order. */
+.tt-header {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 16px; margin-bottom: 24px;
+}
+.tt-header h1 { margin: 0; }
 
 .tt-toolbar {
   display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;
@@ -12,6 +25,24 @@
 }
 .tt-spacer { flex: 1; }
 
+/* --- buttons --- */
+.tt-btn {
+  padding: 8px 14px; border: 1px solid #d0d5dd; border-radius: 8px;
+  background: #fff; color: #344054; font: inherit; font-weight: 600;
+  cursor: pointer; transition: background .12s ease, border-color .12s ease;
+}
+.tt-btn:hover:not(:disabled) { background: #f9fafb; border-color: #98a2b3; }
+.tt-btn:disabled { opacity: .55; cursor: not-allowed; }
+.tt-btn-primary { background: #7f56d9; border-color: #7f56d9; color: #fff; }
+.tt-btn-primary:hover:not(:disabled) { background: #6941c6; border-color: #6941c6; }
+.tt-btn-inline { margin-left: 12px; padding: 4px 10px; font-size: 13px; }
+
+.tt-status { font-weight: 700; }
+.tt-status-draft { color: #b54708; }
+.tt-status-published { color: #067647; }
+.tt-status-archived { color: #667085; }
+.tt-refreshing { color: #667085; font-style: italic; }
+
 .tt-banner {
   padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 14px;
   border: 1px solid transparent;
@@ -22,7 +53,7 @@
 .tt-banner.ok    { background: #ecfdf3; border-color: #abefc6; color: #067647; }
 
 /* --- grid --- */
-.tt-scroll { overflow-x: auto; }
+.tt-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 table.tt-grid { border-collapse: collapse; width: 100%; min-width: 900px; }
 .tt-grid th, .tt-grid td { border: 1px solid #eaecf0; vertical-align: top; padding: 0; }
 .tt-grid thead th {
@@ -34,8 +65,13 @@ table.tt-grid { border-collapse: collapse; width: 100%; min-width: 900px; }
 .tt-time span { display: block; font-size: 11px; color: #667085; }
 
 .tt-slot { min-height: 62px; padding: 4px; transition: background .12s ease; }
+/* While a lesson is in hand, every slot says whether it will take it. */
+.tt-slot.tt-target { background: #fcfaff; }
+.tt-slot.tt-blocked { background: #fffbfa; cursor: not-allowed; }
 .tt-slot.tt-drop { background: #eff8ff; outline: 2px dashed #2e90fa; outline-offset: -3px; }
 .tt-slot.tt-invalid { background: #fef3f2; outline: 2px dashed #f04438; outline-offset: -3px; }
+.tt-slot.tt-flagged { outline: 2px solid #f79009; outline-offset: -3px; }
+.tt-slot:focus-visible { outline: 2px solid #7f56d9; outline-offset: -3px; }
 .tt-row-nonclass td, .tt-row-nonclass th.tt-time { background: #f9fafb; }
 .tt-row-nonclass td { text-align: center; font-size: 12px; color: #667085; padding: 8px; }
 
@@ -56,6 +92,62 @@ table.tt-grid { border-collapse: collapse; width: 100%; min-width: 900px; }
 }
 
 .tt-clashes { margin-top: 16px; }
-.tt-clashes li { font-size: 13px; margin-bottom: 4px; color: #b42318; }
+.tt-clashes ul { list-style: none; padding: 0; margin: 8px 0 0; }
+.tt-clashes li { margin-bottom: 4px; }
+.tt-clash-link {
+  background: none; border: 0; padding: 2px 0; font: inherit; font-size: 13px;
+  color: #b42318; text-align: left; cursor: pointer; text-decoration: underline;
+  text-decoration-style: dotted;
+}
+.tt-clash-link:hover { color: #7a271a; }
 
 .tt-hint { font-size: 12px; color: #667085; margin: 8px 0 0; }
+
+/* --- new-draft form --- */
+.tt-form label { display: block; font-size: 13px; font-weight: 600; color: #344054; margin-top: 12px; }
+.tt-form input, .tt-form select {
+  width: 100%; padding: 8px 10px; margin-top: 4px; font: inherit;
+  border: 1px solid #d0d5dd; border-radius: 8px; background: #fff;
+}
+.tt-form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+/* --- narrow screens --- */
+/* The grid cannot usefully reflow - a week is five columns - so it scrolls,
+   with the time column pinned so you can still tell which period you are on. */
+@media (max-width: 768px) {
+  .timetable-page { padding: 14px; }
+  .tt-toolbar { gap: 10px; }
+  .tt-field, .tt-field select, .tt-field input { min-width: 0; width: 100%; }
+  .tt-field { flex: 1 1 100%; }
+  table.tt-grid { min-width: 760px; }
+  .tt-grid th.tt-time {
+    position: sticky; left: 0; z-index: 1; width: 84px;
+    box-shadow: 1px 0 0 #eaecf0;
+  }
+  .tt-scroll { margin: 0 -14px; padding: 0 14px; }
+}
+
+/* --- legend --- */
+/* Where "duty" and "pool" are explained: both are words this page uses that
+   nothing else in the portal does. */
+.tt-legend {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px 16px;
+  font-size: 12px; color: #667085; margin: 12px 0 0;
+}
+.tt-key {
+  display: inline-block; width: 12px; height: 12px; border-radius: 3px;
+  border: 1px solid #e4e7ec; margin-right: -2px; vertical-align: middle;
+}
+.tt-key-duty { border-left: 3px solid #f79009; background: #fffcf5; }
+.tt-key-lesson { border-left: 3px solid #7f56d9; background: #fff; }
+.tt-legend-term { display: inline-flex; align-items: center; }
+
+/* Which lunch sitting a period carries - in the data all along, but never shown,
+   so nothing on screen said which of Periods 4 and 5 was which. */
+.tt-time .tt-sitting {
+  display: block; font-size: 10px; font-weight: 600; color: #b54708;
+  text-transform: uppercase; letter-spacing: .03em; margin-top: 2px;
+}
+
+/* A cell named in the clash list, so the problem shows in the grid too. */
+.tt-slot.tt-clashing { background: #fef3f2; box-shadow: inset 0 0 0 2px #fda29b; }
