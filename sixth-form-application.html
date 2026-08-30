@@ -17,6 +17,11 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-X57S1L85ZP"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-X57S1L85ZP');</script>
   <style>
+    /* No hero image on this page for the header to float over, so put it back
+       in flow. site-nav.css positions .site-header absolutely for the hero
+       pages, which would otherwise overlap the top of this page's content. */
+    .site-header { position: relative !important; background: #1a1a1a !important; }
+
     :root {
       --primary:      #1a1410;
       --primary-deep: #000000;

@@ -10,6 +10,11 @@
   <link href="images/favicon.ico" rel="shortcut icon" type="image/x-icon">
   <link href="images/webclip.png" rel="apple-touch-icon">
   <style>
+    /* No hero image on this page for the header to float over, so put it back
+       in flow. site-nav.css positions .site-header absolutely for the hero
+       pages, which would otherwise overlap the top of this page's content. */
+    .site-header { position: relative !important; background: #1a1a1a !important; }
+
     * { box-sizing: border-box; }
 
     .status-hero {
