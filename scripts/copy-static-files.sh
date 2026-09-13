@@ -47,12 +47,7 @@ fi
 #
 #   timetable.html - the 2026-2027 timetable is not final; the school does not
 #                    want it visible to students or parents yet.
-#   my-books.html  - the textbook rental system is not in use yet. The page is
-#                    built and kept in sync, but there is nothing to show a
-#                    student until the library has been stocktaken and the
-#                    books issued. Remove this entry to launch it, and add the
-#                    nav link in partials/site-nav.html at the same time.
-UNPUBLISHED="timetable.html my-books.html"
+UNPUBLISHED="timetable.html"
 
 for html_file in *.html; do
   if [ -f "$html_file" ]; then
