@@ -216,6 +216,98 @@ export interface BooklistEntry {
   updatedAt: string;
 }
 
+// --- Textbook rental -------------------------------------------------------
+
+export type BookCondition = 'NEW' | 'GOOD' | 'FAIR' | 'POOR' | 'DAMAGED';
+export type CopyStatus = 'AVAILABLE' | 'ON_LOAN' | 'REPAIR' | 'LOST' | 'WITHDRAWN';
+export type LoanStatus = 'ACTIVE' | 'RETURNED' | 'LOST' | 'WRITTEN_OFF';
+export type ChargeType = 'RENTAL' | 'LOST' | 'DAMAGE';
+export type ChargeStatus = 'OUTSTANDING' | 'WAIVED';
+export type StudentVerification = 'UNVERIFIED' | 'VERIFIED' | 'REJECTED';
+
+/** Copy counts per status. `total` excludes WITHDRAWN - it is "how many books
+ *  do we have", not "how many rows are there". */
+export interface CopyCounts {
+  AVAILABLE: number;
+  ON_LOAN: number;
+  REPAIR: number;
+  LOST: number;
+  WITHDRAWN: number;
+  total: number;
+}
+
+export interface Book {
+  id: string;
+  title: string;
+  author?: string | null;
+  publisher?: string | null;
+  edition?: string | null;
+  isbn?: string | null;
+  subject: string;
+  yearGroups: number[];
+  replacementCost: number;
+  rentalFee: number;
+  isActive: boolean;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  /** Present on list and detail responses, not on create/update. */
+  copies?: CopyCounts;
+}
+
+export interface CopyHolder {
+  id: string;
+  name: string;
+  formClass: string | null;
+  studentNumber: string | null;
+}
+
+export interface BookCopy {
+  id: string;
+  bookId: string;
+  barcode: string;
+  copyNumber: number;
+  condition: BookCondition;
+  status: CopyStatus;
+  acquiredAt?: string | null;
+  batchId?: string | null;
+  withdrawnAt?: string | null;
+  withdrawnReason?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  /** Read from the ACTIVE loan, which is the authoritative record of who holds
+   *  the copy - not from `status`, which is a derived cache. */
+  currentLoan?: {
+    id: string;
+    issuedAt: string;
+    dueAt: string;
+    student: CopyHolder;
+  } | null;
+}
+
+export interface CopyLabel {
+  barcode: string;
+  copyNumber: number;
+  title: string;
+  subject: string;
+}
+
+export interface GenerateCopiesResult {
+  batchId: string;
+  count: number;
+  firstBarcode: string;
+  lastBarcode: string;
+  barcodes: string[];
+  message: string;
+}
+
+export interface YearGroupOption {
+  yearGroup: number;
+  label: string;
+  formClasses: string[];
+  undivided: boolean;
+}
+
 export interface Request {
   id: string;
   type: 'DOCUMENT' | 'DEVICE' | 'LAB' | 'GENERAL';

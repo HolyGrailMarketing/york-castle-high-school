@@ -126,6 +126,20 @@ export const PAGE_HELP: Record<string, PageHelp> = {
     ],
   },
 
+  'library/books': {
+    key: 'library/books',
+    title: 'Textbooks',
+    summary: 'Every title the school lends, and every physical copy of it with its own barcode.',
+    roles: ALL_STAFF,
+    actions: [
+      { label: 'Add a title', detail: 'Add Textbook records the book itself \u2014 title, subject, which years use it, and what it costs to replace. It does not add any copies yet.' },
+      { label: 'Add copies you have bought', detail: 'Open a title and use Add Copies. Enter how many; the system gives each one its own barcode in order. Larger orders are sent in batches of 500 and you get one label sheet covering all of them.' },
+      { label: 'Print the barcode labels', detail: 'After adding copies a label sheet opens \u2014 use your browser\u2019s Print. It prints a real scannable barcode with the code underneath, three across, sized for ordinary address label sheets. You can reprint a title\u2019s labels any time from Print Labels in its copy list.' },
+      { label: 'Retire a damaged copy', detail: 'Withdraw sets one copy out of circulation and asks why. Its history is kept, but nobody can scan it out again. A copy that is currently with a student cannot be withdrawn \u2014 take it back first.' },
+      { label: 'Get the list out as a spreadsheet', detail: 'Export CSV downloads every copy with its barcode, condition and who has it, for stocktaking.' },
+    ],
+  },
+
   booklist: {
     key: 'booklist',
     title: 'Booklist',
@@ -190,6 +204,31 @@ export type GlossaryEntry = {
  * attached to the place it appears with <Hint term="…" />.
  */
 export const GLOSSARY: GlossaryEntry[] = [
+  {
+    term: 'copy-barcode',
+    label: 'Copy barcode',
+    definition:
+      'The label stuck inside one individual book, like YCHS-000123. Every physical copy has its own, even when twenty copies are the same title \u2014 that is how the school knows which one a particular student has, and what condition that one was in. It is not the ISBN printed by the publisher.',
+  },
+  {
+    term: 'condition-grade',
+    label: 'Condition',
+    definition:
+      'How worn a copy is, recorded both when it goes out and when it comes back: New, Good, Fair, Poor or Damaged. The pair is what settles an argument about whether a student damaged a book or was handed it that way, so set it honestly on the way out as well as the way in.',
+  },
+  {
+    term: 'withdrawn-copy',
+    label: 'Withdrawn copy',
+    definition:
+      'A copy taken out of circulation for good \u2014 destroyed, lost beyond recovery, or too damaged to lend. Its history stays on record and the barcode is never reused, but it cannot be scanned out to anyone again.',
+  },
+  {
+    term: 'rental-fee',
+    label: 'Rental fee',
+    definition:
+      'What a student is charged for having a book for the term. It is recorded against them by the office once a term, not automatically when the book is handed over.',
+  },
+
   {
     term: 'section-d',
     label: 'Section D (CAPE subject stream selection)',

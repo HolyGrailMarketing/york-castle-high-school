@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { User, Application, SixthFormApplication, SixthFormReadiness, SixthFormInterview, AcceptanceLetterDetails, Course, BlogPost, Event, Document, BooklistEntry, Request } from '../types';
+import type { User, Application, SixthFormApplication, SixthFormReadiness, SixthFormInterview, AcceptanceLetterDetails, Course, BlogPost, Event, Document, BooklistEntry, Request, Book, BookCopy, BookCondition, CopyStatus, CopyLabel, GenerateCopiesResult } from '../types';
 
 // Use relative path since everything is served from the same server
 // This works in both development and production when served from backend
@@ -246,6 +246,66 @@ class ApiService {
 
   async deleteBooklistEntry(id: string) {
     return this.request('DELETE', `/booklist/${id}`);
+  }
+
+  // Textbook rental - catalogue
+  async getBooks(params?: { q?: string; subject?: string; yearGroup?: number; isActive?: boolean }) {
+    const query = params
+      ? '?' + new URLSearchParams(
+          Object.entries(params)
+            .filter(([, v]) => v !== undefined && v !== '')
+            .map(([k, v]) => [k, String(v)])
+        ).toString()
+      : '';
+    return this.request<{ books: Book[] }>('GET', `/library/books${query}`);
+  }
+
+  async getBook(id: string) {
+    return this.request<{ book: Book }>('GET', `/library/books/${id}`);
+  }
+
+  async createBook(data: Partial<Book>) {
+    return this.request<{ book: Book }>('POST', '/library/books', data);
+  }
+
+  async updateBook(id: string, data: Partial<Book>) {
+    return this.request<{ book: Book }>('PUT', `/library/books/${id}`, data);
+  }
+
+  async retireBook(id: string) {
+    return this.request<{ book: Book; message: string }>('DELETE', `/library/books/${id}`);
+  }
+
+  async getSubjects() {
+    return this.request<{ subjects: string[] }>('GET', '/library/subjects');
+  }
+
+  async getBookCopies(bookId: string) {
+    return this.request<{ copies: BookCopy[] }>('GET', `/library/books/${bookId}/copies`);
+  }
+
+  async generateCopies(bookId: string, data: { count: number; condition?: BookCondition; acquiredAt?: string }) {
+    return this.request<GenerateCopiesResult>('POST', `/library/books/${bookId}/copies`, data);
+  }
+
+  async updateCopy(id: string, data: { condition?: BookCondition; status?: CopyStatus; withdrawnReason?: string }) {
+    return this.request<{ copy: BookCopy }>('PATCH', `/library/copies/${id}`, data);
+  }
+
+  async getCopyLabels(params: { batchId?: string; ids?: string[] }) {
+    const query = params.batchId
+      ? `?batchId=${encodeURIComponent(params.batchId)}`
+      : `?ids=${encodeURIComponent((params.ids || []).join(','))}`;
+    return this.request<{ labels: CopyLabel[] }>('GET', `/library/copies/labels${query}`);
+  }
+
+  /** Downloads rather than returning data, so it bypasses request(). */
+  async exportCopiesCsv() {
+    const response = await axios.get(`${API_BASE_URL}/library/copies/export.csv`, {
+      headers: { Authorization: `Bearer ${this.token}` },
+      responseType: 'blob',
+    });
+    return response.data as Blob;
   }
 
   // Requests
