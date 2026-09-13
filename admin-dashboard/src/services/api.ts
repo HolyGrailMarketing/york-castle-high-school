@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { User, Application, SixthFormApplication, SixthFormReadiness, SixthFormInterview, AcceptanceLetterDetails, Course, BlogPost, Event, Document, BooklistEntry, Request, Book, BookCopy, BookCondition, CopyStatus, CopyLabel, GenerateCopiesResult } from '../types';
+import type { User, Application, SixthFormApplication, SixthFormReadiness, SixthFormInterview, AcceptanceLetterDetails, Course, BlogPost, Event, Document, BooklistEntry, Request, Book, BookCopy, BookCondition, CopyStatus, CopyLabel, GenerateCopiesResult, StudentProfile, StudentLoanSummary, BookCharge, StudentVerification, YearGroupOption } from '../types';
 
 // Use relative path since everything is served from the same server
 // This works in both development and production when served from backend
@@ -246,6 +246,43 @@ class ApiService {
 
   async deleteBooklistEntry(id: string) {
     return this.request('DELETE', `/booklist/${id}`);
+  }
+
+  // Textbook rental - students
+  async getStudents(params?: { q?: string; verification?: string; formClass?: string; yearGroup?: number; owes?: boolean; page?: number; limit?: number }) {
+    const query = params
+      ? '?' + new URLSearchParams(
+          Object.entries(params)
+            .filter(([, v]) => v !== undefined && v !== '')
+            .map(([k, v]) => [k, String(v)])
+        ).toString()
+      : '';
+    return this.request<{ students: StudentProfile[]; pagination: any; unverifiedCount: number }>('GET', `/students${query}`);
+  }
+
+  async getStudentDetail(id: string) {
+    return this.request<{
+      student: StudentProfile;
+      loans: StudentLoanSummary[];
+      charges: BookCharge[];
+      outstandingTotal: number;
+    }>('GET', `/students/${id}`);
+  }
+
+  async updateStudentProfile(id: string, data: Partial<StudentProfile>) {
+    return this.request<{ student: StudentProfile }>('PUT', `/students/${id}`, data);
+  }
+
+  async verifyStudent(id: string, data: { verification: StudentVerification; formClass?: string; yearGroup?: number; studentNumber?: string; note?: string }) {
+    return this.request<{ student: StudentProfile; message: string }>('POST', `/students/${id}/verify`, data);
+  }
+
+  async deskRegisterStudent(data: { name: string; email?: string; formClass: string; yearGroup?: number; studentNumber?: string; guardianName?: string; guardianPhone?: string }) {
+    return this.request<{ student: StudentProfile; needsEmail: boolean; message: string }>('POST', '/students/desk-register', data);
+  }
+
+  async getSchoolClasses() {
+    return this.request<{ yearGroups: YearGroupOption[]; formClasses: string[] }>('GET', '/students/classes');
   }
 
   // Textbook rental - catalogue

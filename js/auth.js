@@ -70,14 +70,19 @@ class Auth {
   }
 
   // Register user
-  async register(email, password, name, phone) {
+  /**
+   * `studentProfile` is optional and only meaningful for students: their year
+   * group, form class and guardian contact. The server records it as a claim
+   * and leaves it unconfirmed until the office checks the class register.
+   */
+  async register(email, password, name, phone, studentProfile) {
     try {
       const response = await fetch(`${window.API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password, name, phone }),
+        body: JSON.stringify({ email, password, name, phone, ...(studentProfile ? { studentProfile } : {}) }),
       });
 
       const data = await response.json();

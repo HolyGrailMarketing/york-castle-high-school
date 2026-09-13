@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../utils/prisma.js';
+import { normaliseFormClass, formClassMatchesYear, yearGroupForFormClass } from '../services/schoolClasses.js';
 import { generateToken } from '../utils/jwt.js';
 import { validateEmailDomain, isAllowedDomain } from '../utils/domainValidator.js';
 import { sendPasswordResetEmail } from '../services/emailService.js';
@@ -260,7 +261,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
 export const register = async (req, res, next) => {
   try {
-    const { email: rawEmail, password, name, phone, role } = req.body;
+    const { email: rawEmail, password, name, phone, role, studentProfile } = req.body;
     const email = rawEmail?.toLowerCase().trim();
 
     // Check if user already exists (case-insensitive)
@@ -281,22 +282,68 @@ export const register = async (req, res, next) => {
     // Create user (default role is STUDENT, only admins can create other roles)
     const userRole = role && req.user?.role === 'ADMIN' ? role : 'STUDENT';
 
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name,
-        phone,
-        role: userRole,
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        phone: true,
-        createdAt: true,
-      },
+    // A student signing up may also give their year group, form class and
+    // guardian contact. What they type is recorded as a *claim* - it goes into
+    // claimedYearGroup/claimedFormClass as well as the working fields, and the
+    // profile starts UNVERIFIED. Nobody can be given a book until the office
+    // has checked it against the class register, so a student cannot get books
+    // meant for another year by typing a different number here.
+    let profileData = null;
+    if (userRole === 'STUDENT' && studentProfile && typeof studentProfile === 'object') {
+      const code = normaliseFormClass(studentProfile.formClass);
+      if (studentProfile.formClass && !code) {
+        return res.status(400).json({
+          error: 'Invalid form class',
+          message: "That is not one of the school's form classes",
+        });
+      }
+      if (code) {
+        const year = studentProfile.yearGroup !== undefined
+          ? Number(studentProfile.yearGroup)
+          : yearGroupForFormClass(code);
+        if (!formClassMatchesYear(code, year)) {
+          return res.status(400).json({
+            error: 'Year and class do not match',
+            message: `Form class ${code} is not in Grade ${year}`,
+          });
+        }
+        profileData = {
+          yearGroup: year,
+          formClass: code,
+          claimedYearGroup: year,
+          claimedFormClass: code,
+          studentNumber: studentProfile.studentNumber?.trim() || null,
+          guardianName: studentProfile.guardianName?.trim() || null,
+          guardianPhone: studentProfile.guardianPhone?.trim() || null,
+          guardianEmail: studentProfile.guardianEmail?.trim()?.toLowerCase() || null,
+        };
+      }
+    }
+
+    // One transaction: an account without the profile it was asked to create
+    // would leave the student looking signed-up but invisible to the office.
+    const user = await prisma.$transaction(async (tx) => {
+      const created = await tx.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          name,
+          phone,
+          role: userRole,
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          phone: true,
+          createdAt: true,
+        },
+      });
+      if (profileData) {
+        await tx.studentProfile.create({ data: { userId: created.id, ...profileData } });
+      }
+      return created;
     });
 
     const token = generateToken(user.id);

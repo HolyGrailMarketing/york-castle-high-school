@@ -301,6 +301,59 @@ export interface GenerateCopiesResult {
   message: string;
 }
 
+export interface StudentProfile {
+  id: string;
+  userId: string;
+  name: string;
+  email: string;
+  phone?: string | null;
+  studentNumber: string | null;
+  /** What the office has confirmed. */
+  yearGroup: number | null;
+  formClass: string | null;
+  /** What the student typed at sign-up. Kept even after the office corrects
+   *  the confirmed fields, so the two can be compared. */
+  claimedYearGroup: number | null;
+  claimedFormClass: string | null;
+  guardianName: string | null;
+  guardianPhone: string | null;
+  verification: StudentVerification;
+  verifiedAt: string | null;
+  registeredAtDesk: boolean;
+  loanCap: number | null;
+  notes?: string | null;
+  createdAt: string;
+  activeLoans: number;
+}
+
+export interface StudentLoanSummary {
+  id: string;
+  status: LoanStatus;
+  issuedAt: string;
+  dueAt: string;
+  returnedAt: string | null;
+  barcode: string;
+  title: string;
+  subject: string;
+}
+
+export interface BookCharge {
+  id: string;
+  studentId: string;
+  loanId: string | null;
+  copyId: string | null;
+  type: ChargeType;
+  amount: number;
+  currency: string;
+  academicYear: string;
+  term: number | null;
+  status: ChargeStatus;
+  reason: string | null;
+  raisedAt: string;
+  waivedAt: string | null;
+  waiveReason: string | null;
+}
+
 export interface YearGroupOption {
   yearGroup: number;
   label: string;

@@ -126,6 +126,20 @@ export const PAGE_HELP: Record<string, PageHelp> = {
     ],
   },
 
+  students: {
+    key: 'students',
+    title: 'Students',
+    summary: 'Students who have made their own account on the website, and whether the office has confirmed their year and class.',
+    roles: OFFICE,
+    actions: [
+      { label: 'Confirm a new student', detail: 'Students type their own year and class when they sign up, so it has to be checked against the class register before they can borrow anything. Open a student, correct the class if they got it wrong, and press Confirm.' },
+      { label: 'Work through the backlog', detail: 'The Not confirmed tab is your queue \u2014 everyone waiting to be allowed to borrow books. The number on the tab is how many are left.' },
+      { label: 'Spot a disagreement', detail: 'Where the class you confirmed is not the one the student typed, the list shows both. The student\u2019s own claim is never overwritten, so you can always see what they said.' },
+      { label: 'Register someone at the counter', detail: 'Register at Desk creates the account for a student standing in front of you and confirms them at the same time, so the queue does not stop. Add their email if they have one; they set their own password afterwards with Forgot password, and you should never type a password for them.' },
+      { label: 'Look someone up', detail: 'Search by name, student number or email. Owes money lists everyone with an unpaid charge.' },
+    ],
+  },
+
   'library/books': {
     key: 'library/books',
     title: 'Textbooks',
@@ -204,6 +218,19 @@ export type GlossaryEntry = {
  * attached to the place it appears with <Hint term="…" />.
  */
 export const GLOSSARY: GlossaryEntry[] = [
+  {
+    term: 'verified-student',
+    label: 'Confirmed student',
+    definition:
+      'A student whose year group and form class the office has checked against the class register. Students type their own when they sign up, so anyone can claim to be in Grade 13. Only confirmed students can be given books; everyone else shows as Not confirmed at the counter.',
+  },
+  {
+    term: 'desk-registration',
+    label: 'Register at Desk',
+    definition:
+      'Creating an account for a student who turns up without one, right at the counter, and confirming them in the same step so they can be given their books immediately. They set their own password afterwards. It exists so one unregistered student does not hold up the queue.',
+  },
+
   {
     term: 'copy-barcode',
     label: 'Copy barcode',

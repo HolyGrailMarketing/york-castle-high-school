@@ -112,6 +112,7 @@ const Layout = () => {
     { path: '/documents',             label: 'Documents',          icon: '📄', roles: ['ADMIN', 'STAFF', 'TEACHER'] },
     { path: '/booklist',              label: 'Booklist',           icon: '📖', roles: ['ADMIN', 'STAFF'] },
     { path: '/library/books',         label: 'Textbooks',          icon: '📕', roles: ['ADMIN', 'STAFF', 'TEACHER'] },
+    { path: '/students',              label: 'Students',           icon: '🧑‍🎓', roles: ['ADMIN', 'STAFF'] },
     { path: '/requests',              label: 'Requests',           icon: '📬', roles: ['ADMIN', 'STAFF'] },
     { path: '/data-subject-requests', label: 'Data Subject Rights',icon: '🔒', roles: ['ADMIN'] },
     { path: '/audit-logs',            label: 'Audit Logs',         icon: '📋', roles: ['ADMIN'] },

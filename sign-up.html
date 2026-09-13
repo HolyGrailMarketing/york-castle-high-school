@@ -157,6 +157,60 @@
                 type="tel" 
                 id="signup-phone" 
                 required>
+              <label for="signup-year-group" class="login-label">Year group</label>
+              <select
+                class="login-field w-input"
+                name="year-group"
+                id="signup-year-group"
+                required>
+                <option value="">Choose your year</option>
+                <option value="7">Grade 7</option>
+                <option value="8">Grade 8</option>
+                <option value="9">Grade 9</option>
+                <option value="10">Grade 10</option>
+                <option value="11">Grade 11</option>
+                <option value="12">Grade 12 (Lower Sixth)</option>
+                <option value="13">Grade 13 (Upper Sixth)</option>
+              </select>
+              <label for="signup-form-class" class="login-label">Form class</label>
+              <select
+                class="login-field w-input"
+                name="form-class"
+                id="signup-form-class"
+                required>
+                <option value="">Choose your year first</option>
+              </select>
+              <p class="login-hint" id="signup-class-hint">
+                Grades 11, 12 and 13 are one class each, so there is nothing more to choose.
+              </p>
+              <label for="signup-student-number" class="login-label">Student number</label>
+              <input
+                class="login-field w-input"
+                maxlength="32"
+                name="student-number"
+                placeholder="Leave blank if you do not know it"
+                type="text"
+                id="signup-student-number">
+              <label for="signup-guardian-name" class="login-label">Parent or guardian's name</label>
+              <input
+                class="login-field w-input"
+                maxlength="100"
+                name="guardian-name"
+                placeholder="Who should the school contact"
+                type="text"
+                id="signup-guardian-name">
+              <label for="signup-guardian-phone" class="login-label">Their phone number</label>
+              <input
+                class="login-field w-input"
+                maxlength="32"
+                name="guardian-phone"
+                placeholder="Enter their phone number"
+                type="tel"
+                id="signup-guardian-phone">
+              <p class="login-hint">
+                The office checks your year and class against the class register before you can
+                borrow textbooks. This usually takes a day.
+              </p>
               <label for="signup-password" class="login-label">Password</label>
               <input 
                 placeholder="Enter your password (minimum 8 characters)" 
@@ -502,6 +556,66 @@
       const submitButton = document.getElementById('signup-submit');
 
       if (signupForm) {
+        // --- year group and form class ------------------------------------
+        //
+        // The list comes from GET /api/students/classes so it lives in one
+        // place on the server, but it is also hardcoded here: if that request
+        // fails the student must still be able to finish signing up. Years 11
+        // to 13 are undivided - their form class is just the year number.
+        const FALLBACK_CLASSES = {
+          7: ['7Y', '7O', '7R', '7K', '7S'],
+          8: ['8Y', '8O', '8R', '8K', '8S'],
+          9: ['9Y', '9O', '9R', '9K', '9S'],
+          10: ['10Y', '10O', '10R', '10K', '10S'],
+          11: ['11'],
+          12: ['12'],
+          13: ['13'],
+        };
+        let classesByYear = FALLBACK_CLASSES;
+
+        const yearSelect = document.getElementById('signup-year-group');
+        const classSelect = document.getElementById('signup-form-class');
+        const classHint = document.getElementById('signup-class-hint');
+
+        fetch('/api/students/classes')
+          .then(function (res) { return res.ok ? res.json() : null; })
+          .then(function (data) {
+            if (!data || !Array.isArray(data.yearGroups)) return;
+            var next = {};
+            data.yearGroups.forEach(function (y) { next[y.yearGroup] = y.formClasses; });
+            if (Object.keys(next).length) {
+              classesByYear = next;
+              renderClasses();
+            }
+          })
+          .catch(function () { /* the fallback list is already in place */ });
+
+        function renderClasses() {
+          var year = yearSelect.value;
+          var options = classesByYear[year] || [];
+          classSelect.innerHTML = '';
+
+          if (!year) {
+            classSelect.appendChild(new Option('Choose your year first', ''));
+            classHint.style.display = 'none';
+            return;
+          }
+          if (options.length === 1) {
+            // Undivided year: there is only one answer, so choose it rather
+            // than making the student pick from a list of one.
+            classSelect.appendChild(new Option(options[0], options[0]));
+            classSelect.value = options[0];
+            classHint.style.display = 'block';
+            return;
+          }
+          classHint.style.display = 'none';
+          classSelect.appendChild(new Option('Choose your class', ''));
+          options.forEach(function (code) { classSelect.appendChild(new Option(code, code)); });
+        }
+
+        yearSelect.addEventListener('change', renderClasses);
+        renderClasses();
+
         signupForm.addEventListener('submit', async function(e) {
           e.preventDefault();
 
@@ -515,6 +629,11 @@
           const name = document.getElementById('signup-name').value;
           const phone = document.getElementById('signup-phone').value;
           const acceptPrivacy = document.getElementById('signup-accept-privacy').checked;
+          const yearGroup = yearSelect.value;
+          const formClass = classSelect.value;
+          const studentNumber = document.getElementById('signup-student-number').value;
+          const guardianName = document.getElementById('signup-guardian-name').value;
+          const guardianPhone = document.getElementById('signup-guardian-phone').value;
 
           // Validate privacy acceptance
           if (!acceptPrivacy) {
@@ -536,7 +655,13 @@
 
           try {
             // Attempt registration
-            const result = await window.auth.register(email, password, name, phone);
+            const result = await window.auth.register(email, password, name, phone, {
+              yearGroup: yearGroup ? Number(yearGroup) : undefined,
+              formClass: formClass || undefined,
+              studentNumber: studentNumber || undefined,
+              guardianName: guardianName || undefined,
+              guardianPhone: guardianPhone || undefined,
+            });
 
             if (result.success) {
               // Show success message
