@@ -29,7 +29,8 @@
     "deploy:supabase": "./scripts/deploy-to-supabase.sh",
     "test:email": "node scripts/test-email.js",
     "check:overdue": "node scripts/check-overdue-requests.js",
-    "seed:booklist": "node scripts/seed-booklist.js"
+    "seed:booklist": "node scripts/seed-booklist.js",
+    "seed:library": "node scripts/seed-library.js"
   },
   "keywords": [],
   "author": "",

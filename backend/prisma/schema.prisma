@@ -64,6 +64,11 @@ model User {
   // Escalation routing - who is emailed when a document request misses the
   // turnaround promised on doc-request.html. Intended for the principal.
   notifyOverdueRequests Boolean @default(false)
+  // Overdue-textbook routing - who is emailed the daily digest of books that
+  // have run past their return date. A separate list from
+  // notifyOverdueRequests: the librarian wants the books, the principal wants
+  // the document requests.
+  notifyOverdueBooks    Boolean @default(false)
 
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
@@ -79,6 +84,15 @@ model User {
   consentRecords       ConsentRecord[]
   dataSubjectRequests  DataSubjectRequest[]
   auditLogs            AuditLog[]
+
+  // Textbook rental
+  studentProfile       StudentProfile?  @relation("StudentProfile")
+  verifiedProfiles     StudentProfile[] @relation("StudentProfileVerifier")
+  bookLoans            BookLoan[]       @relation("BookLoans")
+  bookLoansIssued      BookLoan[]       @relation("BookLoansIssued")
+  bookLoansReturned    BookLoan[]       @relation("BookLoansReturned")
+  bookCharges          BookCharge[]     @relation("BookCharges")
+  bookChargesRaised    BookCharge[]     @relation("BookChargesRaised")
 
   @@index([email])
   @@index([role])
@@ -151,6 +165,10 @@ model SixthFormApplication {
   @@index([status])
   @@index([submittedAt])
   @@index([userId])
+  // Present in the database since 20260828230000_add_sixth_form_faculty; the
+  // matching line was missed here, so every later `migrate diff` wanted to drop
+  // the index. Do not remove.
+  @@index([faculty])
   // A case-insensitive unique index on lower(email) enforces one application
   // per applicant. Expression indexes can't be declared here, so it lives in
   // migrations/20260820140000_sixth_form_unique_email — do not drop it.
@@ -461,3 +479,306 @@ model AuditLog {
   @@index([createdAt])
 }
 
+// ---------------------------------------------------------------------------
+// Textbook rental
+//
+// Authority rule, and the reason the offline counter is safe:
+//
+//   BookLoan is authoritative for "who has this copy".
+//   BookCopy.status is a derived cache.
+//
+// The guarantee is a partial unique index that Prisma cannot express here and
+// which is therefore hand-written into the migration SQL:
+//
+//   CREATE UNIQUE INDEX "BookLoan_one_active_per_copy"
+//     ON public."BookLoan" ("copyId") WHERE status = 'ACTIVE';
+//
+// That single line is what stops two offline stations that cannot see each
+// other from both issuing the same physical book. The second one to sync gets
+// a P2002 from Postgres instead of quietly creating a second live loan.
+//
+// BookCopy.status is kept in the same transaction as every loan mutation. It
+// exists because inventory queries would otherwise need a correlated subquery
+// on every row, and because it can express states a loan cannot: WITHDRAWN,
+// REPAIR, and LOST-while-on-the-shelf. scripts/reconcile-copy-status.js
+// recomputes it from loans, so drift is detectable rather than theoretical.
+// ---------------------------------------------------------------------------
+
+/// One scale, used for shelf condition, condition at issue and condition at return.
+enum BookCondition {
+  NEW
+  GOOD
+  FAIR
+  POOR
+  DAMAGED
+}
+
+/// Where the physical object is, from the school's point of view.
+enum CopyStatus {
+  AVAILABLE
+  ON_LOAN
+  REPAIR
+  LOST
+  WITHDRAWN // soft delete: retired from circulation, history preserved
+}
+
+enum LoanStatus {
+  ACTIVE
+  RETURNED
+  LOST
+  WRITTEN_OFF
+}
+
+/// Whether this was recorded live or replayed from a station's offline queue.
+enum LoanSource {
+  ONLINE
+  OFFLINE_SYNC
+}
+
+enum ChargeType {
+  RENTAL
+  LOST
+  DAMAGE
+}
+
+/// Deliberately no PAID. This system records what is owed; the bursary takes
+/// the money and records the payment in its own books.
+enum ChargeStatus {
+  OUTSTANDING
+  WAIVED
+}
+
+enum StudentVerification {
+  UNVERIFIED
+  VERIFIED
+  REJECTED
+}
+
+/// School-specific fields for a student's own account. Students sign up
+/// themselves, so everything here starts unconfirmed and the office checks it
+/// against the class register before any book is handed over.
+model StudentProfile {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation("StudentProfile", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Confirmed by the office. Null until someone has checked the class register.
+  studentNumber String? @unique
+  yearGroup     Int? // 7..13
+  formClass     String? // "7Y", "9R" - validated against services/schoolClasses.js
+
+  // What the student typed at sign-up, frozen. Never overwritten, so staff can
+  // see what was claimed and a self-declared year can never pass as confirmed.
+  claimedYearGroup Int?
+  claimedFormClass String?
+
+  guardianName  String?
+  guardianPhone String?
+  guardianEmail String?
+
+  verification     StudentVerification @default(UNVERIFIED)
+  verifiedAt       DateTime?
+  verifiedById     String?
+  verifiedBy       User?               @relation("StudentProfileVerifier", fields: [verifiedById], references: [id], onDelete: SetNull)
+  /// The librarian created this account at the counter rather than the student
+  /// signing up themselves. Kept so "how did this account appear" is answerable.
+  registeredAtDesk Boolean             @default(false)
+  /// Per-student override of the school-wide borrowing limit. Null = default.
+  loanCap          Int?
+  notes            String?             @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([verification])
+  @@index([yearGroup, formClass])
+  @@index([formClass])
+}
+
+/// A title the school lends. The physical objects are BookCopy.
+model Book {
+  id              String   @id @default(uuid())
+  title           String
+  author          String?
+  publisher       String?
+  edition         String?
+  /// Nullable-unique: Postgres allows many NULLs, so untracked titles coexist.
+  isbn            String?  @unique
+  subject         String
+  /// A book can serve more than one year, e.g. [9, 10].
+  yearGroups      Int[]
+  replacementCost Decimal  @db.Decimal(10, 2)
+  rentalFee       Decimal  @default(0) @db.Decimal(10, 2)
+  isActive        Boolean  @default(true)
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  copies BookCopy[]
+
+  @@index([subject])
+  @@index([isActive])
+  @@index([title])
+}
+
+/// One physical book with its own barcode label. Twenty copies of the same
+/// title are twenty rows, which is how the school can say which one a
+/// particular student has and what condition that one was in.
+model BookCopy {
+  id              String        @id @default(uuid())
+  bookId          String
+  book            Book          @relation(fields: [bookId], references: [id], onDelete: Restrict)
+  barcode         String        @unique // "YCHS-000123"
+  copyNumber      Int // sequential within the book
+  condition       BookCondition @default(GOOD)
+  status          CopyStatus    @default(AVAILABLE)
+  acquiredAt      DateTime?
+  /// Groups one "add 120 copies" run so its labels can be reprinted later.
+  batchId         String?
+  withdrawnAt     DateTime?
+  withdrawnReason String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  loans   BookLoan[]
+  charges BookCharge[]
+
+  @@unique([bookId, copyNumber])
+  @@index([status])
+  @@index([bookId, status])
+  @@index([batchId])
+}
+
+model BookLoan {
+  id        String   @id @default(uuid())
+  copyId    String
+  copy      BookCopy @relation(fields: [copyId], references: [id], onDelete: Restrict)
+  studentId String
+  student   User     @relation("BookLoans", fields: [studentId], references: [id], onDelete: Restrict)
+
+  /// Copied from the current AcademicTerm at issue, so history survives the
+  /// term rolling over.
+  academicYear String
+  term         Int?
+  status       LoanStatus @default(ACTIVE)
+
+  /// issuedAt is the effective time and may have come from an offline device
+  /// (corrected for clock skew, then clamped). issuedServerAt is when the row
+  /// was actually written. Both, always - you need the second to debug the first.
+  issuedAt        DateTime
+  issuedServerAt  DateTime      @default(now())
+  issuedById      String
+  issuedBy        User          @relation("BookLoansIssued", fields: [issuedById], references: [id], onDelete: Restrict)
+  issuedCondition BookCondition
+  /// Always computed server-side from AcademicTerm.endsOn, so a wrong clock on
+  /// a counter laptop can never produce a wrong due date.
+  dueAt           DateTime
+
+  returnedAt        DateTime?
+  returnedServerAt  DateTime?
+  returnedById      String?
+  returnedBy        User?          @relation("BookLoansReturned", fields: [returnedById], references: [id], onDelete: SetNull)
+  returnedCondition BookCondition?
+  conditionNote     String?        @db.Text
+
+  // Offline sync. The op ids are client-generated UUIDs and are the
+  // idempotency keys: a retried request whose response was lost replays onto
+  // the same row instead of creating a second loan.
+  issueOpId    String      @unique
+  returnOpId   String?     @unique
+  issueSource  LoanSource  @default(ONLINE)
+  returnSource LoanSource?
+  stationId    String?
+  /// Accepted, but a human should look at it. Set when sync takes a record
+  /// that policy would have refused at the counter - the book has already left
+  /// the building, so refusing the record would destroy the only trace of it.
+  needsReview  Boolean     @default(false)
+  reviewReason String?
+
+  // Notification stamps, mirroring Request.escalatedAt: written only after the
+  // send succeeds, so an email outage retries next run instead of losing the
+  // alert. Two separate stamps because "the student was told" and "staff were
+  // told" are different facts.
+  dueSoonNotifiedAt DateTime?
+  overdueNotifiedAt DateTime?
+  escalatedAt       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  charges BookCharge[]
+
+  @@index([studentId, status])
+  @@index([status, dueAt])
+  @@index([copyId, status])
+  @@index([academicYear, term])
+  @@index([needsReview])
+}
+
+/// What a student owes. Recording only - no payment is ever taken or recorded
+/// here; that happens at the bursary.
+model BookCharge {
+  id        String    @id @default(uuid())
+  studentId String
+  student   User      @relation("BookCharges", fields: [studentId], references: [id], onDelete: Restrict)
+  loanId    String?
+  loan      BookLoan? @relation(fields: [loanId], references: [id], onDelete: SetNull)
+  copyId    String?
+  copy      BookCopy? @relation(fields: [copyId], references: [id], onDelete: SetNull)
+
+  type         ChargeType
+  amount       Decimal      @db.Decimal(10, 2)
+  currency     String       @default("JMD")
+  academicYear String
+  term         Int?
+  status       ChargeStatus @default(OUTSTANDING)
+  reason       String?      @db.Text
+
+  raisedById  String?
+  raisedBy    User?     @relation("BookChargesRaised", fields: [raisedById], references: [id], onDelete: SetNull)
+  raisedAt    DateTime  @default(now())
+  waivedById  String?
+  waivedAt    DateTime?
+  waiveReason String?
+
+  /// Idempotency key when a damage charge is raised from an offline station.
+  opId      String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// One RENTAL, one LOST and one DAMAGE per loan. This is what stops a
+  /// replayed op from charging a student twice.
+  @@unique([loanId, type])
+  @@index([studentId, status])
+  @@index([status, academicYear])
+}
+
+/// The single source of truth for "what year and term is it". Never derive
+/// this from new Date() - dueAt and every overdue calculation come from here.
+model AcademicTerm {
+  id           String   @id @default(uuid())
+  academicYear String // "2026-2027"
+  term         Int // 1 | 2 | 3
+  startsOn     DateTime
+  endsOn       DateTime // the default dueAt for loans issued in this term
+  isCurrent    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  // + hand-added partial unique index in the migration, so only one row can be
+  // current:
+  //   CREATE UNIQUE INDEX "AcademicTerm_one_current"
+  //     ON public."AcademicTerm" ((true)) WHERE "isCurrent";
+
+  @@unique([academicYear, term])
+}
+
+/// Allocates sequential copy barcodes. A single row, incremented inside the
+/// same transaction as the createMany that consumes the numbers, so two admins
+/// generating copies at the same time cannot collide. Deliberately not
+/// MAX(barcode)+1, which races.
+model BarcodeCounter {
+  id        String   @id @default("copy")
+  prefix    String   @default("YCHS-")
+  nextValue Int      @default(1)
+  updatedAt DateTime @updatedAt
+}
