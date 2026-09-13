@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { User, Application, SixthFormApplication, SixthFormReadiness, SixthFormInterview, AcceptanceLetterDetails, Course, BlogPost, Event, Document, BooklistEntry, Request, Book, BookCopy, BookCondition, CopyStatus, CopyLabel, GenerateCopiesResult, StudentProfile, StudentLoanSummary, BookCharge, StudentVerification, YearGroupOption } from '../types';
+import type { User, Application, SixthFormApplication, SixthFormReadiness, SixthFormInterview, AcceptanceLetterDetails, Course, BlogPost, Event, Document, BooklistEntry, Request, Book, BookCopy, BookCondition, CopyStatus, CopyLabel, GenerateCopiesResult, StudentProfile, StudentLoanSummary, BookCharge, StudentVerification, YearGroupOption, BookLoanRow, LoanSummary } from '../types';
 
 // Use relative path since everything is served from the same server
 // This works in both development and production when served from backend
@@ -246,6 +246,26 @@ class ApiService {
 
   async deleteBooklistEntry(id: string) {
     return this.request('DELETE', `/booklist/${id}`);
+  }
+
+  // Textbook rental - loans
+  async getLoans(params?: { status?: string; overdue?: boolean; formClass?: string; studentId?: string; needsReview?: boolean; page?: number; limit?: number }) {
+    const query = params
+      ? '?' + new URLSearchParams(
+          Object.entries(params)
+            .filter(([, v]) => v !== undefined && v !== '')
+            .map(([k, v]) => [k, String(v)])
+        ).toString()
+      : '';
+    return this.request<{ loans: BookLoanRow[]; pagination: any; summary: LoanSummary }>('GET', `/loans${query}`);
+  }
+
+  async markLoanLost(id: string, note?: string) {
+    return this.request<{ message: string }>('POST', `/loans/${id}/mark-lost`, { note });
+  }
+
+  async bulkReturn(data: { formClass?: string; bookId?: string; condition?: BookCondition; dryRun?: boolean }) {
+    return this.request<{ dryRun?: boolean; count?: number; returned?: number; message?: string; loans?: any[] }>('POST', '/loans/bulk-return', data);
   }
 
   // Textbook rental - students

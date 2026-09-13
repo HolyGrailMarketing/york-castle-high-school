@@ -138,8 +138,8 @@ const Students = () => {
 
       <p className="page-intro">
         Students make their own account on the website and type their own year and class, so it has
-        to be checked against the class register before they can borrow anything. Only a{' '}
-        <Hint term="verified-student">confirmed student</Hint> can be given books.
+        to be checked against the class register before they can borrow anything. Only a
+        confirmed student<Hint term="verified-student" /> can be given books.
       </p>
 
       <div className="stu-tabs" role="tablist">

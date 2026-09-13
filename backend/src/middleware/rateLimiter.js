@@ -70,6 +70,20 @@ export const adminLimiter = rateLimit(createRateLimitConfig({
 }));
 
 // Very strict limiter for public request submissions
+/**
+ * Draining a counter station's offline queue.
+ *
+ * Deliberately generous: a station coming back after a day without internet
+ * legitimately sends several hundred operations as a run of chunked requests,
+ * and throttling that would leave scans stranded on a laptop. It is still
+ * bounded, so a station stuck in a retry loop cannot hammer the database.
+ */
+export const syncLimiter = rateLimit(createRateLimitConfig({
+  windowMs: 60 * 1000,
+  max: 30,
+  message: 'Too many sync requests. The scans on this computer are safe and will be sent shortly.',
+}));
+
 export const publicRequestLimiter = rateLimit(createRateLimitConfig({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: isProduction ? 3 : 5, // Stricter in production

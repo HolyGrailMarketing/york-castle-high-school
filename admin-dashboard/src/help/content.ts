@@ -140,6 +140,34 @@ export const PAGE_HELP: Record<string, PageHelp> = {
     ],
   },
 
+  'library/desk': {
+    key: 'library/desk',
+    title: 'Issue & Return',
+    summary: 'The counter screen \u2014 scan a student, then scan their books out or back in.',
+    roles: OFFICE,
+    actions: [
+      { label: 'Give a student their books', detail: 'Scan the student\u2019s card, or type their student number and press Enter. Their name stays on screen until you press Esc, so you can do a whole stack of books without scanning them again.' },
+      { label: 'Take books back', detail: 'Scan the book on its own \u2014 you do not need the student. The screen tells you whose it was. If a book comes back damaged, set the condition to Damaged before you scan it.' },
+      { label: 'Set the condition', detail: 'The buttons above the list set the condition for the next book scanned back. The keyboard shortcuts are G, F, P and D. Damaged raises a charge for the cost of the book and sends the copy for repair rather than back on the shelf.' },
+      { label: 'When someone cannot be given a book', detail: 'A yellow bar explains why \u2014 usually the office has not confirmed their year and class yet, or they already have as many books as they are allowed. Send them to the office; do not hand the book over.' },
+      { label: 'Undo a mistake', detail: 'Every scan has an Undo button for ten seconds. After that, scan the book back in instead \u2014 the school\u2019s records already show it moving, so the correction has to be another movement.' },
+      { label: 'Keep the box armed', detail: 'The scanner types into whatever is selected on screen. The box says Ready to scan in green when it is listening; if it says Click here, click it before you scan.' },
+    ],
+  },
+
+  'library/loans': {
+    key: 'library/loans',
+    title: 'Book Loans',
+    summary: 'Every book currently with a student, and everything that has been lent this year.',
+    roles: ALL_STAFF,
+    actions: [
+      { label: 'See who is late', detail: 'The Overdue tab shows books past their return date. This is the list to chase in person.' },
+      { label: 'Collect a whole class at the end of term', detail: 'End of Term Return takes back every book one form class still has. It shows you the full list first \u2014 read it before confirming, because it changes a lot of records at once and cannot be undone in bulk.' },
+      { label: 'Record a book as lost', detail: 'Mark Lost closes the loan and charges the student the full replacement cost of the book. The charge shows on Book Charges and on the student\u2019s own page.' },
+      { label: 'Check something that looks wrong', detail: 'Needs review lists loans the system was not certain about \u2014 usually recorded on a counter computer while it was offline, or given to a student who had not been confirmed. Each one says why.' },
+    ],
+  },
+
   'library/books': {
     key: 'library/books',
     title: 'Textbooks',
@@ -218,6 +246,25 @@ export type GlossaryEntry = {
  * attached to the place it appears with <Hint term="…" />.
  */
 export const GLOSSARY: GlossaryEntry[] = [
+  {
+    term: 'station',
+    label: 'Counter computer (station)',
+    definition:
+      'The computer at the library counter running the Issue & Return screen. Each one has a short name so two counters can be told apart when their records disagree about who has a book.',
+  },
+  {
+    term: 'needs-attention',
+    label: 'Needs attention',
+    definition:
+      'A scan the school\u2019s records would not accept \u2014 nearly always because the book was already recorded as out to a different student. The system will not guess which is right, because only someone who can see the actual book knows. Find out who has it, then choose.',
+  },
+  {
+    term: 'end-of-term-return',
+    label: 'End of Term Return',
+    definition:
+      'Marking every book from one form class returned at once, for the collection at the end of term. It affects a whole class in one action and cannot be undone in bulk \u2014 check the list on screen before confirming.',
+  },
+
   {
     term: 'verified-student',
     label: 'Confirmed student',

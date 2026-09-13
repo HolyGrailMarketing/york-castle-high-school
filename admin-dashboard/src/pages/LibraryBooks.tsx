@@ -265,8 +265,8 @@ const LibraryBooks = () => {
       </div>
 
       <p className="page-intro">
-        Every title the school lends, and every physical copy of it. Each copy has its own{' '}
-        <Hint term="copy-barcode">barcode</Hint>, which is how the school knows which one a
+        Every title the school lends, and every physical copy of it. Each copy has its own
+        barcode<Hint term="copy-barcode" />, which is how the school knows which one a
         particular student has and what condition that one was in.
       </p>
 
@@ -362,7 +362,7 @@ const LibraryBooks = () => {
                               <tr>
                                 <th>Barcode</th>
                                 <th>No.</th>
-                                <th><Hint term="condition-grade">Condition</Hint></th>
+                                <th>Condition<Hint term="condition-grade" /></th>
                                 <th>Status</th>
                                 <th>Held by</th>
                                 <th />
@@ -470,7 +470,7 @@ const LibraryBooks = () => {
               <span className="field-hint">What a student is charged if this book is lost. Required.</span>
             </div>
             <div className="form-group">
-              <label><Hint term="rental-fee">Rental fee</Hint> per term (JMD)</label>
+              <label>Rental fee<Hint term="rental-fee" /> per term (JMD)</label>
               <input
                 type="number" min="0" step="1"
                 value={bookForm.rentalFee}

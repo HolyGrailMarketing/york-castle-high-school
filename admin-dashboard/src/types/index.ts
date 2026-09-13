@@ -326,6 +326,30 @@ export interface StudentProfile {
   activeLoans: number;
 }
 
+export interface BookLoanRow {
+  id: string;
+  status: LoanStatus;
+  issuedAt: string;
+  dueAt: string;
+  returnedAt: string | null;
+  overdue: boolean;
+  needsReview: boolean;
+  reviewReason: string | null;
+  issuedCondition: BookCondition;
+  returnedCondition: BookCondition | null;
+  barcode: string;
+  title: string;
+  subject: string;
+  replacementCost: number;
+  student: { id: string; name: string; formClass: string | null; studentNumber: string | null };
+}
+
+export interface LoanSummary {
+  active: number;
+  overdue: number;
+  needsReview: number;
+}
+
 export interface StudentLoanSummary {
   id: string;
   status: LoanStatus;

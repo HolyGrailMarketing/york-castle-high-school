@@ -1,0 +1,126 @@
+/* Issue & Return counter screen. Classes prefixed `desk-`. */
+
+.desk-header-actions { display: flex; align-items: center; gap: 0.75rem; }
+.desk-station { font-size: 0.8rem; color: #6b7280; font-family: ui-monospace, monospace; }
+
+/* Scan box ---------------------------------------------------------------- */
+
+/*
+ * Deliberately the largest thing on the page. A wedge scanner types into
+ * whatever has focus, so the librarian has to be able to tell at a glance that
+ * this box is armed - a box that has quietly lost focus is the single most
+ * common way these screens fail.
+ */
+.desk-scan { position: relative; margin: 1rem 0 0.75rem; }
+.desk-scan-input {
+  width: 100%;
+  padding: 1.1rem 1.25rem;
+  font-size: 1.5rem;
+  font-family: ui-monospace, 'Courier New', monospace;
+  border: 3px solid #1a1a2e;
+  border-radius: 10px;
+  background: #fff;
+}
+.desk-scan-input:focus { outline: none; border-color: #047857; box-shadow: 0 0 0 4px rgba(4,120,87,0.15); }
+.desk-scan-input::placeholder { font-family: inherit; color: #9ca3af; font-size: 1.1rem; }
+
+.desk-ready {
+  position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+  font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  color: #047857;
+}
+.desk-scan-input:not(:focus) + .desk-ready { color: #b45309; }
+.desk-scan-input:not(:focus) + .desk-ready::before { content: 'Click here — '; }
+.desk-ready.is-busy { color: #6b7280; }
+
+/* Condition --------------------------------------------------------------- */
+
+.desk-condition { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-bottom: 1rem; font-size: 0.85rem; color: #6b7280; }
+.desk-cond {
+  padding: 0.3rem 0.7rem; border: 1px solid #d1d5db; border-radius: 999px;
+  background: #fff; font-size: 0.85rem; cursor: pointer;
+}
+.desk-cond.is-on { background: #1a1a2e; border-color: #1a1a2e; color: #fff; }
+.desk-cond.is-on.is-damage { background: #b91c1c; border-color: #b91c1c; }
+.desk-cond kbd {
+  margin-left: 0.3rem; padding: 0 0.25rem; border: 1px solid currentColor;
+  border-radius: 3px; font-size: 0.7rem; opacity: 0.7;
+}
+.desk-cond-warning { color: #b91c1c; font-weight: 600; }
+
+/* Banners ----------------------------------------------------------------- */
+
+.desk-banner {
+  display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+  padding: 0.85rem 1rem; border-radius: 8px; margin-bottom: 1rem;
+  border-left: 5px solid;
+}
+.desk-banner strong { font-size: 1rem; }
+.desk-banner span { font-size: 0.88rem; }
+.desk-banner button { margin-left: auto; }
+.desk-banner--block { background: #fffbeb; border-color: #b45309; color: #7c2d12; }
+.desk-banner--error { background: #fef2f2; border-color: #b91c1c; color: #7f1d1d; flex-direction: column; align-items: flex-start; gap: 0.2rem; }
+.desk-banner--attention { background: #fef2f2; border-color: #b91c1c; color: #7f1d1d; }
+
+/* Student card ------------------------------------------------------------ */
+
+.desk-student {
+  display: grid; grid-template-columns: 1fr auto; gap: 0.5rem 1rem;
+  padding: 1rem 1.25rem; margin-bottom: 1rem;
+  background: #fff; border: 2px solid #047857; border-radius: 10px;
+}
+.desk-student.is-unverified { border-color: #b45309; background: #fffbeb; }
+.desk-student h2 { margin: 0; font-size: 1.35rem; }
+.desk-student p { margin: 0.15rem 0 0; color: #4b5563; font-size: 0.92rem; }
+
+.desk-verify { display: inline-block; margin-top: 0.35rem; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.desk-verify--verified { color: #047857; }
+.desk-verify--unverified, .desk-verify--rejected { color: #b45309; }
+
+.desk-student-loans { grid-column: 1 / -1; margin: 0.5rem 0 0; padding: 0; list-style: none; font-size: 0.85rem; }
+.desk-student-loans li { padding: 0.15rem 0; color: #4b5563; }
+.desk-student-loans li.is-overdue { color: #b91c1c; }
+.desk-overdue { margin-left: 0.4rem; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; }
+
+.desk-candidates { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+.desk-candidates p { margin: 0 0 0.5rem; font-weight: 600; }
+.desk-candidates ul { margin: 0; padding: 0; list-style: none; }
+.desk-candidates button {
+  display: block; width: 100%; text-align: left; padding: 0.5rem;
+  background: none; border: none; border-bottom: 1px solid #f1f2f4; cursor: pointer; font: inherit;
+}
+.desk-candidates button:hover { background: #f9fafb; }
+
+/* Feed -------------------------------------------------------------------- */
+
+.desk-feed-heading { font-size: 1rem; color: #6b7280; margin: 1.5rem 0 0.5rem; }
+.desk-empty { color: #9ca3af; }
+
+.desk-feed { margin: 0; padding: 0; list-style: none; }
+.desk-feed-item {
+  display: flex; align-items: flex-start; gap: 1rem;
+  padding: 0.7rem 0.9rem; margin-bottom: 0.35rem;
+  border-radius: 8px; border-left: 5px solid;
+  background: #fff;
+}
+/* Never colour alone - every row leads with a word saying what happened. */
+.desk-feed-item--applied { border-color: #047857; }
+.desk-feed-item--rejected { border-color: #b91c1c; background: #fef2f2; }
+.desk-feed-item--error { border-color: #b45309; background: #fffbeb; }
+
+.desk-feed-main { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem; flex: 1; }
+.desk-feed-main strong { min-width: 8rem; }
+.desk-feed-what code { font-size: 0.85rem; }
+.desk-feed-who { color: #4b5563; }
+.desk-feed-due, .desk-feed-note { font-size: 0.8rem; color: #6b7280; }
+.desk-feed-late { font-size: 0.8rem; font-weight: 700; color: #b45309; }
+.desk-feed-charge { font-size: 0.8rem; font-weight: 700; color: #b91c1c; }
+.desk-feed-why { flex-basis: 100%; font-size: 0.85rem; color: #7f1d1d; }
+.desk-feed-item--applied .desk-feed-why { color: #6b7280; }
+.desk-feed-actions { display: flex; gap: 0.4rem; }
+
+@media (max-width: 640px) {
+  .desk-scan-input { font-size: 1.15rem; padding: 0.9rem; }
+  .desk-ready { display: none; }
+  .desk-student { grid-template-columns: 1fr; }
+}
