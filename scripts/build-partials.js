@@ -57,6 +57,9 @@ const PAGES = {
   'application-status.html': 'full',
   'data-subject-request.html': 'full',
   'sixth-form-application.html': 'full',
+  // Internal, administrator-only; the sign-in chrome suits it better than the
+  // full marketing menu.
+  'network.html': 'minimal',
   'reset-password.html': 'minimal',
   'forgot-password.html': 'minimal',
 };

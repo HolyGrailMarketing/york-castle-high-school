@@ -21,6 +21,7 @@
     "db:seed": "cd backend && npm run prisma:seed",
     "db:studio": "cd backend && npm run prisma:studio",
     "site:partials": "node scripts/build-partials.js",
+    "network:seed": "cd backend && node scripts/network-seed.js",
     "timetable:parse": "node scripts/timetable/parse-fet.js",
     "timetable:build": "node scripts/timetable/build-public.js",
     "timetable:page": "node scripts/timetable/build-page.js",
