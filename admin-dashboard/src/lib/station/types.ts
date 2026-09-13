@@ -32,6 +32,8 @@ export interface QueuedOp {
   clientAt: string;
   state: 'pending' | 'sending' | 'applied' | 'rejected' | 'error';
   attempts: number;
+  /** Why the last attempt failed, shown in the status bar during an outage. */
+  lastError?: string;
 }
 
 /** The server's verdict on one operation. */

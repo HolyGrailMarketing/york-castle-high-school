@@ -1,7 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { stationClient, asStationError } from '../lib/station/client';
-import { enqueue, compensate, subscribe, clearResult, stationId } from '../lib/station/queue';
-import type { DeskStudent, OpResult, QueuedOp } from '../lib/station/types';
+import { asStationError } from '../lib/station/client';
+import {
+  enqueue, subscribe, dismissResult, undo as undoOp, syncNow,
+  startWatching, printableLog, stationIdValue, type QueueState,
+} from '../lib/station/queue';
+import { copyByBarcode, findStudents, copiesForStudent, type CachedCopy, type CachedStudent } from '../lib/station/db';
+import { readState, refreshQuietly, isStale, liveLoanCount, REFRESH_MS, type SnapshotState } from '../lib/station/snapshot';
+import { loadOffset, skewWarning } from '../lib/station/clock';
+import StationStatusBar from '../components/library/StationStatusBar';
+import ReconcileDrawer from '../components/library/ReconcileDrawer';
+import UpdatePrompt from '../components/library/UpdatePrompt';
+import type { OpResult, QueuedOp } from '../lib/station/types';
 import type { BookCondition } from '../types';
 import PageHelp from '../components/PageHelp';
 import Hint from '../components/Hint';
@@ -48,25 +57,66 @@ const beep = (ok: boolean, muted: boolean) => {
   }
 };
 
+/** What the desk shows for the student currently on screen. */
+interface DeskStudent extends CachedStudent {
+  held: CachedCopy[];
+}
+
 const LibraryDesk = () => {
   const [scan, setScan] = useState('');
   const [student, setStudent] = useState<DeskStudent | null>(null);
-  const [candidates, setCandidates] = useState<DeskStudent[]>([]);
+  const [candidates, setCandidates] = useState<CachedStudent[]>([]);
   const [condition, setCondition] = useState<BookCondition>('GOOD');
   const [muted, setMuted] = useState(false);
-  const [busy, setBusy] = useState(false);
   const [blocked, setBlocked] = useState<string | null>(null);
-  const [feed, setFeed] = useState<{ op: QueuedOp; result: OpResult }[]>([]);
-  const [needsAttention, setNeedsAttention] = useState<{ op: QueuedOp; result: OpResult }[]>([]);
-  const [sessionError, setSessionError] = useState<string | null>(null);
+  const [queue, setQueue] = useState<QueueState | null>(null);
+  const [snapshot, setSnapshot] = useState<SnapshotState | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [reconcileOpen, setReconcileOpen] = useState(false);
+  const [skew, setSkew] = useState<string | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const lastScanRef = useRef<{ code: string; at: number }>({ code: '', at: 0 });
+  const titlesRef = useRef<Map<string, string>>(new Map());
 
-  useEffect(() => subscribe((state) => {
-    setFeed(state.results);
-    setNeedsAttention(state.needsAttention);
-  }), []);
+  // Subscribe to the queue, start the connection watcher, and pull the roster.
+  useEffect(() => {
+    const unsubscribe = subscribe(setQueue);
+    const stopWatching = startWatching();
+    void (async () => {
+      await loadOffset();
+      setSkew(skewWarning());
+      const current = await readState();
+      setSnapshot(current);
+      // A first visit has nothing cached, so fetch before the librarian starts.
+      if (!current.snapshotAt) await doRefresh(true);
+    })();
+    return () => { unsubscribe(); stopWatching(); };
+  }, []);
+
+  // Keep the cache fresh while the desk is open.
+  useEffect(() => {
+    const timer = window.setInterval(() => { void doRefresh(false); }, REFRESH_MS);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const doRefresh = async (force: boolean) => {
+    setRefreshing(true);
+    const { state, error } = await refreshQuietly(force);
+    setSnapshot(state);
+    setSkew(skewWarning());
+    setRefreshing(false);
+    if (error && force) setBlocked(`Could not refresh the station data: ${error}`);
+    await cacheTitles();
+  };
+
+  /** Book titles, so the feed can name a book without a round trip. */
+  const cacheTitles = async () => {
+    const { db } = await import('../lib/station/db');
+    const database = await db();
+    const books = await database.getAll('books');
+    titlesRef.current = new Map(books.map((b) => [b.id, b.title]));
+  };
 
   /**
    * Keep the scan box focused. A wedge scanner types into whatever has focus,
@@ -74,7 +124,7 @@ const LibraryDesk = () => {
    * librarian scans the same book three times wondering why.
    */
   const refocus = useCallback(() => {
-    if (document.querySelector('.desk-modal')) return;
+    if (document.querySelector('.desk-drawer')) return;
     inputRef.current?.focus();
   }, []);
 
@@ -93,8 +143,7 @@ const LibraryDesk = () => {
     };
   }, [refocus]);
 
-  // Esc clears the student, so the next person can be served without reaching
-  // for the mouse. G/F/P/D set the condition for the next return.
+  // Esc clears the student; G/F/P/D set the condition for the next return.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') { setStudent(null); setCandidates([]); setBlocked(null); refocus(); return; }
@@ -106,47 +155,43 @@ const LibraryDesk = () => {
     return () => window.removeEventListener('keydown', onKey);
   }, [scan, refocus]);
 
-  /** Everything a student's card needs, refreshed after every scan. */
-  const loadStudent = async (query: string): Promise<boolean> => {
-    const { data } = await stationClient.get<{ students: DeskStudent[] }>('/loans/student-lookup', {
-      params: { q: query },
-    });
-    if (data.students.length === 0) return false;
-    if (data.students.length === 1) {
-      setStudent(data.students[0]);
-      setCandidates([]);
-      checkPolicy(data.students[0]);
-      return true;
-    }
-    setCandidates(data.students);
-    return true;
+  /** Build the card from the cache, so it works with no connection. */
+  const pinStudent = async (cached: CachedStudent) => {
+    const held = await copiesForStudent(cached.id);
+    const pinned: DeskStudent = { ...cached, held };
+    setStudent(pinned);
+    setCandidates([]);
+    await checkPolicy(pinned);
   };
 
-  const refreshStudent = async (id: string) => {
-    try {
-      const { data } = await stationClient.get<{ students: DeskStudent[] }>('/loans/student-lookup', { params: { q: id } });
-      const found = data.students.find((s) => s.id === id);
-      if (found) { setStudent(found); checkPolicy(found); }
-    } catch {
-      // The card is stale but the scan already succeeded; not worth interrupting.
-    }
+  const repinStudent = async (id: string) => {
+    const { studentById } = await import('../lib/station/db');
+    const cached = await studentById(id);
+    if (cached) await pinStudent(cached);
   };
 
   /**
-   * Policy is decided here, at the counter, against what the desk can see.
+   * Policy is decided here, at the counter, against the cached snapshot.
    *
    * This is the one moment it can be enforced: the book is still on this side
    * of the desk. Once a scan reaches the server the book has gone, and the
    * server records it regardless rather than losing the only trace of it.
    */
-  const checkPolicy = (s: DeskStudent) => {
-    if (s.verification !== 'VERIFIED') {
+  const checkPolicy = async (s: DeskStudent) => {
+    const policy = snapshot?.policy;
+    if ((policy?.blockOnUnverified ?? true) && s.verification !== 'VERIFIED') {
       setBlocked(`${s.name} has not been confirmed by the office. Send them to the office to confirm their year and class before giving them any books.`);
       return;
     }
-    const cap = s.loanCap ?? 8;
-    if (s.activeLoans.length >= cap) {
-      setBlocked(`${s.name} already has ${s.activeLoans.length} books out, which is the limit. Take some back first.`);
+    const cap = s.loanCap ?? policy?.defaultLoanCap ?? 8;
+    const out = await liveLoanCount(s.id);
+    if (out >= cap) {
+      setBlocked(`${s.name} already has ${out} books out, which is the limit. Take some back first.`);
+      return;
+    }
+    const threshold = policy?.warnOnChargesOver ?? 0;
+    if (threshold > 0 && s.outstandingTotal > threshold) {
+      setBlocked(`${s.name} owes ${money(s.outstandingTotal)}. You can still lend to them, but tell them to settle it at the bursary.`);
       return;
     }
     setBlocked(null);
@@ -163,106 +208,114 @@ const LibraryDesk = () => {
       return;
     }
     lastScanRef.current = { code, at: now };
-
     setScan('');
-    setBusy(true);
-    setSessionError(null);
+
     try {
-      // What was scanned decides what happens - there is no mode to forget to
-      // switch. A copy barcode is a book; anything else is a person.
-      const looksLikeBarcode = /^YCHS-\d+$/i.test(code);
-      if (!looksLikeBarcode) {
-        const found = await loadStudent(code);
-        if (!found) {
+      // Everything is resolved from the cache on this computer, so a scan works
+      // exactly the same with or without a connection.
+      const copy = await copyByBarcode(code);
+
+      if (!copy) {
+        const matches = await findStudents(code);
+        if (matches.length === 0) {
           beep(false, muted);
-          setBlocked(`Nothing found for "${code}". Try their student number, or their name.`);
+          setBlocked(`Nothing found for "${code}". Try their student number, or their name. If they are new, the station data may need refreshing.`);
+          return;
         }
+        if (matches.length === 1) { await pinStudent(matches[0]); beep(true, muted); return; }
+        setCandidates(matches);
         return;
       }
 
-      const { data: lookup } = await stationClient.get('/loans/lookup', { params: { barcode: code } });
+      if (copy.status === 'WITHDRAWN') {
+        beep(false, muted);
+        setBlocked(`${copy.barcode} was withdrawn and cannot be lent again.${copy.withdrawnReason ? ` Reason: ${copy.withdrawnReason}` : ''}`);
+        return;
+      }
 
-      if (lookup.currentLoan) {
-        // The copy is out, so this is a return. No student needs to be
-        // selected: that is how a returns pile actually gets processed.
-        const result = await enqueue({
+      // Out to someone? Then this is a book coming back, and no student needs
+      // to be on screen - that is how a returns pile is actually worked through.
+      if (copy.currentLoanId) {
+        await enqueue({
           kind: 'RETURN',
-          barcode: code,
-          copyId: lookup.copy.id,
-          expectedLoanId: lookup.currentLoan.id,
+          barcode: copy.barcode,
+          copyId: copy.id,
+          expectedLoanId: copy.currentLoanId,
           condition,
         });
-        beep(result.status === 'applied', muted);
-        // Only worth refreshing the card if the book that came back was one of
-        // the pinned student's.
-        const shown = student;
-        if (result.status === 'applied' && shown && shown.id === lookup.currentLoan.student.id) {
-          await refreshStudent(shown.id);
-        }
+        beep(true, muted);
+        if (student && copy.currentStudentId === student.id) await repinStudent(student.id);
         return;
       }
 
       if (!student) {
         beep(false, muted);
-        setBlocked(`${lookup.book.title} is not out to anyone. To give it to a student, scan the student first.`);
+        setBlocked(`${titlesRef.current.get(copy.bookId) ?? copy.barcode} is not out to anyone. To give it to a student, scan the student first.`);
         return;
       }
       if (blocked) { beep(false, muted); return; }
 
-      const result = await enqueue({
+      await enqueue({
         kind: 'ISSUE',
-        barcode: code,
-        copyId: lookup.copy.id,
+        barcode: copy.barcode,
+        copyId: copy.id,
         studentId: student.id,
         studentLabel: `${student.name}${student.formClass ? `, ${student.formClass}` : ''}`,
         condition,
       });
-      beep(result.status === 'applied', muted);
-      if (result.status === 'applied') await refreshStudent(student.id);
+      beep(true, muted);
+      await repinStudent(student.id);
     } catch (error) {
-      const failure = asStationError(error);
       beep(false, muted);
-      if (failure.name === 'SessionExpiredError') setSessionError(failure.message);
-      else setBlocked(failure.message);
+      setBlocked(asStationError(error).message);
     } finally {
-      setBusy(false);
       setTimeout(refocus, 0);
     }
   };
 
-  const undo = async (entry: { op: QueuedOp; result: OpResult }) => {
-    setBusy(true);
-    try {
-      await compensate(entry);
-      if (student) await refreshStudent(student.id);
-    } catch (error) {
-      setBlocked(asStationError(error).message);
-    } finally {
-      setBusy(false);
-      refocus();
-    }
+  const handleUndo = async (entry: { op: QueuedOp; result?: OpResult }) => {
+    await undoOp(entry);
+    if (student) await repinStudent(student.id);
+    refocus();
   };
 
-  const canUndo = (entry: { op: QueuedOp; result: OpResult }) =>
-    entry.result.status === 'applied' && Date.now() - new Date(entry.op.clientAt).getTime() < UNDO_MS;
+  const printLog = async () => {
+    const text = await printableLog();
+    const w = window.open('', '_blank');
+    if (!w) { setBlocked('Your browser blocked the print window. Allow pop-ups for this page.'); return; }
+    w.document.write(`<pre style="font:12px/1.4 ui-monospace,monospace">${text.replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c] as string))}</pre>`);
+    w.document.close();
+    w.print();
+  };
+
+  const canUndo = (op: QueuedOp) => Date.now() - new Date(op.clientAt).getTime() < UNDO_MS;
+
+  // Waiting scans first - they are the ones the librarian has to care about.
+  const feed = [
+    ...(queue?.pending ?? []).map((op) => ({ op, result: undefined as OpResult | undefined, waiting: true })),
+    ...(queue?.results ?? []).map((r) => ({ op: r.op, result: r.result, waiting: false })),
+  ];
 
   return (
     <div className="desk-page">
       <PageHelp pageKey="library/desk" />
 
-      {sessionError && (
-        <div className="desk-banner desk-banner--error" role="alert">
-          <strong>{sessionError}</strong>
-          <span>Nothing has been lost. Sign in again in another tab, then carry on scanning here.</span>
-        </div>
-      )}
+      <UpdatePrompt />
+
+      <StationStatusBar
+        queue={queue}
+        snapshot={snapshot}
+        refreshing={refreshing}
+        skew={skew}
+        onSync={() => void syncNow()}
+        onRefresh={() => void doRefresh(true)}
+        onReview={() => setReconcileOpen(true)}
+        onPrintLog={() => void printLog()}
+      />
 
       <div className="page-header">
         <h1>Issue &amp; Return</h1>
         <div className="desk-header-actions">
-          <span className="desk-station" title="This computer's name, used to tell two counters apart">
-            {stationId()}<Hint term="station" />
-          </span>
           <button className="btn-secondary" onClick={() => setMuted(!muted)} aria-pressed={muted}>
             {muted ? 'Sound off' : 'Sound on'}
           </button>
@@ -271,7 +324,7 @@ const LibraryDesk = () => {
 
       {/* The scan box. Always focused, always obviously armed. */}
       <form
-        className={`desk-scan ${busy ? 'is-busy' : ''}`}
+        className="desk-scan"
         onSubmit={(e) => { e.preventDefault(); void handleScan(scan); }}
       >
         <input
@@ -284,7 +337,7 @@ const LibraryDesk = () => {
           autoComplete="off"
           spellCheck={false}
         />
-        <span className={`desk-ready ${busy ? 'is-busy' : ''}`}>{busy ? 'Working...' : 'Ready to scan'}</span>
+        <span className="desk-ready">Ready to scan</span>
       </form>
 
       <div className="desk-condition">
@@ -319,7 +372,7 @@ const LibraryDesk = () => {
           <ul>
             {candidates.map((c) => (
               <li key={c.id}>
-                <button onClick={() => { setStudent(c); setCandidates([]); checkPolicy(c); refocus(); }}>
+                <button onClick={() => { void pinStudent(c); refocus(); }}>
                   <strong>{c.name}</strong> · {c.formClass ?? 'no class'} · {c.studentNumber ?? 'no number'}
                 </button>
               </li>
@@ -334,7 +387,7 @@ const LibraryDesk = () => {
             <h2>{student.name}</h2>
             <p>
               {student.formClass ?? 'No class'} · {student.studentNumber ?? 'No student number'} ·{' '}
-              {student.activeLoans.length} book{student.activeLoans.length === 1 ? '' : 's'} out ·{' '}
+              {student.held.length} book{student.held.length === 1 ? '' : 's'} out ·{' '}
               {student.outstandingTotal > 0 ? `owes ${money(student.outstandingTotal)}` : 'owes nothing'}
             </p>
             <span className={`desk-verify desk-verify--${student.verification.toLowerCase()}`}>
@@ -344,27 +397,19 @@ const LibraryDesk = () => {
           <button className="btn-secondary" onClick={() => { setStudent(null); setBlocked(null); refocus(); }}>
             Done (Esc)
           </button>
-          {student.activeLoans.length > 0 && (
+          {student.held.length > 0 && (
             <ul className="desk-student-loans">
-              {student.activeLoans.map((l) => (
-                <li key={l.id} className={l.overdue ? 'is-overdue' : ''}>
-                  <code>{l.barcode}</code> {l.title}
-                  {l.overdue && <span className="desk-overdue">overdue</span>}
-                </li>
-              ))}
+              {student.held.map((c) => {
+                const late = c.dueAt ? new Date(c.dueAt) < new Date() : false;
+                return (
+                  <li key={c.id} className={late ? 'is-overdue' : ''}>
+                    <code>{c.barcode}</code> {titlesRef.current.get(c.bookId) ?? ''}
+                    {late && <span className="desk-overdue">overdue</span>}
+                  </li>
+                );
+              })}
             </ul>
           )}
-        </div>
-      )}
-
-      {needsAttention.length > 0 && (
-        <div className="desk-banner desk-banner--attention" role="alert">
-          <strong>
-            {needsAttention.length} scan{needsAttention.length === 1 ? '' : 's'} could not be saved
-          </strong>
-          <span>
-            Find out who actually has the book before deciding.<Hint term="needs-attention" />
-          </span>
         </div>
       )}
 
@@ -373,50 +418,65 @@ const LibraryDesk = () => {
         <p className="desk-empty">Nothing scanned yet. Scan a student, then their books.</p>
       ) : (
         <ul className="desk-feed">
-          {feed.map((entry) => {
-            const r = entry.result;
-            return (
-              <li key={entry.op.opId} className={`desk-feed-item desk-feed-item--${r.status}`}>
-                <div className="desk-feed-main">
-                  <strong>
-                    {r.status === 'applied'
-                      ? entry.op.kind === 'ISSUE' ? 'Given out' : 'Taken back'
-                      : r.status === 'rejected' ? 'Could not be saved' : 'Not sent'}
-                  </strong>
-                  <span className="desk-feed-what">
-                    <code>{r.barcode || entry.op.barcode}</code> {r.title || ''}
+          {feed.slice(0, 40).map(({ op, result, waiting }) => (
+            <li
+              key={op.opId}
+              className={`desk-feed-item desk-feed-item--${waiting ? 'waiting' : result?.status ?? 'applied'}`}
+            >
+              <div className="desk-feed-main">
+                <strong>
+                  {waiting
+                    ? op.kind === 'ISSUE' ? 'Giving out' : 'Taking back'
+                    : result?.status === 'applied'
+                      ? op.kind === 'ISSUE' ? 'Given out' : 'Taken back'
+                      : 'Could not be saved'}
+                </strong>
+                <span className="desk-feed-what">
+                  <code>{op.barcode}</code> {result?.title || ''}
+                </span>
+                {(result?.student?.name || op.studentLabel) && (
+                  <span className="desk-feed-who">{result?.student?.name ?? op.studentLabel}</span>
+                )}
+                {waiting && <span className="desk-feed-note">saved on this computer, waiting to be sent</span>}
+                {result?.duplicate && <span className="desk-feed-note">already recorded — not counted twice</span>}
+                {result?.dueAt && op.kind === 'ISSUE' && (
+                  <span className="desk-feed-due">due {new Date(result.dueAt).toLocaleDateString()}</span>
+                )}
+                {result?.overdueDays ? <span className="desk-feed-late">{result.overdueDays} days late</span> : null}
+                {result?.charge && <span className="desk-feed-charge">charged {money(result.charge.amount)}</span>}
+                {result && result.status !== 'applied' && <span className="desk-feed-why">{result.message}</span>}
+                {result?.detail?.heldBy && (
+                  <span className="desk-feed-why">
+                    The records say {result.detail.heldBy}{result.detail.formClass ? `, ${result.detail.formClass}` : ''} has it
+                    {result.detail.since ? ` since ${new Date(result.detail.since).toLocaleDateString()}` : ''}.
                   </span>
-                  {r.student && <span className="desk-feed-who">{r.student.name}{r.student.formClass ? `, ${r.student.formClass}` : ''}</span>}
-                  {r.status === 'applied' && entry.op.kind === 'ISSUE' && r.dueAt && (
-                    <span className="desk-feed-due">due {new Date(r.dueAt).toLocaleDateString()}</span>
-                  )}
-                  {r.duplicate && <span className="desk-feed-note">already recorded — not counted twice</span>}
-                  {r.overdueDays ? <span className="desk-feed-late">{r.overdueDays} days late</span> : null}
-                  {r.charge && <span className="desk-feed-charge">charged {money(r.charge.amount)}</span>}
-                  {r.status !== 'applied' && <span className="desk-feed-why">{r.message}</span>}
-                  {r.detail?.heldBy && (
-                    <span className="desk-feed-why">
-                      The records say {r.detail.heldBy}{r.detail.formClass ? `, ${r.detail.formClass}` : ''} has it
-                      {r.detail.since ? ` since ${new Date(r.detail.since).toLocaleDateString()}` : ''}.
-                    </span>
-                  )}
-                  {r.needsReview && r.reviewReason && (
-                    <span className="desk-feed-why">Saved, but flagged: {r.reviewReason}</span>
-                  )}
-                </div>
-                <div className="desk-feed-actions">
-                  {canUndo(entry) && (
-                    <button className="btn-secondary" disabled={busy} onClick={() => undo(entry)}>Undo</button>
-                  )}
-                  {r.status === 'rejected' && (
-                    <button className="btn-secondary" onClick={() => clearResult(entry.op.opId)}>Dismiss</button>
-                  )}
-                </div>
-              </li>
-            );
-          })}
+                )}
+                {result?.needsReview && result.reviewReason && (
+                  <span className="desk-feed-why">Saved, but flagged: {result.reviewReason}</span>
+                )}
+              </div>
+              <div className="desk-feed-actions">
+                {canUndo(op) && (
+                  <button className="btn-secondary" onClick={() => void handleUndo({ op, result })}>Undo</button>
+                )}
+                {result?.status === 'rejected' && (
+                  <button className="btn-secondary" onClick={() => setReconcileOpen(true)}>Review</button>
+                )}
+                {result && result.status === 'applied' && !canUndo(op) && (
+                  <button className="btn-secondary" onClick={() => void dismissResult(op.opId)}>Clear</button>
+                )}
+              </div>
+            </li>
+          ))}
         </ul>
       )}
+
+      <ReconcileDrawer
+        open={reconcileOpen}
+        entries={queue?.needsAttention ?? []}
+        onClose={() => { setReconcileOpen(false); refocus(); }}
+        onResolved={() => void syncNow()}
+      />
     </div>
   );
 };

@@ -78,6 +78,16 @@ export const adminLimiter = rateLimit(createRateLimitConfig({
  * and throttling that would leave scans stranded on a laptop. It is still
  * bounded, so a station stuck in a retry loop cannot hammer the database.
  */
+/**
+ * The station snapshot. Refreshed on a timer while a counter is open, so the
+ * ceiling only needs to stop a stuck polling loop hammering the database.
+ */
+export const snapshotLimiter = rateLimit(createRateLimitConfig({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  message: 'Too many refreshes of the station data. Wait a moment and try again.',
+}));
+
 export const syncLimiter = rateLimit(createRateLimitConfig({
   windowMs: 60 * 1000,
   max: 30,

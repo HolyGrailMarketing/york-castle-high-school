@@ -12,8 +12,9 @@ import {
   exportCopiesCsv,
   getSubjects,
 } from '../controllers/libraryCatalogController.js';
+import { getStationSnapshot } from '../controllers/stationSnapshotController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
-import { adminLimiter } from '../middleware/rateLimiter.js';
+import { adminLimiter, snapshotLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
@@ -25,6 +26,10 @@ router.use(authenticate);
 // which book a class is on, not to run the stock.
 const READ = authorize('ADMIN', 'STAFF', 'TEACHER');
 const OFFICE = authorize('ADMIN', 'STAFF');
+
+// The offline bundle a counter station caches. Never responseCache'd: it is
+// per-caller and staleness here is exactly what it must not have.
+router.get('/station/snapshot', OFFICE, snapshotLimiter, getStationSnapshot);
 
 // Catalogue
 router.get('/books', READ, getBooks);

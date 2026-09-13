@@ -247,6 +247,13 @@ export type GlossaryEntry = {
  */
 export const GLOSSARY: GlossaryEntry[] = [
   {
+    term: 'pending-scans',
+    label: 'Scans waiting',
+    definition:
+      'Scans made while the counter computer had no internet. They are saved on that computer and send themselves as soon as the connection comes back. Nothing is lost \u2014 but they are only on that one machine, so do not shut it down for the day while the number is above zero. If you have to, print today\u2019s scans first.',
+  },
+
+  {
     term: 'station',
     label: 'Counter computer (station)',
     definition:

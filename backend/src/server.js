@@ -152,6 +152,18 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
+/**
+ * Files that must always be revalidated, never cached for a year.
+ *
+ * The HTML shell, because a deploy points it at a new hashed bundle. And the
+ * service worker files, more urgently: an immutable service worker is a
+ * library counter that can never be updated - offline, at a desk, with no way
+ * to fix it remotely. Applied at every place below that sets an immutable
+ * header, because more than one static handler can serve the same file and
+ * whichever matches first wins.
+ */
+const NEVER_CACHE = /(^|[\\/])(sw\.js|workbox-[^\\/]+\.js|manifest\.webmanifest|[^\\/]+\.html)$/;
+
 // Configure trust proxy for serverless/proxy environments (Vercel, etc.)
 // This is required for express-rate-limit and security headers to work correctly
 // Vercel and other proxies set X-Forwarded-* headers that Express needs to trust
@@ -330,7 +342,9 @@ const serveStaticWithFallback = (route, dirName) => {
             }
             
             // Set cache headers for static assets
-            if (NODE_ENV === 'production') {
+            if (NEVER_CACHE.test(filePath)) {
+              res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+            } else if (NODE_ENV === 'production') {
               res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
             } else {
               res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
@@ -446,7 +460,9 @@ if (!process.env.VERCEL && !process.env.VERCEL_ENV) {
             if (mimeTypes[ext]) {
               res.setHeader('Content-Type', mimeTypes[ext]);
             }
-            if (NODE_ENV === 'production') {
+            if (NEVER_CACHE.test(filePath)) {
+              res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+            } else if (NODE_ENV === 'production') {
               res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
             }
             
@@ -506,7 +522,9 @@ if (!process.env.VERCEL && !process.env.VERCEL_ENV) {
             if (mimeTypes[ext]) {
               res.setHeader('Content-Type', mimeTypes[ext]);
             }
-            if (NODE_ENV === 'production') {
+            if (NEVER_CACHE.test(filePath)) {
+              res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+            } else if (NODE_ENV === 'production') {
               res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
             }
           }
@@ -743,7 +761,13 @@ const staticOptions = {
     // Content-hashed assets are immutable and can be cached for a year, but
     // index.html must always revalidate so new deploys (which reference a new
     // hashed bundle) are picked up instead of serving a stale cached page.
-    if (filePath.endsWith('.html')) {
+    //
+    // The service worker and its manifest must revalidate for the same reason,
+    // and more urgently: maxAge above would otherwise hand out the library
+    // counter's worker with a year-long lifetime, and a station stuck on a
+    // stale worker cannot be updated at all - offline, at a counter, with no
+    // way to fix it remotely.
+    if (NEVER_CACHE.test(filePath)) {
       res.setHeader('Cache-Control', 'no-cache, must-revalidate');
     }
   },

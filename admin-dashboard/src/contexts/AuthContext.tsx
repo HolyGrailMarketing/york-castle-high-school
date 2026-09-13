@@ -77,6 +77,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     localStorage.removeItem('token');
     authService.setToken(null);
+
+    // Wipe the class list and book list the library counter caches on this
+    // computer. It is other students' names and classes sitting on a machine
+    // in a shared room, and it is only there to make the counter work offline.
+    //
+    // The queue of scans that have not reached the school yet is deliberately
+    // NOT touched: it is the only record of those books moving, and losing it
+    // to a sign-out would lose books. Loaded lazily so signing out of any other
+    // page does not pull in the station code.
+    void import('../lib/station/db')
+      .then((station) => station.clearCachedData())
+      .catch(() => {
+        // No IndexedDB, or nothing cached. Nothing to clean up.
+      });
   };
 
   return (
