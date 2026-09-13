@@ -126,8 +126,8 @@ export const PAGE_HELP: Record<string, PageHelp> = {
     ],
   },
 
-  students: {
-    key: 'students',
+  'library/students': {
+    key: 'library/students',
     title: 'Students',
     summary: 'Students who have made their own account on the website, and whether the office has confirmed their year and class.',
     roles: OFFICE,

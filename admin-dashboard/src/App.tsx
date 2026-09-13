@@ -6,6 +6,7 @@ const isVercel = typeof window !== 'undefined' && window.location.hostname !== '
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import Layout from './components/Layout';
+import LibraryLayout from './components/LibraryLayout';
 
 // Redirects to /dashboard if the current user's role isn't in the allowed list
 const RoleRoute = ({ children, roles }: { children: React.ReactNode; roles: string[] }) => {
@@ -55,6 +56,38 @@ function App() {
           
           <Route path="/login" element={<Login />} />
           <Route path="/auth/callback" element={<Login />} />
+          {/*
+            The book rental system, in its own shell. A sibling of the admin
+            portal rather than a section inside it: the person at the counter
+            has no use for Applications, Blog Posts or Sixth Form, and burying
+            the scanning screen among them is how it gets lost. Same app and
+            same sign-in, so there is nothing to maintain twice.
+
+            The desk keeps its own address so a counter machine can be pointed
+            straight at it - that is also what the offline install opens.
+          */}
+          <Route
+            path="/library"
+            element={
+              <PrivateRoute>
+                <RoleRoute roles={['ADMIN', 'STAFF', 'TEACHER']}>
+                  <LibraryLayout />
+                </RoleRoute>
+              </PrivateRoute>
+            }
+          >
+            <Route index element={<Navigate to="/library/desk" replace />} />
+            <Route path="desk" element={<RoleRoute roles={['ADMIN', 'STAFF']}><LibraryDesk /></RoleRoute>} />
+            <Route path="books" element={<RoleRoute roles={['ADMIN', 'STAFF', 'TEACHER']}><LibraryBooks /></RoleRoute>} />
+            <Route path="loans" element={<RoleRoute roles={['ADMIN', 'STAFF', 'TEACHER']}><LibraryLoans /></RoleRoute>} />
+            <Route path="charges" element={<RoleRoute roles={['ADMIN', 'STAFF']}><LibraryCharges /></RoleRoute>} />
+            <Route path="students" element={<RoleRoute roles={['ADMIN', 'STAFF']}><Students /></RoleRoute>} />
+          </Route>
+
+          {/* Where the old in-portal addresses used to live, so a bookmark or a
+              link someone saved still lands in the right place. */}
+          <Route path="/students" element={<Navigate to="/library/students" replace />} />
+
           <Route
             path="/"
             element={
@@ -73,11 +106,6 @@ function App() {
             <Route path="courses" element={<Courses />} />
             <Route path="documents" element={<Documents />} />
             <Route path="booklist" element={<RoleRoute roles={['ADMIN', 'STAFF']}><Booklist /></RoleRoute>} />
-            <Route path="library/books" element={<RoleRoute roles={['ADMIN', 'STAFF', 'TEACHER']}><LibraryBooks /></RoleRoute>} />
-            <Route path="library/desk" element={<RoleRoute roles={['ADMIN', 'STAFF']}><LibraryDesk /></RoleRoute>} />
-            <Route path="library/loans" element={<RoleRoute roles={['ADMIN', 'STAFF', 'TEACHER']}><LibraryLoans /></RoleRoute>} />
-            <Route path="library/charges" element={<RoleRoute roles={['ADMIN', 'STAFF']}><LibraryCharges /></RoleRoute>} />
-            <Route path="students" element={<RoleRoute roles={['ADMIN', 'STAFF']}><Students /></RoleRoute>} />
             <Route path="requests" element={<RoleRoute roles={['ADMIN', 'STAFF']}><Requests /></RoleRoute>} />
             <Route path="data-subject-requests" element={<RoleRoute roles={['ADMIN']}><DataSubjectRequests /></RoleRoute>} />
             <Route path="audit-logs" element={<RoleRoute roles={['ADMIN']}><AuditLogs /></RoleRoute>} />

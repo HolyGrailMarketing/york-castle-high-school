@@ -123,7 +123,7 @@ const Students = () => {
 
   return (
     <div className="stu-page">
-      <PageHelp pageKey="students" />
+      <PageHelp pageKey="library/students" />
 
       {toasts.map((toast) => (
         <Toast key={toast.id} message={toast.message} type={toast.type} onClose={() => removeToast(toast.id)} />

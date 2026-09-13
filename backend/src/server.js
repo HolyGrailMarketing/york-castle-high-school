@@ -773,6 +773,19 @@ const staticOptions = {
   },
 };
 
+/**
+ * Short address for the library counter.
+ *
+ * The book rental screens live inside the same React bundle as the admin
+ * portal, which is mounted at /admin, so their real paths are /admin/library/*.
+ * A counter machine is set up once and then used by whoever is on duty, and
+ * "/library/desk" is an address someone can actually be told over the phone.
+ */
+app.get(['/library', '/library/*'], (req, res) => {
+  const rest = req.path.replace(/^\/library\/?/, '');
+  res.redirect(302, `/admin/library/${rest}`);
+});
+
 // Serve admin dashboard (built React app)
 const adminDistPath = path.join(projectRoot, 'admin-dashboard/dist');
 if (fs.existsSync(adminDistPath)) {

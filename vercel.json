@@ -27,6 +27,14 @@
       "destination": "/admin/index.html"
     },
     {
+      "source": "/library",
+      "destination": "/api/index.mjs"
+    },
+    {
+      "source": "/library/:path*",
+      "destination": "/api/index.mjs"
+    },
+    {
       "source": "/:file.html",
       "destination": "/api/index.mjs"
     }
