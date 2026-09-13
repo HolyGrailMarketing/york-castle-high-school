@@ -155,6 +155,19 @@ export const PAGE_HELP: Record<string, PageHelp> = {
     ],
   },
 
+  'library/charges': {
+    key: 'library/charges',
+    title: 'Book Charges',
+    summary: 'What each student owes for book rental, damage or replacement. This records the amount only \u2014 it does not take payment.',
+    roles: OFFICE,
+    actions: [
+      { label: 'See who owes what', detail: 'One row per charge. Filter by form class to get a list for a form teacher. The figure at the top is the school-wide total; when you filter, a second figure shows what the list in front of you adds up to.' },
+      { label: 'Charge the term\u2019s rental', detail: 'Raise Term Rental adds the rental fee for every book currently out. It shows you how many students and how much before anything is saved. Running it twice does not charge anyone twice.' },
+      { label: 'Cancel a charge', detail: 'Cancel removes the amount owed and asks why. It is recorded against your name and cannot be undone here. Only an administrator can do it.' },
+      { label: 'Hand the list to the bursary', detail: 'Export CSV downloads the outstanding amounts with student numbers and form classes. Payment is taken and recorded at the bursary, never here \u2014 a charge stays on this list until someone cancels it.' },
+    ],
+  },
+
   'library/loans': {
     key: 'library/loans',
     title: 'Book Loans',

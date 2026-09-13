@@ -1,0 +1,29 @@
+/* Book Charges page. Classes prefixed `chg-`. */
+
+.chg-header-actions { display: flex; gap: 0.5rem; }
+
+.chg-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px,1fr)); gap: 1rem; margin: 1rem 0 1.5rem; }
+.chg-summary > div { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.85rem 1rem; }
+.chg-summary > div.is-filtered { border-style: dashed; }
+.chg-summary strong { display: block; font-size: 1.4rem; color: #111827; }
+.chg-summary span { font-size: 0.8rem; color: #6b7280; }
+
+.chg-filters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+.chg-tab { padding: 0.45rem 0.9rem; border: 1px solid #d1d5db; border-radius: 999px; background: #fff; font-size: 0.9rem; cursor: pointer; }
+.chg-tab.is-active { background: #1a1a2e; border-color: #1a1a2e; color: #fff; }
+.chg-filters select { padding: 0.45rem 0.6rem; border: 1px solid #d1d5db; border-radius: 6px; margin-left: auto; }
+
+.chg-loading { color: #6b7280; }
+.chg-sub { display: block; font-size: 0.78rem; color: #6b7280; }
+
+.chg-amount-col { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chg-row--waived { opacity: 0.6; }
+.chg-struck { text-decoration: line-through; }
+.chg-waived { display: block; font-size: 0.75rem; color: #6d28d9; }
+
+.chg-modal-intro { margin: 0 0 1rem; color: #4b5563; font-size: 0.9rem; }
+.chg-preview { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 0.85rem; margin-bottom: 1rem; max-height: 260px; overflow: auto; }
+.chg-preview ul { margin: 0.5rem 0 0; padding-left: 1.1rem; font-size: 0.85rem; }
+.chg-preview li { padding: 0.1rem 0; }
+
+@media (max-width: 560px) { .chg-filters select { margin-left: 0; width: 100%; } }

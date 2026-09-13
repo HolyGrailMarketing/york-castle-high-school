@@ -29,6 +29,7 @@ import LibraryBooks from './pages/LibraryBooks';
 import Students from './pages/Students';
 import LibraryDesk from './pages/LibraryDesk';
 import LibraryLoans from './pages/LibraryLoans';
+import LibraryCharges from './pages/LibraryCharges';
 import Requests from './pages/Requests';
 import Analytics from './pages/Analytics';
 import DataSubjectRequests from './pages/DataSubjectRequests';
@@ -75,6 +76,7 @@ function App() {
             <Route path="library/books" element={<RoleRoute roles={['ADMIN', 'STAFF', 'TEACHER']}><LibraryBooks /></RoleRoute>} />
             <Route path="library/desk" element={<RoleRoute roles={['ADMIN', 'STAFF']}><LibraryDesk /></RoleRoute>} />
             <Route path="library/loans" element={<RoleRoute roles={['ADMIN', 'STAFF', 'TEACHER']}><LibraryLoans /></RoleRoute>} />
+            <Route path="library/charges" element={<RoleRoute roles={['ADMIN', 'STAFF']}><LibraryCharges /></RoleRoute>} />
             <Route path="students" element={<RoleRoute roles={['ADMIN', 'STAFF']}><Students /></RoleRoute>} />
             <Route path="requests" element={<RoleRoute roles={['ADMIN', 'STAFF']}><Requests /></RoleRoute>} />
             <Route path="data-subject-requests" element={<RoleRoute roles={['ADMIN']}><DataSubjectRequests /></RoleRoute>} />

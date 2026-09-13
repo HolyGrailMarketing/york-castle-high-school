@@ -17,6 +17,7 @@ export interface User {
   notifySixthFormApps?: boolean;
   notifyAdmissions?: boolean;
   notifyOverdueRequests?: boolean;
+  notifyOverdueBooks?: boolean;
   createdAt: string;
   updatedAt?: string;
 }
@@ -324,6 +325,22 @@ export interface StudentProfile {
   notes?: string | null;
   createdAt: string;
   activeLoans: number;
+}
+
+export interface BookChargeRow {
+  id: string;
+  type: ChargeType;
+  amount: number;
+  currency: string;
+  status: ChargeStatus;
+  reason: string | null;
+  academicYear: string;
+  term: number | null;
+  raisedAt: string;
+  waivedAt: string | null;
+  waiveReason: string | null;
+  student: { id: string; name: string; formClass: string | null; studentNumber: string | null } | null;
+  book: { title: string; barcode: string } | null;
 }
 
 export interface BookLoanRow {

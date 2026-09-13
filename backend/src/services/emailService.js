@@ -206,6 +206,49 @@ export const sendOverdueRequestsEscalation = async (details, to) => {
   await sendEmail(to, template.subject, template.text, template.html);
 };
 
+// --- textbook rental --------------------------------------------------------
+
+/**
+ * Who is emailed the daily digest of overdue books.
+ *
+ * A separate list from the document-request escalation: the librarian wants the
+ * books, the principal wants the requests. Deliberately not falling back to
+ * ALWAYS_NOTIFY_EMAILS - if nobody has opted in, nobody is chased, rather than
+ * a general inbox being filled with a list it cannot act on.
+ */
+export const getOverdueBookRecipients = async () => {
+  const users = await prisma.user.findMany({
+    where: { notifyOverdueBooks: true },
+    select: { email: true },
+  });
+  return users
+    .map((u) => u.email)
+    // .invalid is reserved by RFC 2606 and can never be delivered to. It is
+    // what desk registration and the seed script use for accounts with no real
+    // address, so filtering here keeps test data from generating bounces.
+    .filter((email) => email && !email.endsWith('.invalid'));
+};
+
+export const sendBookDueSoon = async ({ email, ...details }) => {
+  const template = templates.bookDueSoon(details);
+  await sendEmail(email, template.subject, template.text, template.html);
+};
+
+export const sendBookOverdueStudent = async ({ email, ...details }) => {
+  const template = templates.bookOverdueStudent(details);
+  await sendEmail(email, template.subject, template.text, template.html);
+};
+
+export const sendBookOverdueStaffDigest = async (details, to) => {
+  const template = templates.bookOverdueStaffDigest(details);
+  await sendEmail(to, template.subject, template.text, template.html);
+};
+
+export const sendBookChargeRaised = async ({ email, ...details }) => {
+  const template = templates.bookChargeRaised(details);
+  await sendEmail(email, template.subject, template.text, template.html);
+};
+
 export const sendRequestAssignmentNotification = async (email, details) => {
   const template = templates.requestAssignment(details);
   await sendEmail(email, template.subject, template.text, template.html);

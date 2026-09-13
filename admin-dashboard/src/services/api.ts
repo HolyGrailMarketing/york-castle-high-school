@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { User, Application, SixthFormApplication, SixthFormReadiness, SixthFormInterview, AcceptanceLetterDetails, Course, BlogPost, Event, Document, BooklistEntry, Request, Book, BookCopy, BookCondition, CopyStatus, CopyLabel, GenerateCopiesResult, StudentProfile, StudentLoanSummary, BookCharge, StudentVerification, YearGroupOption, BookLoanRow, LoanSummary } from '../types';
+import type { User, Application, SixthFormApplication, SixthFormReadiness, SixthFormInterview, AcceptanceLetterDetails, Course, BlogPost, Event, Document, BooklistEntry, Request, Book, BookCopy, BookCondition, CopyStatus, CopyLabel, GenerateCopiesResult, StudentProfile, StudentLoanSummary, BookCharge, StudentVerification, YearGroupOption, BookLoanRow, LoanSummary, BookChargeRow, ChargeType } from '../types';
 
 // Use relative path since everything is served from the same server
 // This works in both development and production when served from backend
@@ -58,7 +58,7 @@ class ApiService {
     return this.request<{ user: User }>('GET', `/users/${id}`);
   }
 
-  async createUser(data: { email: string; password?: string; name: string; role?: string; phone?: string; authMethod?: 'EMAIL' | 'GOOGLE'; notifyGeneralRequests?: boolean; notifySixthFormApps?: boolean; notifyAdmissions?: boolean; notifyOverdueRequests?: boolean }) {
+  async createUser(data: { email: string; password?: string; name: string; role?: string; phone?: string; authMethod?: 'EMAIL' | 'GOOGLE'; notifyGeneralRequests?: boolean; notifySixthFormApps?: boolean; notifyAdmissions?: boolean; notifyOverdueRequests?: boolean; notifyOverdueBooks?: boolean }) {
     return this.request<{ user: User }>('POST', '/users', data);
   }
 
@@ -246,6 +246,42 @@ class ApiService {
 
   async deleteBooklistEntry(id: string) {
     return this.request('DELETE', `/booklist/${id}`);
+  }
+
+  // Textbook rental - charges
+  async getCharges(params?: { status?: string; type?: string; formClass?: string; studentId?: string; limit?: number }) {
+    const query = params
+      ? '?' + new URLSearchParams(
+          Object.entries(params)
+            .filter(([, v]) => v !== undefined && v !== '')
+            .map(([k, v]) => [k, String(v)])
+        ).toString()
+      : '';
+    return this.request<{ charges: BookChargeRow[]; pagination: any; summary: { outstandingTotal: number; outstandingCount: number } }>('GET', `/library/charges${query}`);
+  }
+
+  async createCharge(data: { studentId: string; type: ChargeType; amount: number; reason?: string }) {
+    return this.request<{ charge: BookChargeRow }>('POST', '/library/charges', data);
+  }
+
+  async waiveCharge(id: string, reason: string) {
+    return this.request<{ charge: BookChargeRow; message: string }>('POST', `/library/charges/${id}/waive`, { reason });
+  }
+
+  async runRentalCharges(dryRun: boolean) {
+    return this.request<{
+      dryRun?: boolean; loans?: number; students?: number; total?: number;
+      sample?: { student: string; formClass: string | null; title: string; amount: number }[];
+      created?: number; message?: string;
+    }>('POST', '/library/charges/rental-run', { dryRun });
+  }
+
+  async exportChargesCsv() {
+    const response = await axios.get(`${API_BASE_URL}/library/charges/export.csv`, {
+      headers: { Authorization: `Bearer ${this.token}` },
+      responseType: 'blob',
+    });
+    return response.data as Blob;
   }
 
   // Textbook rental - loans

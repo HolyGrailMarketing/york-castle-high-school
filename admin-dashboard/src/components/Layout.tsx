@@ -114,6 +114,7 @@ const Layout = () => {
     { path: '/library/desk',          label: 'Issue & Return',     icon: '🔁', roles: ['ADMIN', 'STAFF'] },
     { path: '/library/books',         label: 'Textbooks',          icon: '📕', roles: ['ADMIN', 'STAFF', 'TEACHER'] },
     { path: '/library/loans',         label: 'Book Loans',         icon: '🔖', roles: ['ADMIN', 'STAFF', 'TEACHER'] },
+    { path: '/library/charges',       label: 'Book Charges',       icon: '💰', roles: ['ADMIN', 'STAFF'] },
     { path: '/students',              label: 'Students',           icon: '🧑‍🎓', roles: ['ADMIN', 'STAFF'] },
     { path: '/requests',              label: 'Requests',           icon: '📬', roles: ['ADMIN', 'STAFF'] },
     { path: '/data-subject-requests', label: 'Data Subject Rights',icon: '🔒', roles: ['ADMIN'] },
