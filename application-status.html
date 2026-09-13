@@ -427,6 +427,7 @@
   </footer>
     <!-- END SHARED FOOTER -->
 
+  <script src="js/portal-auth.js"></script>
   <script>
     const API = '/api';
 
@@ -627,9 +628,15 @@
       sessionStorage.removeItem('sf_token');
       goSignIn();
     }
-    document.getElementById('signout-btn').addEventListener('click', signOut);
-    document.getElementById('nav-signout').addEventListener('click', signOut);
-    document.getElementById('error-back-btn').addEventListener('click', function() {
+    // Bound defensively. #nav-signout used to live in this page's own nav; the
+    // shared partial in partials/site-nav.html does not have it, so the plain
+    // form of this threw a TypeError here and aborted the rest of the script -
+    // which meant the token was never read and the page sat on "Loading" for
+    // every signed-in student. Optional chaining so one missing control cannot
+    // take the whole page down again.
+    document.getElementById('signout-btn')?.addEventListener('click', signOut);
+    document.getElementById('nav-signout')?.addEventListener('click', signOut);
+    document.getElementById('error-back-btn')?.addEventListener('click', function() {
       sessionStorage.removeItem('sf_token');
       goSignIn();
     });
@@ -752,28 +759,15 @@
       }
     });
 
-    // Accept a token handed over from the sign-in page (?token=), or bounce any
-    // sign-in error back to the unified sign-in page to show there.
-    (function captureToken() {
-      const params = new URLSearchParams(window.location.search);
-      const oauthError = params.get('error');
-      if (oauthError) {
-        window.location.replace('signin.html?error=' + encodeURIComponent(oauthError));
-        return;
-      }
-      const oauthToken = params.get('token');
-      if (oauthToken) {
-        sessionStorage.setItem('sf_token', oauthToken);
-        history.replaceState({}, document.title, window.location.pathname);
-      }
-    })();
-
-    // Require a session — otherwise send the visitor to the sign-in page
-    const saved = sessionStorage.getItem('sf_token');
+    // Accept a token handed over from the sign-in page (?token=), bounce any
+    // sign-in error back there, and scrub the URL. Shared with my-books.html
+    // through js/portal-auth.js, so this security-sensitive handling is written
+    // once rather than copied onto every portal page.
+    const saved = window.portalAuth.captureToken();
     if (saved) {
       loadApplication(saved);
     } else {
-      goSignIn();
+      window.portalAuth.goSignIn();
     }
 
   </script>
