@@ -1,0 +1,142 @@
+/*
+ * Textbooks page. Every class is prefixed `lib-`: page stylesheets are imported
+ * globally in this app, so unprefixed names collide across pages.
+ */
+
+.lib-header-actions { display: flex; gap: 0.5rem; }
+
+/* Summary strip ----------------------------------------------------------- */
+
+.lib-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0 1.5rem;
+}
+.lib-summary > div {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+}
+.lib-summary strong { display: block; font-size: 1.5rem; line-height: 1.2; color: #111827; }
+.lib-summary span { font-size: 0.8rem; color: #6b7280; }
+
+/* Filters ----------------------------------------------------------------- */
+
+.lib-filters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+.lib-filters input[type='search'] { flex: 1 1 240px; min-width: 0; }
+.lib-filters input, .lib-filters select {
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.lib-loading { color: #6b7280; padding: 1rem 0; }
+
+/* Titles table ------------------------------------------------------------ */
+
+.lib-title-button {
+  background: none; border: none; padding: 0;
+  font: inherit; font-weight: 600; color: #1a1a2e;
+  cursor: pointer; text-align: left;
+}
+.lib-title-button:hover { text-decoration: underline; }
+
+.lib-author { display: block; font-size: 0.8rem; color: #6b7280; }
+.lib-retired { opacity: 0.6; }
+
+.lib-badge {
+  display: inline-block; margin-left: 0.5rem; padding: 0.1rem 0.45rem;
+  border-radius: 999px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+}
+.lib-badge--retired { background: #f3f4f6; color: #6b7280; }
+
+/* Copies ------------------------------------------------------------------ */
+
+.lib-copies-row > td { background: #f9fafb; padding: 1rem; }
+.lib-empty-copies { color: #6b7280; margin: 0; }
+
+.lib-copies-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 0.75rem; font-size: 0.85rem; color: #6b7280;
+}
+
+.lib-copies-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.lib-copies-table th {
+  text-align: left; padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid #e5e7eb; color: #6b7280; font-weight: 600;
+}
+.lib-copies-table td { padding: 0.4rem 0.5rem; border-bottom: 1px solid #f1f2f4; }
+.lib-copies-table code { font-size: 0.85rem; }
+.lib-copies-table select { padding: 0.2rem 0.35rem; border: 1px solid #d1d5db; border-radius: 4px; }
+
+.lib-copy--withdrawn { opacity: 0.55; }
+
+/* Status is never colour alone - the word is always there too. */
+.lib-status { font-weight: 600; text-transform: capitalize; }
+.lib-status--available { color: #047857; }
+.lib-status--on_loan { color: #b45309; }
+.lib-status--repair { color: #6d28d9; }
+.lib-status--lost { color: #b91c1c; }
+.lib-status--withdrawn { color: #6b7280; }
+
+.lib-withdrawn-reason { display: block; font-size: 0.75rem; color: #6b7280; }
+
+/* Forms ------------------------------------------------------------------- */
+
+.lib-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 560px) { .lib-form-row { grid-template-columns: 1fr; } }
+
+.lib-year-picker { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.lib-year-picker label {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.3rem 0.6rem; border: 1px solid #d1d5db; border-radius: 999px;
+  font-size: 0.85rem; cursor: pointer; user-select: none;
+}
+.lib-year-picker label.is-on { border-color: #1a1a2e; background: #1a1a2e; color: #fff; }
+
+.lib-progress { color: #b45309; font-size: 0.85rem; }
+
+/* Label sheet ------------------------------------------------------------- */
+
+.lib-labels-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: #fff; overflow: auto; padding: 1rem;
+}
+.lib-labels-bar {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding-bottom: 1rem; border-bottom: 1px solid #e5e7eb; margin-bottom: 1rem;
+}
+.lib-labels-bar span { margin-right: auto; color: #6b7280; font-size: 0.9rem; }
+
+/* Sized for a common 3-across sheet of address labels. */
+.lib-labels-sheet {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.25rem;
+}
+.lib-label {
+  border: 1px dashed #d1d5db;
+  padding: 0.4rem 0.5rem;
+  height: 2.54cm;
+  display: flex; flex-direction: column; justify-content: center;
+  overflow: hidden;
+}
+.lib-label-title {
+  font-size: 0.7rem; font-weight: 600; line-height: 1.15;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+/* Real Code 128 bars, drawn as SVG by components/library/BarcodeLabel.tsx. */
+.lib-label-svg { display: block; width: 100%; max-height: 1.4cm; }
+.lib-label-meta { font-size: 0.6rem; color: #6b7280; }
+
+@media print {
+  /* Print the sheet alone: no sidebar, no toolbar, no dashed guides. */
+  body * { visibility: hidden; }
+  .lib-labels-overlay, .lib-labels-overlay * { visibility: visible; }
+  .lib-labels-overlay { position: absolute; inset: 0; padding: 0; }
+  .lib-labels-bar { display: none; }
+  .lib-label { border: none; break-inside: avoid; }
+}

@@ -1,7 +1,7 @@
 import express from 'express';
 import { register, login, logout, getMe, updateMe, googleAuth, googleCallback, forgotPassword, resetPassword } from '../controllers/authController.js';
 import { authenticate } from '../middleware/auth.js';
-import { registerValidation, loginValidation, forgotPasswordValidation, resetPasswordValidation, handleValidationErrors, sanitizeBody } from '../utils/validation.js';
+import { registerValidation, studentProfileValidation, loginValidation, forgotPasswordValidation, resetPasswordValidation, handleValidationErrors, sanitizeBody } from '../utils/validation.js';
 import { authLimiter, generalLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
@@ -35,7 +35,7 @@ const router = express.Router();
  *       400:
  *         description: Validation error
  */
-router.post('/register', authLimiter, sanitizeBody, registerValidation, handleValidationErrors, register);
+router.post('/register', authLimiter, sanitizeBody, registerValidation, studentProfileValidation, handleValidationErrors, register);
 
 /**
  * @swagger

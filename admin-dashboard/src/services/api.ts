@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { User, Application, SixthFormApplication, SixthFormReadiness, SixthFormInterview, AcceptanceLetterDetails, Course, BlogPost, Event, Document, BooklistEntry, Request } from '../types';
+import type { User, Application, SixthFormApplication, SixthFormReadiness, SixthFormInterview, AcceptanceLetterDetails, Course, BlogPost, Event, Document, BooklistEntry, Request, Book, BookCopy, BookCondition, CopyStatus, CopyLabel, GenerateCopiesResult, StudentProfile, StudentLoanSummary, BookCharge, StudentVerification, YearGroupOption, BookLoanRow, LoanSummary, BookChargeRow, ChargeType } from '../types';
 
 // Use relative path since everything is served from the same server
 // This works in both development and production when served from backend
@@ -58,7 +58,7 @@ class ApiService {
     return this.request<{ user: User }>('GET', `/users/${id}`);
   }
 
-  async createUser(data: { email: string; password?: string; name: string; role?: string; phone?: string; authMethod?: 'EMAIL' | 'GOOGLE'; notifyGeneralRequests?: boolean; notifySixthFormApps?: boolean; notifyAdmissions?: boolean; notifyOverdueRequests?: boolean }) {
+  async createUser(data: { email: string; password?: string; name: string; role?: string; phone?: string; authMethod?: 'EMAIL' | 'GOOGLE'; notifyGeneralRequests?: boolean; notifySixthFormApps?: boolean; notifyAdmissions?: boolean; notifyOverdueRequests?: boolean; notifyOverdueBooks?: boolean }) {
     return this.request<{ user: User }>('POST', '/users', data);
   }
 
@@ -246,6 +246,159 @@ class ApiService {
 
   async deleteBooklistEntry(id: string) {
     return this.request('DELETE', `/booklist/${id}`);
+  }
+
+  // Textbook rental - charges
+  async getCharges(params?: { status?: string; type?: string; formClass?: string; studentId?: string; limit?: number }) {
+    const query = params
+      ? '?' + new URLSearchParams(
+          Object.entries(params)
+            .filter(([, v]) => v !== undefined && v !== '')
+            .map(([k, v]) => [k, String(v)])
+        ).toString()
+      : '';
+    return this.request<{ charges: BookChargeRow[]; pagination: any; summary: { outstandingTotal: number; outstandingCount: number } }>('GET', `/library/charges${query}`);
+  }
+
+  async createCharge(data: { studentId: string; type: ChargeType; amount: number; reason?: string }) {
+    return this.request<{ charge: BookChargeRow }>('POST', '/library/charges', data);
+  }
+
+  async waiveCharge(id: string, reason: string) {
+    return this.request<{ charge: BookChargeRow; message: string }>('POST', `/library/charges/${id}/waive`, { reason });
+  }
+
+  async runRentalCharges(dryRun: boolean) {
+    return this.request<{
+      dryRun?: boolean; loans?: number; students?: number; total?: number;
+      sample?: { student: string; formClass: string | null; title: string; amount: number }[];
+      created?: number; message?: string;
+    }>('POST', '/library/charges/rental-run', { dryRun });
+  }
+
+  async exportChargesCsv() {
+    const response = await axios.get(`${API_BASE_URL}/library/charges/export.csv`, {
+      headers: { Authorization: `Bearer ${this.token}` },
+      responseType: 'blob',
+    });
+    return response.data as Blob;
+  }
+
+  // Textbook rental - loans
+  async getLoans(params?: { status?: string; overdue?: boolean; formClass?: string; studentId?: string; needsReview?: boolean; page?: number; limit?: number }) {
+    const query = params
+      ? '?' + new URLSearchParams(
+          Object.entries(params)
+            .filter(([, v]) => v !== undefined && v !== '')
+            .map(([k, v]) => [k, String(v)])
+        ).toString()
+      : '';
+    return this.request<{ loans: BookLoanRow[]; pagination: any; summary: LoanSummary }>('GET', `/loans${query}`);
+  }
+
+  async markLoanLost(id: string, note?: string) {
+    return this.request<{ message: string }>('POST', `/loans/${id}/mark-lost`, { note });
+  }
+
+  async bulkReturn(data: { formClass?: string; bookId?: string; condition?: BookCondition; dryRun?: boolean }) {
+    return this.request<{ dryRun?: boolean; count?: number; returned?: number; message?: string; loans?: any[] }>('POST', '/loans/bulk-return', data);
+  }
+
+  // Textbook rental - students
+  async getStudents(params?: { q?: string; verification?: string; formClass?: string; yearGroup?: number; owes?: boolean; page?: number; limit?: number }) {
+    const query = params
+      ? '?' + new URLSearchParams(
+          Object.entries(params)
+            .filter(([, v]) => v !== undefined && v !== '')
+            .map(([k, v]) => [k, String(v)])
+        ).toString()
+      : '';
+    return this.request<{ students: StudentProfile[]; pagination: any; unverifiedCount: number }>('GET', `/students${query}`);
+  }
+
+  async getStudentDetail(id: string) {
+    return this.request<{
+      student: StudentProfile;
+      loans: StudentLoanSummary[];
+      charges: BookCharge[];
+      outstandingTotal: number;
+    }>('GET', `/students/${id}`);
+  }
+
+  async updateStudentProfile(id: string, data: Partial<StudentProfile>) {
+    return this.request<{ student: StudentProfile }>('PUT', `/students/${id}`, data);
+  }
+
+  async verifyStudent(id: string, data: { verification: StudentVerification; formClass?: string; yearGroup?: number; studentNumber?: string; note?: string }) {
+    return this.request<{ student: StudentProfile; message: string }>('POST', `/students/${id}/verify`, data);
+  }
+
+  async deskRegisterStudent(data: { name: string; email?: string; formClass: string; yearGroup?: number; studentNumber?: string; guardianName?: string; guardianPhone?: string }) {
+    return this.request<{ student: StudentProfile; needsEmail: boolean; message: string }>('POST', '/students/desk-register', data);
+  }
+
+  async getSchoolClasses() {
+    return this.request<{ yearGroups: YearGroupOption[]; formClasses: string[] }>('GET', '/students/classes');
+  }
+
+  // Textbook rental - catalogue
+  async getBooks(params?: { q?: string; subject?: string; yearGroup?: number; isActive?: boolean }) {
+    const query = params
+      ? '?' + new URLSearchParams(
+          Object.entries(params)
+            .filter(([, v]) => v !== undefined && v !== '')
+            .map(([k, v]) => [k, String(v)])
+        ).toString()
+      : '';
+    return this.request<{ books: Book[] }>('GET', `/library/books${query}`);
+  }
+
+  async getBook(id: string) {
+    return this.request<{ book: Book }>('GET', `/library/books/${id}`);
+  }
+
+  async createBook(data: Partial<Book>) {
+    return this.request<{ book: Book }>('POST', '/library/books', data);
+  }
+
+  async updateBook(id: string, data: Partial<Book>) {
+    return this.request<{ book: Book }>('PUT', `/library/books/${id}`, data);
+  }
+
+  async retireBook(id: string) {
+    return this.request<{ book: Book; message: string }>('DELETE', `/library/books/${id}`);
+  }
+
+  async getSubjects() {
+    return this.request<{ subjects: string[] }>('GET', '/library/subjects');
+  }
+
+  async getBookCopies(bookId: string) {
+    return this.request<{ copies: BookCopy[] }>('GET', `/library/books/${bookId}/copies`);
+  }
+
+  async generateCopies(bookId: string, data: { count: number; condition?: BookCondition; acquiredAt?: string }) {
+    return this.request<GenerateCopiesResult>('POST', `/library/books/${bookId}/copies`, data);
+  }
+
+  async updateCopy(id: string, data: { condition?: BookCondition; status?: CopyStatus; withdrawnReason?: string }) {
+    return this.request<{ copy: BookCopy }>('PATCH', `/library/copies/${id}`, data);
+  }
+
+  async getCopyLabels(params: { batchId?: string; ids?: string[] }) {
+    const query = params.batchId
+      ? `?batchId=${encodeURIComponent(params.batchId)}`
+      : `?ids=${encodeURIComponent((params.ids || []).join(','))}`;
+    return this.request<{ labels: CopyLabel[] }>('GET', `/library/copies/labels${query}`);
+  }
+
+  /** Downloads rather than returning data, so it bypasses request(). */
+  async exportCopiesCsv() {
+    const response = await axios.get(`${API_BASE_URL}/library/copies/export.csv`, {
+      headers: { Authorization: `Bearer ${this.token}` },
+      responseType: 'blob',
+    });
+    return response.data as Blob;
   }
 
   // Requests

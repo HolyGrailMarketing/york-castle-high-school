@@ -17,6 +17,7 @@ export interface User {
   notifySixthFormApps?: boolean;
   notifyAdmissions?: boolean;
   notifyOverdueRequests?: boolean;
+  notifyOverdueBooks?: boolean;
   createdAt: string;
   updatedAt?: string;
 }
@@ -214,6 +215,191 @@ export interface BooklistEntry {
   uploadedBy?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+// --- Textbook rental -------------------------------------------------------
+
+export type BookCondition = 'NEW' | 'GOOD' | 'FAIR' | 'POOR' | 'DAMAGED';
+export type CopyStatus = 'AVAILABLE' | 'ON_LOAN' | 'REPAIR' | 'LOST' | 'WITHDRAWN';
+export type LoanStatus = 'ACTIVE' | 'RETURNED' | 'LOST' | 'WRITTEN_OFF';
+export type ChargeType = 'RENTAL' | 'LOST' | 'DAMAGE';
+export type ChargeStatus = 'OUTSTANDING' | 'WAIVED';
+export type StudentVerification = 'UNVERIFIED' | 'VERIFIED' | 'REJECTED';
+
+/** Copy counts per status. `total` excludes WITHDRAWN - it is "how many books
+ *  do we have", not "how many rows are there". */
+export interface CopyCounts {
+  AVAILABLE: number;
+  ON_LOAN: number;
+  REPAIR: number;
+  LOST: number;
+  WITHDRAWN: number;
+  total: number;
+}
+
+export interface Book {
+  id: string;
+  title: string;
+  author?: string | null;
+  publisher?: string | null;
+  edition?: string | null;
+  isbn?: string | null;
+  subject: string;
+  yearGroups: number[];
+  replacementCost: number;
+  rentalFee: number;
+  isActive: boolean;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  /** Present on list and detail responses, not on create/update. */
+  copies?: CopyCounts;
+}
+
+export interface CopyHolder {
+  id: string;
+  name: string;
+  formClass: string | null;
+  studentNumber: string | null;
+}
+
+export interface BookCopy {
+  id: string;
+  bookId: string;
+  barcode: string;
+  copyNumber: number;
+  condition: BookCondition;
+  status: CopyStatus;
+  acquiredAt?: string | null;
+  batchId?: string | null;
+  withdrawnAt?: string | null;
+  withdrawnReason?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  /** Read from the ACTIVE loan, which is the authoritative record of who holds
+   *  the copy - not from `status`, which is a derived cache. */
+  currentLoan?: {
+    id: string;
+    issuedAt: string;
+    dueAt: string;
+    student: CopyHolder;
+  } | null;
+}
+
+export interface CopyLabel {
+  barcode: string;
+  copyNumber: number;
+  title: string;
+  subject: string;
+}
+
+export interface GenerateCopiesResult {
+  batchId: string;
+  count: number;
+  firstBarcode: string;
+  lastBarcode: string;
+  barcodes: string[];
+  message: string;
+}
+
+export interface StudentProfile {
+  id: string;
+  userId: string;
+  name: string;
+  email: string;
+  phone?: string | null;
+  studentNumber: string | null;
+  /** What the office has confirmed. */
+  yearGroup: number | null;
+  formClass: string | null;
+  /** What the student typed at sign-up. Kept even after the office corrects
+   *  the confirmed fields, so the two can be compared. */
+  claimedYearGroup: number | null;
+  claimedFormClass: string | null;
+  guardianName: string | null;
+  guardianPhone: string | null;
+  verification: StudentVerification;
+  verifiedAt: string | null;
+  registeredAtDesk: boolean;
+  loanCap: number | null;
+  notes?: string | null;
+  createdAt: string;
+  activeLoans: number;
+}
+
+export interface BookChargeRow {
+  id: string;
+  type: ChargeType;
+  amount: number;
+  currency: string;
+  status: ChargeStatus;
+  reason: string | null;
+  academicYear: string;
+  term: number | null;
+  raisedAt: string;
+  waivedAt: string | null;
+  waiveReason: string | null;
+  student: { id: string; name: string; formClass: string | null; studentNumber: string | null } | null;
+  book: { title: string; barcode: string } | null;
+}
+
+export interface BookLoanRow {
+  id: string;
+  status: LoanStatus;
+  issuedAt: string;
+  dueAt: string;
+  returnedAt: string | null;
+  overdue: boolean;
+  needsReview: boolean;
+  reviewReason: string | null;
+  issuedCondition: BookCondition;
+  returnedCondition: BookCondition | null;
+  barcode: string;
+  title: string;
+  subject: string;
+  replacementCost: number;
+  student: { id: string; name: string; formClass: string | null; studentNumber: string | null };
+}
+
+export interface LoanSummary {
+  active: number;
+  overdue: number;
+  needsReview: number;
+}
+
+export interface StudentLoanSummary {
+  id: string;
+  status: LoanStatus;
+  issuedAt: string;
+  dueAt: string;
+  returnedAt: string | null;
+  barcode: string;
+  title: string;
+  subject: string;
+}
+
+export interface BookCharge {
+  id: string;
+  studentId: string;
+  loanId: string | null;
+  copyId: string | null;
+  type: ChargeType;
+  amount: number;
+  currency: string;
+  academicYear: string;
+  term: number | null;
+  status: ChargeStatus;
+  reason: string | null;
+  raisedAt: string;
+  waivedAt: string | null;
+  waiveReason: string | null;
+}
+
+export interface YearGroupOption {
+  yearGroup: number;
+  label: string;
+  formClasses: string[];
+  undivided: boolean;
 }
 
 export interface Request {

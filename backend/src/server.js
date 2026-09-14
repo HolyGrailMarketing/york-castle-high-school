@@ -37,6 +37,9 @@ import eventRoutes from './routes/events.js';
 import courseRoutes from './routes/courses.js';
 import documentRoutes from './routes/documents.js';
 import booklistRoutes from './routes/booklist.js';
+import libraryRoutes from './routes/library.js';
+import studentRoutes from './routes/students.js';
+import loanRoutes from './routes/loans.js';
 import requestRoutes from './routes/requests.js';
 import analyticsRoutes from './routes/analytics.js';
 import healthRoutes from './routes/health.js';
@@ -148,6 +151,18 @@ if (!process.env.VERCEL && !process.env.VERCEL_ENV) {
 const app = express();
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
+
+/**
+ * Files that must always be revalidated, never cached for a year.
+ *
+ * The HTML shell, because a deploy points it at a new hashed bundle. And the
+ * service worker files, more urgently: an immutable service worker is a
+ * library counter that can never be updated - offline, at a desk, with no way
+ * to fix it remotely. Applied at every place below that sets an immutable
+ * header, because more than one static handler can serve the same file and
+ * whichever matches first wins.
+ */
+const NEVER_CACHE = /(^|[\\/])(sw\.js|workbox-[^\\/]+\.js|manifest\.webmanifest|[^\\/]+\.html)$/;
 
 // Configure trust proxy for serverless/proxy environments (Vercel, etc.)
 // This is required for express-rate-limit and security headers to work correctly
@@ -327,7 +342,9 @@ const serveStaticWithFallback = (route, dirName) => {
             }
             
             // Set cache headers for static assets
-            if (NODE_ENV === 'production') {
+            if (NEVER_CACHE.test(filePath)) {
+              res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+            } else if (NODE_ENV === 'production') {
               res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
             } else {
               res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
@@ -443,7 +460,9 @@ if (!process.env.VERCEL && !process.env.VERCEL_ENV) {
             if (mimeTypes[ext]) {
               res.setHeader('Content-Type', mimeTypes[ext]);
             }
-            if (NODE_ENV === 'production') {
+            if (NEVER_CACHE.test(filePath)) {
+              res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+            } else if (NODE_ENV === 'production') {
               res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
             }
             
@@ -503,7 +522,9 @@ if (!process.env.VERCEL && !process.env.VERCEL_ENV) {
             if (mimeTypes[ext]) {
               res.setHeader('Content-Type', mimeTypes[ext]);
             }
-            if (NODE_ENV === 'production') {
+            if (NEVER_CACHE.test(filePath)) {
+              res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+            } else if (NODE_ENV === 'production') {
               res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
             }
           }
@@ -575,6 +596,9 @@ app.use('/api/events', eventRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/booklist', booklistRoutes);
+app.use('/api/library', libraryRoutes);
+app.use('/api/students', studentRoutes);
+app.use('/api/loans', loanRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/data-subject', dataSubjectRoutes);
@@ -737,11 +761,30 @@ const staticOptions = {
     // Content-hashed assets are immutable and can be cached for a year, but
     // index.html must always revalidate so new deploys (which reference a new
     // hashed bundle) are picked up instead of serving a stale cached page.
-    if (filePath.endsWith('.html')) {
+    //
+    // The service worker and its manifest must revalidate for the same reason,
+    // and more urgently: maxAge above would otherwise hand out the library
+    // counter's worker with a year-long lifetime, and a station stuck on a
+    // stale worker cannot be updated at all - offline, at a counter, with no
+    // way to fix it remotely.
+    if (NEVER_CACHE.test(filePath)) {
       res.setHeader('Cache-Control', 'no-cache, must-revalidate');
     }
   },
 };
+
+/**
+ * Short address for the library counter.
+ *
+ * The book rental screens live inside the same React bundle as the admin
+ * portal, which is mounted at /admin, so their real paths are /admin/library/*.
+ * A counter machine is set up once and then used by whoever is on duty, and
+ * "/library/desk" is an address someone can actually be told over the phone.
+ */
+app.get(['/library', '/library/*'], (req, res) => {
+  const rest = req.path.replace(/^\/library\/?/, '');
+  res.redirect(302, `/admin/library/${rest}`);
+});
 
 // Serve admin dashboard (built React app)
 const adminDistPath = path.join(projectRoot, 'admin-dashboard/dist');

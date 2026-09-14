@@ -5,7 +5,7 @@
   "outputDirectory": "public",
   "crons": [
     {
-      "path": "/api/cron/overdue-requests",
+      "path": "/api/cron/daily",
       "schedule": "0 12 * * 1-5"
     }
   ],
@@ -25,6 +25,14 @@
     {
       "source": "/admin/:path*",
       "destination": "/admin/index.html"
+    },
+    {
+      "source": "/library",
+      "destination": "/api/index.mjs"
+    },
+    {
+      "source": "/library/:path*",
+      "destination": "/api/index.mjs"
     },
     {
       "source": "/:file.html",
@@ -101,6 +109,28 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/admin/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/admin/"
+        }
+      ]
+    },
+    {
+      "source": "/admin/manifest.webmanifest",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
         }
       ]
     }

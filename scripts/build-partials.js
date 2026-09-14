@@ -55,6 +55,7 @@ const PAGES = {
   'privacy-policy.html': 'full',
   'terms-of-service.html': 'full',
   'application-status.html': 'full',
+  'my-books.html': 'full',
   'data-subject-request.html': 'full',
   'sixth-form-application.html': 'full',
   'reset-password.html': 'minimal',
