@@ -126,6 +126,75 @@ export const PAGE_HELP: Record<string, PageHelp> = {
     ],
   },
 
+  'library/students': {
+    key: 'library/students',
+    title: 'Students',
+    summary: 'Students who have made their own account on the website, and whether the office has confirmed their year and class.',
+    roles: OFFICE,
+    actions: [
+      { label: 'Confirm a new student', detail: 'Students type their own year and class when they sign up, so it has to be checked against the class register before they can borrow anything. Open a student, correct the class if they got it wrong, and press Confirm.' },
+      { label: 'Work through the backlog', detail: 'The Not confirmed tab is your queue \u2014 everyone waiting to be allowed to borrow books. The number on the tab is how many are left.' },
+      { label: 'Spot a disagreement', detail: 'Where the class you confirmed is not the one the student typed, the list shows both. The student\u2019s own claim is never overwritten, so you can always see what they said.' },
+      { label: 'Register someone at the counter', detail: 'Register at Desk creates the account for a student standing in front of you and confirms them at the same time, so the queue does not stop. Add their email if they have one; they set their own password afterwards with Forgot password, and you should never type a password for them.' },
+      { label: 'Look someone up', detail: 'Search by name, student number or email. Owes money lists everyone with an unpaid charge.' },
+    ],
+  },
+
+  'library/desk': {
+    key: 'library/desk',
+    title: 'Issue & Return',
+    summary: 'The counter screen \u2014 scan a student, then scan their books out or back in.',
+    roles: OFFICE,
+    actions: [
+      { label: 'Give a student their books', detail: 'Scan the student\u2019s card, or type their student number and press Enter. Their name stays on screen until you press Esc, so you can do a whole stack of books without scanning them again.' },
+      { label: 'Take books back', detail: 'Scan the book on its own \u2014 you do not need the student. The screen tells you whose it was. If a book comes back damaged, set the condition to Damaged before you scan it.' },
+      { label: 'Set the condition', detail: 'The buttons above the list set the condition for the next book scanned back. The keyboard shortcuts are G, F, P and D. Damaged raises a charge for the cost of the book and sends the copy for repair rather than back on the shelf.' },
+      { label: 'When someone cannot be given a book', detail: 'A yellow bar explains why \u2014 usually the office has not confirmed their year and class yet, or they already have as many books as they are allowed. Send them to the office; do not hand the book over.' },
+      { label: 'Undo a mistake', detail: 'Every scan has an Undo button for ten seconds. After that, scan the book back in instead \u2014 the school\u2019s records already show it moving, so the correction has to be another movement.' },
+      { label: 'Keep the box armed', detail: 'The scanner types into whatever is selected on screen. The box says Ready to scan in green when it is listening; if it says Click here, click it before you scan.' },
+    ],
+  },
+
+  'library/charges': {
+    key: 'library/charges',
+    title: 'Book Charges',
+    summary: 'What each student owes for book rental, damage or replacement. This records the amount only \u2014 it does not take payment.',
+    roles: OFFICE,
+    actions: [
+      { label: 'See who owes what', detail: 'One row per charge. Filter by form class to get a list for a form teacher. The figure at the top is the school-wide total; when you filter, a second figure shows what the list in front of you adds up to.' },
+      { label: 'Charge the term\u2019s rental', detail: 'Raise Term Rental adds the rental fee for every book currently out. It shows you how many students and how much before anything is saved. Running it twice does not charge anyone twice.' },
+      { label: 'Cancel a charge', detail: 'Cancel removes the amount owed and asks why. It is recorded against your name and cannot be undone here. Only an administrator can do it.' },
+      { label: 'Hand the list to the bursary', detail: 'Export CSV downloads the outstanding amounts with student numbers and form classes. Payment is taken and recorded at the bursary, never here \u2014 a charge stays on this list until someone cancels it.' },
+    ],
+  },
+
+  'library/loans': {
+    key: 'library/loans',
+    title: 'Book Loans',
+    summary: 'Every book currently with a student, and everything that has been lent this year.',
+    roles: ALL_STAFF,
+    actions: [
+      { label: 'See who is late', detail: 'The Overdue tab shows books past their return date. This is the list to chase in person.' },
+      { label: 'Collect a whole class at the end of term', detail: 'End of Term Return takes back every book one form class still has. It shows you the full list first \u2014 read it before confirming, because it changes a lot of records at once and cannot be undone in bulk.' },
+      { label: 'Record a book as lost', detail: 'Mark Lost closes the loan and charges the student the full replacement cost of the book. The charge shows on Book Charges and on the student\u2019s own page.' },
+      { label: 'Check something that looks wrong', detail: 'Needs review lists loans the system was not certain about \u2014 usually recorded on a counter computer while it was offline, or given to a student who had not been confirmed. Each one says why.' },
+    ],
+  },
+
+  'library/books': {
+    key: 'library/books',
+    title: 'Textbooks',
+    summary: 'Every title the school lends, and every physical copy of it with its own barcode.',
+    roles: ALL_STAFF,
+    actions: [
+      { label: 'Add a title', detail: 'Add Textbook records the book itself \u2014 title, subject, which years use it, and what it costs to replace. It does not add any copies yet.' },
+      { label: 'Add copies you have bought', detail: 'Open a title and use Add Copies. Enter how many; the system gives each one its own barcode in order. Larger orders are sent in batches of 500 and you get one label sheet covering all of them.' },
+      { label: 'Print the barcode labels', detail: 'After adding copies a label sheet opens \u2014 use your browser\u2019s Print. It prints a real scannable barcode with the code underneath, three across, sized for ordinary address label sheets. You can reprint a title\u2019s labels any time from Print Labels in its copy list.' },
+      { label: 'Retire a damaged copy', detail: 'Withdraw sets one copy out of circulation and asks why. Its history is kept, but nobody can scan it out again. A copy that is currently with a student cannot be withdrawn \u2014 take it back first.' },
+      { label: 'Get the list out as a spreadsheet', detail: 'Export CSV downloads every copy with its barcode, condition and who has it, for stocktaking.' },
+    ],
+  },
+
   booklist: {
     key: 'booklist',
     title: 'Booklist',
@@ -190,6 +259,70 @@ export type GlossaryEntry = {
  * attached to the place it appears with <Hint term="…" />.
  */
 export const GLOSSARY: GlossaryEntry[] = [
+  {
+    term: 'pending-scans',
+    label: 'Scans waiting',
+    definition:
+      'Scans made while the counter computer had no internet. They are saved on that computer and send themselves as soon as the connection comes back. Nothing is lost \u2014 but they are only on that one machine, so do not shut it down for the day while the number is above zero. If you have to, print today\u2019s scans first.',
+  },
+
+  {
+    term: 'station',
+    label: 'Counter computer (station)',
+    definition:
+      'The computer at the library counter running the Issue & Return screen. Each one has a short name so two counters can be told apart when their records disagree about who has a book.',
+  },
+  {
+    term: 'needs-attention',
+    label: 'Needs attention',
+    definition:
+      'A scan the school\u2019s records would not accept \u2014 nearly always because the book was already recorded as out to a different student. The system will not guess which is right, because only someone who can see the actual book knows. Find out who has it, then choose.',
+  },
+  {
+    term: 'end-of-term-return',
+    label: 'End of Term Return',
+    definition:
+      'Marking every book from one form class returned at once, for the collection at the end of term. It affects a whole class in one action and cannot be undone in bulk \u2014 check the list on screen before confirming.',
+  },
+
+  {
+    term: 'verified-student',
+    label: 'Confirmed student',
+    definition:
+      'A student whose year group and form class the office has checked against the class register. Students type their own when they sign up, so anyone can claim to be in Grade 13. Only confirmed students can be given books; everyone else shows as Not confirmed at the counter.',
+  },
+  {
+    term: 'desk-registration',
+    label: 'Register at Desk',
+    definition:
+      'Creating an account for a student who turns up without one, right at the counter, and confirming them in the same step so they can be given their books immediately. They set their own password afterwards. It exists so one unregistered student does not hold up the queue.',
+  },
+
+  {
+    term: 'copy-barcode',
+    label: 'Copy barcode',
+    definition:
+      'The label stuck inside one individual book, like YCHS-000123. Every physical copy has its own, even when twenty copies are the same title \u2014 that is how the school knows which one a particular student has, and what condition that one was in. It is not the ISBN printed by the publisher.',
+  },
+  {
+    term: 'condition-grade',
+    label: 'Condition',
+    definition:
+      'How worn a copy is, recorded both when it goes out and when it comes back: New, Good, Fair, Poor or Damaged. The pair is what settles an argument about whether a student damaged a book or was handed it that way, so set it honestly on the way out as well as the way in.',
+  },
+  {
+    term: 'withdrawn-copy',
+    label: 'Withdrawn copy',
+    definition:
+      'A copy taken out of circulation for good \u2014 destroyed, lost beyond recovery, or too damaged to lend. Its history stays on record and the barcode is never reused, but it cannot be scanned out to anyone again.',
+  },
+  {
+    term: 'rental-fee',
+    label: 'Rental fee',
+    definition:
+      'What a student is charged for having a book for the term. It is recorded against them by the office once a term, not automatically when the book is handed over.',
+  },
+
   {
     term: 'section-d',
     label: 'Section D (CAPE subject stream selection)',

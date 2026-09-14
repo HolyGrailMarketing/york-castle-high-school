@@ -1,4 +1,5 @@
 import { body, param, query, validationResult } from 'express-validator';
+import { isValidFormClass } from '../services/schoolClasses.js';
 
 // XSS sanitization helper
 const sanitizeInput = (value) => {
@@ -72,6 +73,37 @@ export const registerValidation = [
     .withMessage('Name is required and must be less than 100 characters')
     .matches(/^[a-zA-Z\s'-]+$/)
     .withMessage('Name can only contain letters, spaces, hyphens, and apostrophes'),
+];
+
+// Optional student details on sign-up. A student may leave the whole block
+// out - the office can fill it in later - but if a form class is given it has
+// to be one the school actually has, checked against services/schoolClasses.js
+// so the list lives in exactly one place.
+export const studentProfileValidation = [
+  body('studentProfile.formClass')
+    .optional({ nullable: true, checkFalsy: true })
+    .isString()
+    .custom((value) => isValidFormClass(value))
+    .withMessage("That is not one of the school's form classes"),
+  body('studentProfile.yearGroup')
+    .optional({ nullable: true, checkFalsy: true })
+    .isInt({ min: 7, max: 13 })
+    .withMessage('Year group must be between 7 and 13'),
+  body('studentProfile.studentNumber')
+    .optional({ nullable: true, checkFalsy: true })
+    .trim().isLength({ max: 32 })
+    .withMessage('Student number must be 32 characters or fewer'),
+  body('studentProfile.guardianName')
+    .optional({ nullable: true, checkFalsy: true })
+    .trim().isLength({ max: 100 })
+    .withMessage("Parent or guardian's name must be 100 characters or fewer"),
+  body('studentProfile.guardianPhone')
+    .optional({ nullable: true, checkFalsy: true })
+    .trim().isLength({ max: 32 })
+    .withMessage("Parent or guardian's phone must be 32 characters or fewer"),
+  body('studentProfile.guardianEmail')
+    .optional({ nullable: true, checkFalsy: true })
+    .isEmail().withMessage("Parent or guardian's email must be a valid address"),
 ];
 
 export const loginValidation = [

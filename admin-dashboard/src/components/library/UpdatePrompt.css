@@ -1,0 +1,10 @@
+.upd {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem;
+  padding: 0.8rem 1rem; margin-bottom: 1rem;
+  background: #eef2ff; border-left: 6px solid #4338ca; border-radius: 10px; color: #312e81;
+}
+.upd > div:first-child { display: flex; flex-direction: column; gap: 0.15rem; }
+.upd strong { font-size: 1rem; }
+.upd span { font-size: 0.87rem; }
+.upd-actions { display: flex; gap: 0.5rem; margin-left: auto; }
+.upd-actions button:disabled { opacity: 0.5; cursor: not-allowed; }

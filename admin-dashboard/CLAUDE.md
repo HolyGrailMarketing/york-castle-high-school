@@ -31,6 +31,12 @@ Anything else that offers a route — dashboard shortcuts, stat cards, help entr
 filter on the same role strings, or a teacher gets offered a page that bounces them back
 to the dashboard. `PAGE_HELP` entries carry a `roles` field for exactly this.
 
+The book rental section is the one exception: it has its own shell and its own nav in
+`src/components/LibraryLayout.tsx`, because the person at the library counter has no use
+for Applications or Blog Posts. Its `NAV` is the source of truth for those five screens,
+and the `library/*` `PAGE_HELP` entries must match it rather than `allNavItems`. The admin
+sidebar carries one `/library` link into the section.
+
 ## Conventions
 
 - `.field-hint` (defined once, in `src/index.css`) is the helper text under a form field.

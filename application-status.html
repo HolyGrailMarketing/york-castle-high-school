@@ -10,9 +10,208 @@
   <link href="images/favicon.ico" rel="shortcut icon" type="image/x-icon">
   <link href="images/webclip.png" rel="apple-touch-icon">
   <style>
+    /* No hero image on this page for the header to float over, so put it back
+       in flow. site-nav.css positions .site-header absolutely for the hero
+       pages, which would otherwise overlap the top of this page's content. */
+    .site-header { position: relative !important; background: #1a1a1a !important; }
+
     * { box-sizing: border-box; }
 
-    /* Override absolute positioning used on hero pages — let header flow naturally */
+    .status-hero {
+      background: linear-gradient(135deg, #0e0e10 0%, #17171b 55%, #241d06 100%);
+      border-bottom: 3px solid #d4af37;
+      padding: 40px 24px 50px;
+      text-align: center;
+      color: #fff;
+    }
+    .status-hero h1 {
+      font-size: clamp(24px, 4vw, 40px);
+      font-weight: 700;
+      margin: 0 0 10px;
+      font-family: Georgia, serif;
+      color: #f0d066;
+    }
+    .status-hero p { color: rgba(255,255,255,0.7); font-size: 15px; margin: 0; }
+
+    #app {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 48px 20px 80px;
+    }
+
+    /* Card */
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 32px 28px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      border: 1px solid #f3f4f6;
+    }
+
+    /* Form */
+    .form-title   { font: 700 22px/1.2 Georgia, serif; color: #1a1a2e; margin: 0 0 6px; }
+    .form-subtitle { font: 400 14px/1.5 -apple-system,sans-serif; color: #6b7280; margin: 0 0 28px; }
+
+    .field { margin-bottom: 18px; }
+    .field label { display: block; font: 600 13px/1 -apple-system,sans-serif; color: #374151; margin-bottom: 6px; }
+    .field input {
+      width: 100%; padding: 12px 14px;
+      border: 1.5px solid #e5e7eb; border-radius: 10px;
+      font: 400 15px/1 -apple-system,sans-serif;
+      outline: none; transition: border-color .15s;
+    }
+    .field input:focus { border-color: #d4af37; }
+
+    .btn-primary {
+      width: 100%; padding: 14px;
+      background: #141417; color: #f0d066;
+      border: 1px solid #141417; border-radius: 10px;
+      font: 600 15px/1 -apple-system,sans-serif; letter-spacing: .2px;
+      cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+    }
+    .btn-primary:hover { background: #d4af37; color: #141417; border-color: #d4af37; }
+    .btn-primary:disabled { background: #9ca3af; color: #fff; border-color: #9ca3af; cursor: not-allowed; }
+
+    .oauth-divider {
+      display: flex; align-items: center; text-align: center;
+      margin: 22px 0 18px; color: #9ca3af;
+      font: 500 12px/1 -apple-system,sans-serif; text-transform: uppercase; letter-spacing: .5px;
+    }
+    .oauth-divider::before, .oauth-divider::after {
+      content: ''; flex: 1; height: 1px; background: #e5e7eb;
+    }
+    .oauth-divider span { padding: 0 12px; }
+
+    .btn-google {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 13px;
+      background: #fff; color: #374151;
+      border: 1.5px solid #e5e7eb; border-radius: 10px;
+      font: 600 15px/1 -apple-system,sans-serif;
+      cursor: pointer; text-decoration: none; transition: background .15s, border-color .15s;
+    }
+    .btn-google:hover { background: #f9fafb; border-color: #d1d5db; }
+
+    .form-footer {
+      text-align: center;
+      margin-top: 20px;
+      font: 400 13px/1.5 -apple-system,sans-serif;
+      color: #9ca3af;
+    }
+    .form-footer a { color: #d4af37; font-weight: 600; text-decoration: none; }
+
+    .alert {
+      padding: 12px 14px; border-radius: 10px;
+      font: 400 14px/1.5 -apple-system,sans-serif;
+      margin-bottom: 20px;
+    }
+    .alert-error { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+    .alert-success { background: #f0fdf4; border: 1px solid #86efac; color: #166534; }
+
+    .field textarea, .field select {
+      width: 100%; padding: 12px 14px;
+      border: 1.5px solid #e5e7eb; border-radius: 10px;
+      font: 400 15px/1.4 -apple-system,sans-serif;
+      outline: none; transition: border-color .15s; resize: vertical;
+    }
+    .field textarea:focus, .field select:focus { border-color: #d4af37; }
+    .field input:disabled { background: #f9fafb; color: #9ca3af; cursor: not-allowed; }
+    .field-hint { font: 400 12px/1.4 -apple-system,sans-serif; color: #9ca3af; margin: 6px 0 0; }
+    .field-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0 16px; }
+    .checkbox-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+    .checkbox-list label {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border: 1.5px solid #e5e7eb; border-radius: 10px;
+      font: 400 14px/1.3 -apple-system,sans-serif; color: #374151; cursor: pointer;
+      margin-bottom: 0; /* .field label adds 6px, which double-spaces the grid */
+    }
+    /* `.field input` above is written for full-width text inputs. It also matches
+       these checkboxes, stretching each one to 100% and pushing its label to the
+       far right, so opt them back out. */
+    .checkbox-list input[type="checkbox"] {
+      width: auto; flex: 0 0 auto;
+      margin: 0; padding: 0; border-radius: 0;
+      accent-color: #d4af37;
+    }
+    .checkbox-list label.checked { border-color: #d4af37; background: #fdfbf0; }
+    .checkbox-list-empty { font: 400 13px/1.5 -apple-system,sans-serif; color: #9ca3af; }
+    .section-heading { font: 700 13px/1 -apple-system,sans-serif; color: #1a1a2e; text-transform: uppercase; letter-spacing: .5px; margin: 28px 0 14px; padding-top: 18px; border-top: 1px solid #f3f4f6; }
+    .section-heading:first-of-type { margin-top: 8px; padding-top: 0; border-top: none; }
+
+    .dash-actions { display: flex; gap: 10px; align-items: center; }
+    .btn-edit {
+      font: 600 13px/1 -apple-system,sans-serif; color: #f0d066;
+      background: #141417; border: 1px solid #141417; border-radius: 8px;
+      padding: 9px 16px; cursor: pointer; white-space: nowrap;
+      transition: background .15s, color .15s, border-color .15s;
+      text-decoration: none; display: inline-block;
+    }
+    .btn-edit:hover { background: #d4af37; color: #141417; border-color: #d4af37; }
+    .locked-note {
+      background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px;
+      padding: 12px 16px; margin-bottom: 20px;
+      font: 400 14px/1.5 -apple-system,sans-serif; color: #6b7280;
+    }
+    .edit-actions { display: flex; gap: 12px; margin-top: 24px; }
+    .edit-actions .btn-primary { width: auto; flex: 1; }
+
+    /* Status dashboard */
+    .dash-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      flex-wrap: wrap; gap: 12px; margin-bottom: 24px;
+    }
+    .dash-header h2 { font: 700 22px/1.2 Georgia,serif; color: #1a1a2e; margin: 0 0 4px; }
+    .dash-header p  { font: 400 14px/1 -apple-system,sans-serif; color: #6b7280; margin: 0; }
+
+    .btn-signout {
+      font: 500 13px/1 -apple-system,sans-serif; color: #6b7280;
+      background: none; border: 1.5px solid #e5e7eb; border-radius: 8px;
+      padding: 8px 16px; cursor: pointer; white-space: nowrap;
+    }
+
+    .status-card {
+      border-radius: 16px; border-width: 2px; border-style: solid;
+      padding: 24px; margin-bottom: 20px;
+    }
+    .status-icon-wrap {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 12px;
+    }
+    .status-label { font: 700 18px/1 -apple-system,sans-serif; margin-bottom: 4px; }
+    .status-date  { font: 400 13px/1 -apple-system,sans-serif; color: #6b7280; }
+    .status-msg   { font: 400 14px/1.6 -apple-system,sans-serif; margin: 14px 0 0; padding-top: 14px; border-top-width: 1px; border-top-style: solid; }
+
+    .details-card { margin-bottom: 20px; }
+    .details-card h3 { font: 700 14px/1 -apple-system,sans-serif; color: #1a1a2e; margin: 0 0 18px; }
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px 24px;
+    }
+    .detail-item-label {
+      font: 600 11px/1 -apple-system,sans-serif;
+      color: #9ca3af; text-transform: uppercase; letter-spacing: .5px;
+      margin-bottom: 4px;
+    }
+    .detail-item-value { font: 400 14px/1.4 -apple-system,sans-serif; color: #1a1a1a; }
+
+    .notes-card {
+      background: #f8fafc; border: 1px solid #e2e8f0;
+      border-radius: 14px; padding: 20px 24px; margin-bottom: 20px;
+    }
+    .notes-card h3 { font: 700 14px/1 -apple-system,sans-serif; color: #374151; margin: 0 0 10px; }
+    .notes-card p  { font: 400 14px/1.6 -apple-system,sans-serif; color: #4b5563; margin: 0; }
+
+    .contact-prompt {
+      text-align: center; padding-top: 16px;
+      font: 400 14px/1.5 -apple-system,sans-serif; color: #9ca3af;
+    }
+    .contact-prompt a { color: #d4af37; font-weight: 600; text-decoration: none; }
+
+    .hidden { display: none !important; }
+    .loading-msg { text-align: center; padding: 60px 24px; color: #6b7280; font: 400 15px/1 -apple-system,sans-serif; }
+  
   </style>
 </head>
 <body class="body-2">
@@ -83,6 +282,7 @@
                 <li><a href="application-form.html" class="dropdown-item">General Admission Form</a></li>
                 <li><a href="request-student-information.html" class="dropdown-item">Request Student Information</a></li>
                 <li><a href="sixth-form-application.html" class="dropdown-item">Sixth Form Application</a></li><li><a href="application-status.html" aria-current="page" class="dropdown-item">Check Application Status</a></li>
+                <li><a href="my-books.html" class="dropdown-item">My Books</a></li>
                 <li><a href="info-on-colleges.html" class="dropdown-item">Information on Colleges</a></li>
                 <li><a href="teachers.html" class="dropdown-item">Staff Directory</a></li>
                 <li><a href="#" class="dropdown-item">Student Handbook</a></li>
@@ -427,6 +627,7 @@
   </footer>
     <!-- END SHARED FOOTER -->
 
+  <script src="js/portal-auth.js"></script>
   <script>
     const API = '/api';
 
@@ -627,9 +828,15 @@
       sessionStorage.removeItem('sf_token');
       goSignIn();
     }
-    document.getElementById('signout-btn').addEventListener('click', signOut);
-    document.getElementById('nav-signout').addEventListener('click', signOut);
-    document.getElementById('error-back-btn').addEventListener('click', function() {
+    // Bound defensively. #nav-signout used to live in this page's own nav; the
+    // shared partial in partials/site-nav.html does not have it, so the plain
+    // form of this threw a TypeError here and aborted the rest of the script -
+    // which meant the token was never read and the page sat on "Loading" for
+    // every signed-in student. Optional chaining so one missing control cannot
+    // take the whole page down again.
+    document.getElementById('signout-btn')?.addEventListener('click', signOut);
+    document.getElementById('nav-signout')?.addEventListener('click', signOut);
+    document.getElementById('error-back-btn')?.addEventListener('click', function() {
       sessionStorage.removeItem('sf_token');
       goSignIn();
     });
@@ -752,28 +959,15 @@
       }
     });
 
-    // Accept a token handed over from the sign-in page (?token=), or bounce any
-    // sign-in error back to the unified sign-in page to show there.
-    (function captureToken() {
-      const params = new URLSearchParams(window.location.search);
-      const oauthError = params.get('error');
-      if (oauthError) {
-        window.location.replace('signin.html?error=' + encodeURIComponent(oauthError));
-        return;
-      }
-      const oauthToken = params.get('token');
-      if (oauthToken) {
-        sessionStorage.setItem('sf_token', oauthToken);
-        history.replaceState({}, document.title, window.location.pathname);
-      }
-    })();
-
-    // Require a session — otherwise send the visitor to the sign-in page
-    const saved = sessionStorage.getItem('sf_token');
+    // Accept a token handed over from the sign-in page (?token=), bounce any
+    // sign-in error back there, and scrub the URL. Shared with my-books.html
+    // through js/portal-auth.js, so this security-sensitive handling is written
+    // once rather than copied onto every portal page.
+    const saved = window.portalAuth.captureToken();
     if (saved) {
       loadApplication(saved);
     } else {
-      goSignIn();
+      window.portalAuth.goSignIn();
     }
 
   </script>

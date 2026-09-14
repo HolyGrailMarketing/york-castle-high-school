@@ -1,0 +1,42 @@
+/* Students page. Classes prefixed `stu-` - page CSS is global in this app. */
+
+.stu-tabs { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+
+.stu-tab {
+  padding: 0.45rem 0.9rem;
+  border: 1px solid #d1d5db; border-radius: 999px; background: #fff;
+  font-size: 0.9rem; cursor: pointer;
+}
+.stu-tab.is-active { background: #1a1a2e; border-color: #1a1a2e; color: #fff; }
+.stu-tab-count {
+  display: inline-block; margin-left: 0.4rem; padding: 0 0.4rem;
+  border-radius: 999px; background: #b45309; color: #fff; font-size: 0.75rem; font-weight: 700;
+}
+.stu-tab.is-active .stu-tab-count { background: #f59e0b; }
+
+.stu-search { display: flex; gap: 0.4rem; margin-left: auto; }
+.stu-search input { padding: 0.45rem 0.65rem; border: 1px solid #d1d5db; border-radius: 6px; min-width: 230px; }
+
+.stu-loading { color: #6b7280; padding: 1rem 0; }
+.stu-muted { color: #9ca3af; }
+
+.stu-email { display: block; font-size: 0.8rem; color: #6b7280; }
+.stu-flag { display: block; font-size: 0.72rem; color: #6d28d9; }
+
+/* Shown when the office's confirmed class differs from the student's claim -
+   the disagreement is the interesting part, so it is visible in the list. */
+.stu-claimed { display: block; font-size: 0.72rem; color: #b45309; }
+
+/* Never colour alone: each status carries its own word. */
+.stu-status { font-weight: 600; }
+.stu-status--verified { color: #047857; }
+.stu-status--unverified { color: #b45309; }
+.stu-status--rejected { color: #b91c1c; }
+
+.stu-modal-intro { margin: 0 0 1rem; color: #4b5563; font-size: 0.9rem; }
+.stu-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 560px) { .stu-form-row { grid-template-columns: 1fr; } .stu-search { margin-left: 0; width: 100%; } }
+
+/* Reject sits away from Confirm so the destructive one is not the easy click. */
+.stu-confirm-actions { display: flex; gap: 0.5rem; }
+.stu-confirm-actions .btn-delete { margin-left: auto; }

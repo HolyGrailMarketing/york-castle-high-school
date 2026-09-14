@@ -871,6 +871,153 @@ export const templates = {
       text: `${subject}\n\nDear ${name},\n\n${textParagraphs}\n\nQuestions? yorkcastle.high.san@moey.gov.jm or +1 876 975-2217.\n\nBest regards,\nYork Castle High School`,
     };
   },
+
+  // --- textbook rental ------------------------------------------------------
+
+  /** A few days before a student's books are due back. */
+  bookDueSoon: ({ name, books }) => {
+    const count = books.length;
+    const subject = `Your school ${count === 1 ? 'book is' : 'books are'} due back soon`;
+
+    const rows = books
+      .map(
+        (b) => `
+        <tr>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e5e5;">
+            <strong>${escapeHtml(b.title)}</strong><br>
+            <span style="color: ${schoolColors.textLight}; font-size: 13px;">${escapeHtml(b.barcode)}</span>
+          </td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e5e5; font-size: 14px; white-space: nowrap;">
+            Due ${escapeHtml(b.dueLabel)}
+          </td>
+        </tr>`
+      )
+      .join('');
+
+    const content = `
+      <h2 style="color: ${schoolColors.secondary}; margin-top: 0;">Books due back soon</h2>
+      <p>Dear ${escapeHtml(name)},</p>
+      <p>${count === 1 ? 'This school book is' : `These ${count} school books are`} due back at the library shortly. Please bring ${count === 1 ? 'it' : 'them'} in on or before the date shown.</p>
+      <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px;">
+        <tbody>${rows}</tbody>
+      </table>
+      <p>If you have already handed ${count === 1 ? 'it' : 'them'} in, please ignore this message.</p>
+    `;
+
+    const text =
+      `${subject}\n\nDear ${name},\n\n` +
+      `${count === 1 ? 'This school book is' : `These ${count} school books are`} due back at the library shortly:\n\n` +
+      books.map((b) => `- ${b.title} (${b.barcode}) - due ${b.dueLabel}`).join('\n') +
+      `\n\nIf you have already handed them in, please ignore this message.\n\nYork Castle High School`;
+
+    return { subject, html: baseTemplate(content, subject), text };
+  },
+
+  /** The student's books are late. */
+  bookOverdueStudent: ({ name, books }) => {
+    const count = books.length;
+    const subject = `Please return your school ${count === 1 ? 'book' : 'books'}`;
+
+    const rows = books
+      .map(
+        (b) => `
+        <tr>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e5e5;">
+            <strong>${escapeHtml(b.title)}</strong><br>
+            <span style="color: ${schoolColors.textLight}; font-size: 13px;">${escapeHtml(b.barcode)}</span>
+          </td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e5e5; font-size: 14px; white-space: nowrap;">
+            Was due ${escapeHtml(b.dueLabel)}<br>
+            <strong style="color: #b00020;">${b.daysLate} ${b.daysLate === 1 ? 'day' : 'days'} late</strong>
+          </td>
+        </tr>`
+      )
+      .join('');
+
+    const content = `
+      <h2 style="color: ${schoolColors.secondary}; margin-top: 0;">Overdue school ${count === 1 ? 'book' : 'books'}</h2>
+      <p>Dear ${escapeHtml(name)},</p>
+      <p>The library has ${count === 1 ? 'a book' : `${count} books`} recorded as still with you, past the date ${count === 1 ? 'it was' : 'they were'} due back.</p>
+      <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px;">
+        <tbody>${rows}</tbody>
+      </table>
+      <p>Please bring ${count === 1 ? 'it' : 'them'} to the library counter. A book that is lost or damaged has to be paid for at the bursary, so bringing ${count === 1 ? 'it' : 'them'} back promptly matters.</p>
+      <p>If you have already handed ${count === 1 ? 'it' : 'them'} in, tell the library so the record can be corrected.</p>
+    `;
+
+    const text =
+      `${subject}\n\nDear ${name},\n\n` +
+      `The library has ${count === 1 ? 'a book' : `${count} books`} recorded as still with you, past the date they were due back:\n\n` +
+      books.map((b) => `- ${b.title} (${b.barcode}) - due ${b.dueLabel}, ${b.daysLate} ${b.daysLate === 1 ? 'day' : 'days'} late`).join('\n') +
+      `\n\nPlease bring them to the library counter. If you have already handed them in, tell the library so the record can be corrected.\n\nYork Castle High School`;
+
+    return { subject, html: baseTemplate(content, subject), text };
+  },
+
+  /** One digest for staff of everything newly overdue. */
+  bookOverdueStaffDigest: ({ total, students, rows: items }) => {
+    const subject = `${total} overdue school ${total === 1 ? 'book' : 'books'}`;
+
+    const rows = items
+      .map(
+        (item) => `
+        <tr>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e5e5;">
+            <strong>${escapeHtml(item.student)}</strong><br>
+            <span style="color: ${schoolColors.textLight}; font-size: 13px;">${escapeHtml(item.formClass || 'no class')}</span>
+          </td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e5e5; font-size: 13px;">
+            ${escapeHtml(item.title)}<br>
+            <span style="color: ${schoolColors.textLight};">${escapeHtml(item.barcode)}</span>
+          </td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e5e5; font-size: 13px; white-space: nowrap;">
+            Due ${escapeHtml(item.dueLabel)}<br>
+            <strong style="color: #b00020;">${item.daysLate} ${item.daysLate === 1 ? 'day' : 'days'} late</strong>
+          </td>
+        </tr>`
+      )
+      .join('');
+
+    const content = `
+      <h2 style="color: ${schoolColors.secondary}; margin-top: 0;">Overdue school books</h2>
+      <p>${total} ${total === 1 ? 'book has' : 'books have'} passed the return date, across ${students} ${students === 1 ? 'student' : 'students'}. The students have been emailed; this is the list to chase in person.</p>
+      <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px;">
+        <tbody>${rows}</tbody>
+      </table>
+      <p style="color: ${schoolColors.textLight}; font-size: 13px;">You are receiving this because your account is set to receive overdue book alerts. Each book is reported once only.</p>
+    `;
+
+    const text =
+      `${subject}\n\n${total} ${total === 1 ? 'book has' : 'books have'} passed the return date, across ${students} ${students === 1 ? 'student' : 'students'}.\n\n` +
+      items.map((i) => `- ${i.student} (${i.formClass || 'no class'}): ${i.title} (${i.barcode}), due ${i.dueLabel}, ${i.daysLate} ${i.daysLate === 1 ? 'day' : 'days'} late`).join('\n') +
+      `\n\nThe students have been emailed. Each book is reported once only.`;
+
+    return { subject, html: baseTemplate(content, subject), text };
+  },
+
+  /** A charge has been recorded against a student. */
+  bookChargeRaised: ({ name, type, amount, currency, reason, title }) => {
+    const label = type === 'LOST' ? 'a lost book' : type === 'DAMAGE' ? 'a damaged book' : 'book rental';
+    const subject = `Charge recorded for ${label}`;
+    const money = `${currency || 'JMD'} ${Number(amount).toLocaleString('en-JM')}`;
+
+    const content = `
+      <h2 style="color: ${schoolColors.secondary}; margin-top: 0;">Charge for ${escapeHtml(label)}</h2>
+      <p>Dear ${escapeHtml(name)},</p>
+      <p>The school has recorded a charge of <strong>${escapeHtml(money)}</strong> against your name${title ? ` for <strong>${escapeHtml(title)}</strong>` : ''}.</p>
+      ${reason ? `<p style="color: ${schoolColors.textLight};">Reason given: ${escapeHtml(reason)}</p>` : ''}
+      <p><strong>This is paid at the bursary</strong>, not online. You can see everything you owe on the My Books page when you sign in to the school website.</p>
+      <p>If you think this is wrong, speak to the library before paying.</p>
+    `;
+
+    const text =
+      `${subject}\n\nDear ${name},\n\n` +
+      `The school has recorded a charge of ${money} against your name${title ? ` for ${title}` : ''}.\n` +
+      (reason ? `Reason given: ${reason}\n` : '') +
+      `\nThis is paid at the bursary, not online. If you think it is wrong, speak to the library before paying.\n\nYork Castle High School`;
+
+    return { subject, html: baseTemplate(content, subject), text };
+  },
 };
 
 
