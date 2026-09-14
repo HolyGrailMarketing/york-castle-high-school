@@ -111,32 +111,71 @@
 }
 .lib-labels-bar span { margin-right: auto; color: #6b7280; font-size: 0.9rem; }
 
-/* Sized for a common 3-across sheet of address labels. */
+/*
+ * Screen preview. The real geometry is in the @media print block below - on
+ * screen this only has to look roughly right.
+ */
 .lib-labels-sheet {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.25rem;
+  grid-template-columns: repeat(3, 2.625in);
+  column-gap: 0.125in;
+  row-gap: 0;
+  width: 8.5in;
+  margin: 0 auto;
 }
 .lib-label {
   border: 1px dashed #d1d5db;
-  padding: 0.4rem 0.5rem;
-  height: 2.54cm;
+  padding: 0.05in 0.09in;
+  width: 2.625in;
+  height: 1in;
   display: flex; flex-direction: column; justify-content: center;
   overflow: hidden;
 }
 .lib-label-title {
-  font-size: 0.7rem; font-weight: 600; line-height: 1.15;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  font-size: 7pt; font-weight: 600; line-height: 1.1;
+  /* One line. Two lines of title plus the bars does not fit in an inch, and a
+     clipped barcode is worse than a clipped title - the code is printed under
+     the bars anyway. */
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 /* Real Code 128 bars, drawn as SVG by components/library/BarcodeLabel.tsx. */
-.lib-label-svg { display: block; width: 100%; max-height: 1.4cm; }
-.lib-label-meta { font-size: 0.6rem; color: #6b7280; }
+.lib-label-svg { display: block; width: 100%; height: 0.58in; }
+.lib-label-meta { font-size: 5.5pt; color: #6b7280; line-height: 1.1; }
+
+/*
+ * Print geometry, pinned to OnlineLabels OL875 / Avery 5160 stock:
+ * 2.625in x 1in labels, 3 across and 10 down on US Letter, 0.5in top and
+ * bottom margins, 0.1875in side margins, 0.125in between columns and nothing
+ * between rows.
+ *
+ * @page margin is zero so the sheet's own padding positions the first label -
+ * a browser's default page margin would push everything down by half an inch
+ * and every label would straddle two die-cuts.
+ *
+ * Print at 100% scale. "Fit to page" rescales the sheet, which both misaligns
+ * the die-cuts and narrows the bars enough to stop them scanning.
+ */
+@page {
+  size: letter;
+  margin: 0;
+}
 
 @media print {
   /* Print the sheet alone: no sidebar, no toolbar, no dashed guides. */
   body * { visibility: hidden; }
   .lib-labels-overlay, .lib-labels-overlay * { visibility: visible; }
-  .lib-labels-overlay { position: absolute; inset: 0; padding: 0; }
+  .lib-labels-overlay { position: absolute; inset: 0; padding: 0; overflow: visible; }
   .lib-labels-bar { display: none; }
-  .lib-label { border: none; break-inside: avoid; }
+
+  .lib-labels-sheet {
+    width: 8.5in;
+    padding: 0.5in 0.1875in;
+    margin: 0;
+  }
+
+  .lib-label {
+    border: none;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 }
