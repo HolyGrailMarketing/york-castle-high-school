@@ -1,0 +1,7 @@
+{
+  "comment": "Pages that are built and kept in sync but must NOT be reachable. Read by scripts/copy-static-files.sh (to keep them out of public/) and by backend/src/server.js (to refuse them at request time). Both are needed: leaving a page out of public/ is not enough, because Vercel hands any unmatched *.html to the Express function, which serves from the repository root where the file still exists.",
+  "pages": [
+    "timetable.html",
+    "network.html"
+  ]
+}

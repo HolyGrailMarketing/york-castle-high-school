@@ -31,6 +31,7 @@
     "check:overdue": "node scripts/check-overdue-requests.js",
     "seed:booklist": "node scripts/seed-booklist.js",
     "seed:library": "node scripts/seed-library.js",
+    "library:import-rental": "node scripts/import-rental-books.js",
     "library:charges": "node scripts/raise-rental-charges.js",
     "library:reconcile": "node scripts/reconcile-copy-status.js"
   },
