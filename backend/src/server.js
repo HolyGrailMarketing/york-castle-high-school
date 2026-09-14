@@ -754,6 +754,47 @@ app.get('/', (req, res, next) => {
   }
 });
 
+/**
+ * Pages that are built and kept in sync but must not be reachable yet.
+ *
+ * Keeping a page out of public/ is NOT enough on its own. Vercel serves
+ * public/ statically, then hands anything unmatched to this function via the
+ * `/:file.html` rewrite - and the static handlers below fall back to the
+ * repository root, where the file still exists. That is how the unfinished
+ * timetable ended up publicly readable despite being listed as unpublished.
+ *
+ * So the list is enforced here as well, before any static middleware runs.
+ * scripts/copy-static-files.sh reads the same file, so the two cannot drift.
+ */
+const UNPUBLISHED_PAGES = (() => {
+  try {
+    const configPath = path.join(projectRoot, 'config/unpublished-pages.json');
+    const { pages } = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    // Lower-cased: macOS and Windows serve /NETWORK.html from network.html, so
+    // a case-sensitive check would let the page through in local development
+    // even though Linux would not.
+    return new Set(pages.map((page) => page.toLowerCase()));
+  } catch (error) {
+    logger.warn('Could not read config/unpublished-pages.json; no pages will be withheld', {
+      error: error.message,
+    });
+    return new Set();
+  }
+})();
+
+if (UNPUBLISHED_PAGES.size > 0) {
+  logger.info('Withholding unpublished pages', { pages: [...UNPUBLISHED_PAGES] });
+  app.use((req, res, next) => {
+    // Match the bare filename, so /timetable.html and /public/timetable.html
+    // are both refused, and a query string cannot slip past.
+    const name = req.path.replace(/^.*\//, '').toLowerCase();
+    if (UNPUBLISHED_PAGES.has(name)) {
+      return res.status(404).send('Not found');
+    }
+    return next();
+  });
+}
+
 // Serve static files with caching headers (define before use)
 const staticOptions = {
   maxAge: NODE_ENV === 'production' ? '1y' : '0',

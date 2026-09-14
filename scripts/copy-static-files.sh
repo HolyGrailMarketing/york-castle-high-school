@@ -42,19 +42,13 @@ if [ -f "index.html" ]; then
 fi
 
 # Pages that are built and kept in sync, but deliberately NOT published yet.
-# Removing a page's links is not enough on its own - the URL would still resolve
-# and could be found or indexed. Delete the entry here to publish it.
 #
-#   timetable.html - the 2026-2027 timetable is not final; the school does not
-#                    want it visible to students or parents yet.
-#
-#   network.html   - the network map is an internal IT tool. It names every
-#                    switch, its uplinks and which ports are free. The data
-#                    behind it is already ADMIN-only (see routes/network.js),
-#                    so a visitor would see an empty shell - but an internal
-#                    tool has no reason to sit on the public school website at
-#                    all. Delete this entry when the school wants it reachable.
-UNPUBLISHED="timetable.html network.html"
+# The list lives in config/unpublished-pages.json because it is enforced in two
+# places: here, to keep the page out of public/, and in backend/src/server.js,
+# to refuse the request outright. Only doing the first is not enough - Vercel
+# hands any unmatched *.html to the Express function, which serves from the
+# repository root where the file still exists.
+UNPUBLISHED=$(node -e "console.log(require('./config/unpublished-pages.json').pages.join(' '))" 2>/dev/null)
 
 for html_file in *.html; do
   if [ -f "$html_file" ]; then
