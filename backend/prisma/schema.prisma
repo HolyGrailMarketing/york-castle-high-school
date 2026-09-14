@@ -391,6 +391,8 @@ model Teacher {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  timetableLinks TimetableTeacher[]
+
   @@index([department])
   @@index([isActive])
 }
@@ -781,4 +783,226 @@ model BarcodeCounter {
   prefix    String   @default("YCHS-")
   nextValue Int      @default(1)
   updatedAt DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Timetable
+//
+// The school's master timetable, imported from the FET .fet file that has been
+// the only source until now. Moving it here is what lets the office edit a
+// lesson without a round-trip through FET on someone's desktop.
+//
+// The published version is exported back out to data/timetable-public.json by
+// scripts/timetable/export-from-db.js; timetable.html is pre-rendered from that
+// file at build time, so the public page keeps working with JavaScript off.
+// ---------------------------------------------------------------------------
+
+enum TimetableStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model TimetableVersion {
+  id          String          @id @default(uuid())
+  schoolYear  String          // e.g. "2026-2027"
+  label       String          // what an admin calls this draft
+  status      TimetableStatus @default(DRAFT)
+  publishedAt DateTime?
+  createdBy   String?
+  sourceFile  String?         // the .fet it was imported from, if any
+  notes       String?         @db.Text
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  periods    TimetablePeriod[]
+  groups     TimetableGroup[]
+  teachers   TimetableTeacher[]
+  rooms      TimetableRoom[]
+  activities TimetableActivity[]
+
+  @@index([schoolYear])
+  @@index([status])
+  // Only one PUBLISHED version per school year. Enforced in the controller too,
+  // because Prisma cannot express a partial unique index.
+  @@index([schoolYear, status])
+}
+
+model TimetablePeriod {
+  id          String  @id @default(uuid())
+  versionId   String
+  version     TimetableVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  key         String  // "p1", "break" - stable id used by placements
+  label       String  // "Period 1"
+  sortOrder   Int
+  startTime   String? // 24-hour "08:20"; null for a period with no recorded time
+  endTime     String?
+  altStart    String? // the shortened-morning bell, where the school runs one
+  altEnd      String?
+  kind        String  // class | break | lunch | registration | other
+  lunchSitting Int?
+  // Some periods carry a registration window inside them - Period 6 runs
+  // 13:40-14:50 with registration for its first ten minutes. Without these the
+  // exported payload loses that detail.
+  regStart    String?
+  regEnd      String?
+  unused      Boolean @default(false) // in the grid but never scheduled
+  sourceLabel String? // the original FET "hour" name; the join key back to FET
+
+  @@unique([versionId, key])
+  @@index([versionId, sortOrder])
+}
+
+model TimetableGroup {
+  id        String  @id @default(uuid())
+  versionId String
+  version   TimetableVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  name      String  // "7Y", or "11" where the year is not divided
+  yearName  String  // "7"
+  undivided Boolean @default(false)
+  sortOrder Int     @default(0)
+
+  @@unique([versionId, name])
+  @@index([versionId, yearName])
+}
+
+model TimetableTeacher {
+  id        String  @id @default(uuid())
+  versionId String
+  version   TimetableVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  name      String  // the FET spelling, e.g. "Gordon   M" - the join key
+  teacherId String? // optional link to the site's own Teacher record
+  teacher   Teacher? @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+
+  @@unique([versionId, name])
+  @@index([teacherId])
+}
+
+model TimetableRoom {
+  id        String  @id @default(uuid())
+  versionId String
+  version   TimetableVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  name      String
+
+  @@unique([versionId, name])
+}
+
+model TimetableActivity {
+  id           String  @id @default(uuid())
+  versionId    String
+  version      TimetableVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  sourceId     String? // the FET <Id>, kept so a re-import can be matched up
+  subject      String
+  duration     Int     @default(1) // in periods
+  isActive     Boolean @default(true)
+  // Lunch duty and CPS: staff roster entries, not lessons. Excluded from the
+  // public payload and from every class timetable.
+  staffOnly    Boolean @default(false)
+  room         String?
+  // Plain arrays rather than join tables, matching Teacher.subjects. Clash
+  // detection runs in JavaScript over a whole version, so join tables would add
+  // a lot of code for no query benefit.
+  teacherNames String[]
+  groupNames   String[]
+
+  placement TimetablePlacement?
+
+  @@index([versionId])
+  @@index([versionId, staffOnly])
+}
+
+model TimetablePlacement {
+  id         String  @id @default(uuid())
+  versionId  String
+  activityId String  @unique
+  activity   TimetableActivity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  day        String  // "Monday"
+  periodKey  String  // matches TimetablePeriod.key
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([versionId, day, periodKey])
+}
+
+enum NetworkPortStatus {
+  USED
+  FREE
+  UPLINK
+  TRUNK
+  AP
+  UNKNOWN
+}
+
+/// The school's network equipment, one row per switch, router or gateway.
+///
+/// Seeded from NetworkDiagram_R1.xlsx - the spreadsheet the network was
+/// documented in before this page existed - with the E-Lab rack corrected
+/// against a photograph taken in September 2026.
+model NetworkDevice {
+  id            String        @id @default(uuid())
+  /// Stable identifier used by the seed script to upsert, and by the page in
+  /// URLs. Room slug and device slug joined by "--", e.g.
+  /// "e-lab--dream-machine-pro".
+  slug          String        @unique
+  name          String
+  /// The spreadsheet's sheet name, kept so a re-import can match rooms.
+  roomKey       String
+  roomLabel     String
+  sortOrder     Int           @default(0)
+  /// Free text shown above the port grid - why this unit is unusual, e.g. that
+  /// it is missing from the spreadsheet entirely.
+  note          String?
+  /// True when the unit was confirmed against a rack photograph rather than
+  /// only appearing in the spreadsheet.
+  photoVerified Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  ports         NetworkPort[]
+  incomingLinks NetworkPort[] @relation("PortToDevice")
+
+  @@index([roomKey, sortOrder])
+}
+
+/// One physical port. Both the current state and the state it was seeded with
+/// are stored: the page shows "originally recorded as ..." beneath every port
+/// and offers a reset, which is what makes it safe for a helper to correct the
+/// records without losing the original reading.
+model NetworkPort {
+  id               String            @id @default(uuid())
+  deviceId         String
+  device           NetworkDevice     @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  /// Order on the faceplate, 0-based. Also the stable key for a port whose
+  /// label repeats - LGS326 has both an RJ45 25 and an SFP 25.
+  position         Int
+  /// As printed on the unit: "1", "G3", "0/0", "LAN1", "SFP1".
+  label            String
+  /// "RJ45", "SFP", "RJ45(WAN)", "RJ45(Stacking)".
+  connector        String
+  status           NetworkPortStatus @default(UNKNOWN)
+  connection       String?
+  note             String?
+  /// The exact cable: the port at the other end. Unique, because a port has at
+  /// most one cable and it is never shared. Both ends are written together.
+  linkedPortId     String?           @unique
+  linkedPort       NetworkPort?      @relation("PortCable", fields: [linkedPortId], references: [id], onDelete: SetNull)
+  linkedFrom       NetworkPort?      @relation("PortCable")
+  /// The far device, for a cable whose far *port* nobody recorded. Set
+  /// automatically when linkedPortId is, so the diagram can draw an edge from
+  /// either without special-casing.
+  linkedDeviceId   String?
+  linkedDevice     NetworkDevice?    @relation("PortToDevice", fields: [linkedDeviceId], references: [id], onDelete: SetNull)
+  sourceStatus     NetworkPortStatus
+  sourceConnection String?
+  sourceNote       String?
+  updatedById      String?
+  /// Denormalised so the page can show who last touched a port without a join
+  /// to User, and so the name survives if that account is later removed.
+  updatedByName    String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@unique([deviceId, position])
+  @@index([deviceId])
+  @@index([status])
+  @@index([linkedDeviceId])
 }

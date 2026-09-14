@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html data-wf-page="601ac8be96e3805f95927a64" data-wf-site="5ff7c2ade6e719f4bf214be0">
+<head>
+  <meta charset="utf-8">
+  <title>Network Map - York Castle High School</title>
+  <meta content="Internal record of the school's network equipment and every port on it." name="description">
+  <meta content="noindex, nofollow" name="robots">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <link href="css/normalize.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="css/homepage-redesign.css?v=3" rel="stylesheet" type="text/css">
+  <link href="css/site-nav.css" rel="stylesheet" type="text/css">
+  <link href="images/favicon.ico" rel="shortcut icon" type="image/x-icon">
+  <link href="images/webclip.png" rel="apple-touch-icon">
+<style>
+  /* No hero image on this page for the header to float over, so put it back in
+     flow - the same fix booklist.html and privacy-policy.html use. */
+  .site-header { position: relative !important; background: #1a1a1a !important; }
+
+  /* Network map. New "ycn-" prefixed classes only, so nothing here collides
+     with the Webflow theme. Tokens continue the ink/gold/cream palette used on
+     booklist.html, doc-request.html and signin.html; the six port colours are
+     additions, chosen to stay legible against the cream ground. */
+  :root {
+    --yc-ink: #1a1410;
+    --yc-ink-2: #4a3f37;
+    --yc-ink-3: #7a6e62;
+    --yc-gold: #c9a227;
+    --yc-gold-deep: #8a6b16;
+    --yc-gold-soft: #fbf4d8;
+    --yc-line: #e8e0d4;
+    --yc-cream: #faf6ee;
+    --yc-cream-2: #f3ecdd;
+    --yc-paper: #ffffff;
+
+    --ycn-used: #2f7d54;      --ycn-used-bg: #e3f0e8;
+    --ycn-free: #a2988a;
+    --ycn-uplink: #8a6b16;    --ycn-uplink-bg: #fbf1d5;
+    --ycn-trunk: #2f5f9e;     --ycn-trunk-bg: #e4ecf7;
+    --ycn-ap: #8a5a7a;        --ycn-ap-bg: #f4e9f0;
+    --ycn-unknown: #b03a48;   --ycn-unknown-bg: #fae4e6;
+    --ycn-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  body { background-color: #f4f3ea; color: var(--yc-ink); font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .ycn-wrap { max-width: 1140px; margin: 0 auto; padding: 34px 20px 90px; }
+  .ycn-wrap h1, .ycn-wrap h2, .ycn-wrap h3 { font-family: Fraunces, Georgia, serif; text-wrap: balance; margin: 0; color: var(--yc-ink); }
+  .ycn-mono { font-family: var(--ycn-mono); font-variant-numeric: tabular-nums; }
+  .ycn-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--yc-gold-deep); }
+
+  /* --- gate ------------------------------------------------------------- */
+  .ycn-gate { max-width: 520px; margin: 70px auto; background: var(--yc-paper); border: 1px solid var(--yc-line); border-radius: 4px; padding: 32px 34px; text-align: center; }
+  .ycn-gate h2 { font-size: 22px; margin-bottom: 10px; }
+  .ycn-gate p { color: var(--yc-ink-2); font-size: 15px; margin: 0 0 20px; }
+
+  /* --- masthead --------------------------------------------------------- */
+  .ycn-mast { border-bottom: 2px solid var(--yc-ink); padding-bottom: 20px; margin-bottom: 26px; }
+  .ycn-mast h1 { font-size: clamp(30px, 5vw, 46px); font-weight: 700; letter-spacing: -.015em; line-height: 1.05; margin-top: 4px; }
+  .ycn-mast p { margin: 12px 0 0; color: var(--yc-ink-2); max-width: 64ch; font-size: 15.5px; }
+  .ycn-meta { display: flex; flex-wrap: wrap; gap: 8px 26px; margin-top: 16px; }
+  .ycn-meta div { font-size: 12.5px; color: var(--yc-ink-3); }
+  .ycn-meta b { font-family: var(--ycn-mono); font-weight: 600; color: var(--yc-ink); font-size: 13.5px; }
+
+  .ycn-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 1px; background: var(--yc-line); border: 1px solid var(--yc-line); border-radius: 4px; overflow: hidden; margin-bottom: 34px; }
+  .ycn-steps div { background: var(--yc-paper); padding: 14px 16px; }
+  .ycn-steps b { display: block; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--yc-gold-deep); margin-bottom: 4px; }
+  .ycn-steps span { font-size: 13.5px; color: var(--yc-ink-2); }
+
+  .ycn-sec { margin-bottom: 42px; }
+  .ycn-shead { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .ycn-shead h2 { font-size: 23px; font-weight: 600; }
+  .ycn-dek { color: var(--yc-ink-2); font-size: 14.5px; margin: 6px 0 20px; max-width: 72ch; }
+
+  /* --- riser ------------------------------------------------------------ */
+  .ycn-riser { border-left: 2px solid var(--yc-line); margin-left: 6px; }
+  .ycn-tier { position: relative; padding: 0 0 24px 26px; }
+  .ycn-tier::before { content: ""; position: absolute; left: -2px; top: 10px; width: 18px; height: 2px; background: var(--yc-line); }
+  .ycn-tier::after { content: ""; position: absolute; left: -7px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: #f4f3ea; border: 2px solid var(--yc-gold); }
+  .ycn-tier-h { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+  .ycn-tier-h .n { font-size: 12.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+  .ycn-tier-h .t { font-size: 12.5px; color: var(--yc-ink-3); }
+  .ycn-nodes { display: grid; grid-template-columns: repeat(auto-fill, minmax(262px, 1fr)); gap: 10px; }
+  .ycn-node { background: var(--yc-paper); border: 1px solid var(--yc-line); border-left: 3px solid var(--ycn-free); border-radius: 3px; padding: 11px 14px; }
+  .ycn-node.isp { border-left-color: var(--ycn-uplink); }
+  .ycn-node.core { border-left-color: var(--yc-gold); background: var(--yc-gold-soft); }
+  .ycn-node.dev { border-left-color: var(--ycn-trunk); }
+  .ycn-node.srv { border-left-color: var(--ycn-used); }
+  .ycn-node.ap { border-left-color: var(--ycn-ap); }
+  .ycn-node.flag { border-left-color: var(--ycn-unknown); background: var(--ycn-unknown-bg); }
+  .ycn-node .t { font-weight: 600; font-size: 14.5px; }
+  .ycn-node .s { font-size: 12.5px; color: var(--yc-ink-2); margin-top: 3px; line-height: 1.45; }
+
+  /* --- generated diagram ------------------------------------------------- */
+  .ycn-diagram { background: var(--yc-paper); border: 1px solid var(--yc-line); border-radius: 3px; padding: 6px; overflow-x: auto; }
+  .ycn-diagram svg { display: block; }
+  .ycn-dnode rect { stroke-width: 1.5; }
+  .ycn-dnode .dn { font-size: 12.5px; font-weight: 600; fill: var(--yc-ink); font-family: Inter, system-ui, sans-serif; }
+  .ycn-dnode .dm { font-size: 10.5px; fill: var(--yc-ink-3); font-family: var(--ycn-mono); }
+  .ycn-dnode { cursor: pointer; }
+  .ycn-dnode:hover rect { stroke: var(--yc-gold-deep); stroke-width: 2.5; }
+  .ycn-dnode:focus-visible rect { stroke: var(--yc-gold-deep); stroke-width: 2.5; }
+  .ycn-edge { fill: none; stroke: var(--ycn-trunk); stroke-width: 1.6; }
+  .ycn-edge.partial { stroke: var(--ycn-unknown); stroke-dasharray: 5 4; }
+  .ycn-elabel { font-family: var(--ycn-mono); font-size: 9.5px; fill: var(--yc-ink-3); }
+  .ycn-tierlab { font-family: Inter, system-ui, sans-serif; font-size: 10px; font-weight: 600;
+                 letter-spacing: .12em; text-transform: uppercase; fill: var(--yc-ink-3); }
+  .ycn-note-line { font-size: 13px; color: var(--ycn-unknown); margin-top: 12px; display: flex; gap: 9px; line-height: 1.5; }
+  .ycn-note-line b { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; flex: none; padding-top: 3px; }
+
+  /* --- room cards ------------------------------------------------------- */
+  .ycn-rooms { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 11px; }
+  .ycn-rm { background: var(--yc-paper); border: 1px solid var(--yc-line); border-radius: 3px; padding: 13px 15px; text-align: left; font: inherit; color: inherit; cursor: pointer; display: block; width: 100%; }
+  .ycn-rm:hover { border-color: var(--yc-gold); }
+  .ycn-rm:focus-visible { outline: 2px solid var(--yc-gold-deep); outline-offset: 2px; }
+  .ycn-rm .rt { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .ycn-rm .rt b { font-family: Fraunces, Georgia, serif; font-size: 15.5px; font-weight: 600; }
+  .ycn-rm .rt span { font-family: var(--ycn-mono); font-size: 11.5px; color: var(--yc-ink-3); }
+  .ycn-bar { display: flex; height: 7px; border-radius: 2px; overflow: hidden; background: var(--yc-cream-2); margin: 10px 0 9px; }
+  .ycn-bar i { display: block; }
+  .ycn-bar i.USED { background: var(--ycn-used); }
+  .ycn-bar i.UPLINK { background: var(--ycn-uplink); }
+  .ycn-bar i.TRUNK { background: var(--ycn-trunk); }
+  .ycn-bar i.AP { background: var(--ycn-ap); }
+  .ycn-bar i.UNKNOWN { background: var(--ycn-unknown); }
+  .ycn-bar i.FREE { background: transparent; }
+  .ycn-rm .up { font-size: 12.5px; color: var(--yc-ink-2); display: flex; gap: 7px; align-items: flex-start; }
+  .ycn-rm .up .dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--ycn-used); margin-top: 6px; }
+  .ycn-rm.flag .up .dot { background: var(--ycn-unknown); }
+  .ycn-rm .why { font-size: 12px; color: var(--ycn-unknown); margin-top: 6px; line-height: 1.45; }
+
+  /* --- legend ----------------------------------------------------------- */
+  .ycn-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(232px, 1fr)); gap: 2px 22px; background: var(--yc-paper); border: 1px solid var(--yc-line); border-radius: 3px; padding: 15px 17px; }
+  .ycn-legend div { display: flex; gap: 9px; align-items: flex-start; font-size: 13px; padding: 4px 0; }
+  .ycn-legend .sw { flex: none; width: 15px; height: 15px; border-radius: 2px; margin-top: 2px; border: 1.5px solid var(--ycn-free); }
+  .ycn-legend span.d { color: var(--yc-ink-3); }
+
+  /* --- tabs and faceplates ---------------------------------------------- */
+  .ycn-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+  .ycn-tab { font: inherit; font-size: 13.5px; font-weight: 600; padding: 8px 14px; border: 1px solid var(--yc-line); background: var(--yc-paper); color: var(--yc-ink-2); border-radius: 3px; cursor: pointer; }
+  .ycn-tab[aria-selected="true"] { background: var(--yc-ink); color: var(--yc-cream); border-color: var(--yc-ink); }
+  .ycn-tab:focus-visible { outline: 2px solid var(--yc-gold-deep); outline-offset: 2px; }
+
+  .ycn-sw { background: var(--yc-paper); border: 1px solid var(--yc-line); border-radius: 3px; margin-bottom: 13px; overflow: hidden; }
+  .ycn-sw-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; padding: 13px 16px; border-bottom: 1px solid var(--yc-line); background: var(--yc-cream); }
+  .ycn-sw-head .n { font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 15.5px; }
+  .ycn-sw-head .c { font-family: var(--ycn-mono); font-size: 11.5px; color: var(--yc-ink-3); display: flex; gap: 15px; flex-wrap: wrap; }
+  .ycn-sw-head .c b { color: var(--yc-ink-2); font-weight: 600; }
+  .ycn-tag { font-family: var(--ycn-mono); font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--yc-ink-3); border: 1px solid var(--yc-line); border-radius: 2px; padding: 1px 6px; white-space: nowrap; }
+  .ycn-tag.ok { color: var(--ycn-used); border-color: var(--ycn-used); }
+  .ycn-note { padding: 10px 16px; border-bottom: 1px solid var(--yc-line); font-size: 13px; color: var(--yc-ink-2); background: var(--yc-cream); display: flex; gap: 9px; line-height: 1.5; }
+  .ycn-note b { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ycn-unknown); flex: none; padding-top: 3px; }
+  .ycn-plate { padding: 15px 16px; overflow-x: auto; }
+  .ycn-plate-in { display: flex; gap: 20px; align-items: flex-start; min-width: min-content; }
+  .ycn-bank { display: grid; grid-auto-flow: column; grid-template-rows: auto auto; gap: 3px; }
+  .ycn-baylab { font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--yc-ink-3); margin-bottom: 6px; }
+  .ycn-bay { border-left: 1px dashed var(--yc-line); padding-left: 18px; }
+  .ycn-pt { width: 31px; height: 27px; border-radius: 2px; border: 1.5px solid var(--ycn-free); background: transparent; color: var(--yc-ink-2); font-family: var(--ycn-mono); font-size: 10.5px; font-weight: 500; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; position: relative; }
+  .ycn-pt:focus-visible { outline: 2px solid var(--yc-gold-deep); outline-offset: 2px; z-index: 2; }
+  .ycn-pt.USED { background: var(--ycn-used-bg); border-color: var(--ycn-used); color: var(--ycn-used); }
+  .ycn-pt.UPLINK { background: var(--ycn-uplink-bg); border-color: var(--ycn-uplink); color: var(--ycn-uplink); }
+  .ycn-pt.TRUNK { background: var(--ycn-trunk-bg); border-color: var(--ycn-trunk); color: var(--ycn-trunk); }
+  .ycn-pt.AP { background: var(--ycn-ap-bg); border-color: var(--ycn-ap); color: var(--ycn-ap); }
+  .ycn-pt.UNKNOWN { background: var(--ycn-unknown-bg); border-color: var(--ycn-unknown); color: var(--ycn-unknown); }
+  .ycn-pt.sel { box-shadow: 0 0 0 2px var(--yc-ink); }
+  .ycn-pt.sfp { border-radius: 2px 2px 6px 6px; }
+  .ycn-pt.edited::after { content: ""; position: absolute; top: -3px; right: -3px; width: 7px; height: 7px; border-radius: 50%; background: var(--yc-gold); border: 1.5px solid var(--yc-paper); }
+
+  /* --- inspector -------------------------------------------------------- */
+  .ycn-insp { position: fixed; right: 0; top: 0; bottom: 0; width: min(410px, 100%); background: var(--yc-paper); border-left: 1px solid var(--yc-line); box-shadow: -8px 0 30px -20px rgba(26,20,16,.6); padding: 22px 24px; overflow-y: auto; z-index: 900; display: flex; flex-direction: column; gap: 15px; }
+  @media (max-width: 640px) { .ycn-insp { top: auto; max-height: 84vh; border-left: none; border-top: 1px solid var(--yc-line); } }
+  .ycn-insp h3 { font-size: 18px; font-weight: 600; }
+  .ycn-insp .sub { font-family: var(--ycn-mono); font-size: 12px; color: var(--yc-ink-3); margin-top: -9px; }
+  .ycn-x { position: absolute; top: 15px; right: 17px; background: none; border: 1px solid var(--yc-line); color: var(--yc-ink-2); width: 29px; height: 29px; border-radius: 3px; cursor: pointer; font-size: 16px; line-height: 1; }
+  .ycn-fld { display: flex; flex-direction: column; gap: 6px; }
+  .ycn-fld label { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--yc-ink-3); font-weight: 600; }
+  .ycn-fld select { font: inherit; font-size: 13.5px; padding: 9px 10px; border: 1px solid var(--yc-line);
+    border-radius: 3px; background: var(--yc-cream); color: var(--yc-ink); width: 100%; }
+  .ycn-fld select:focus { outline: 2px solid var(--yc-gold-deep); outline-offset: -1px; }
+  .ycn-fld input, .ycn-fld textarea { font: inherit; font-size: 14px; padding: 9px 11px; border: 1px solid var(--yc-line); border-radius: 3px; background: var(--yc-cream); color: var(--yc-ink); width: 100%; }
+  .ycn-fld textarea { min-height: 64px; resize: vertical; }
+  .ycn-fld input:focus, .ycn-fld textarea:focus { outline: 2px solid var(--yc-gold-deep); outline-offset: -1px; border-color: var(--yc-gold-deep); }
+  .ycn-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .ycn-chip { font: inherit; font-size: 13px; font-weight: 500; text-align: left; padding: 9px 11px; border: 1.5px solid var(--yc-line); background: var(--yc-cream); color: var(--yc-ink-2); border-radius: 3px; cursor: pointer; display: flex; gap: 8px; align-items: center; }
+  .ycn-chip .sw { width: 12px; height: 12px; border-radius: 2px; border: 1.5px solid var(--ycn-free); flex: none; }
+  .ycn-chip[aria-pressed="true"] { border-color: var(--yc-ink); color: var(--yc-ink); background: var(--yc-paper); }
+  .ycn-chip:focus-visible { outline: 2px solid var(--yc-gold-deep); outline-offset: 2px; }
+  .ycn-btn { font: inherit; font-weight: 600; font-size: 14px; padding: 10px 18px; border-radius: 3px; border: 1px solid var(--yc-ink); background: var(--yc-ink); color: var(--yc-cream); cursor: pointer; }
+  .ycn-btn.ghost { background: transparent; color: var(--yc-ink-2); border-color: var(--yc-line); }
+  .ycn-btn[disabled] { opacity: .55; cursor: default; }
+  .ycn-btn:focus-visible { outline: 2px solid var(--yc-gold-deep); outline-offset: 2px; }
+  .ycn-btnrow { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ycn-orig { font-size: 12.5px; color: var(--yc-ink-3); border-top: 1px solid var(--yc-line); padding-top: 11px; line-height: 1.55; }
+  .ycn-orig b { color: var(--yc-ink-2); font-family: var(--ycn-mono); }
+
+  /* --- questions -------------------------------------------------------- */
+  .ycn-q { background: var(--yc-paper); border: 1px solid var(--yc-line); border-left: 3px solid var(--ycn-unknown); border-radius: 3px; padding: 14px 17px; margin-bottom: 9px; }
+  .ycn-q .qt { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .ycn-q .qt b { font-family: Fraunces, Georgia, serif; font-size: 15px; font-weight: 600; }
+  .ycn-q p { margin: 6px 0 0; font-size: 13.5px; color: var(--yc-ink-2); line-height: 1.55; }
+  .ycn-q .todo { margin-top: 8px; font-size: 13.5px; display: flex; gap: 8px; }
+  .ycn-q .todo b { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ycn-unknown); flex: none; padding-top: 3px; }
+
+  /* --- table ------------------------------------------------------------ */
+  .ycn-tbl { overflow-x: auto; border: 1px solid var(--yc-line); border-radius: 3px; background: var(--yc-paper); }
+  .ycn-tbl table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 660px; }
+  .ycn-tbl th { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--yc-ink-3); text-align: left; padding: 11px 15px; border-bottom: 1px solid var(--yc-line); white-space: nowrap; }
+  .ycn-tbl td { padding: 10px 15px; border-bottom: 1px solid var(--yc-cream-2); }
+  .ycn-tbl tr:last-child td { border-bottom: none; }
+  .ycn-tbl td.num { font-family: var(--ycn-mono); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+  .ycn-tbl td .rn { color: var(--yc-ink-3); font-size: 12.5px; }
+
+  .ycn-toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 24px; background: var(--yc-ink); color: var(--yc-cream); font-size: 13.5px; font-weight: 600; padding: 11px 20px; border-radius: 3px; z-index: 1000; box-shadow: 0 8px 24px -14px rgba(26,20,16,.8); }
+  .ycn-foot { border-top: 1px solid var(--yc-line); padding-top: 18px; color: var(--yc-ink-3); font-size: 12.5px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+  <div class="hero-section" style="min-height:auto;">
+    <!-- BEGIN SHARED NAV -->
+<header class="site-header">
+      <div class="top-bar">
+        <div class="top-bar-container">
+          <div class="top-bar-left">
+            <a href="tel:+1876975-2217" class="top-bar-link"><span class="top-bar-icon">📞</span><span>+1 876 975-2217</span></a>
+            <span class="top-bar-divider">|</span>
+            <a href="mailto:yorkcastle.high.san@moey.gov.jm" class="top-bar-link"><span class="top-bar-icon">✉</span><span>yorkcastle.high.san@moey.gov.jm</span></a>
+          </div>
+          <div class="top-bar-right">
+            <a href="signin.html" class="btn-login">Sign in</a>
+          </div>
+        </div>
+      </div>
+      <nav class="main-nav">
+        <div class="nav-container">
+          <a href="index.html" class="nav-logo">
+            <img src="images/logo-badge.webp" width="125" alt="York Castle High School Logo" class="logo-image">
+          </a>
+          <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+            <span></span><span></span><span></span>
+          </button>
+          <ul class="nav-menu">
+            <li><a href="index.html" class="nav-item">Home</a></li>
+            <li><a href="sixth-form-application.html" class="nav-item">Apply</a></li>
+            <li><a href="contact-us.html" class="nav-item">Contact us</a></li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+    <!-- END SHARED NAV -->
+  </div>
+
+<main class="ycn-wrap">
+  <!-- Shown until the API confirms this visitor is an administrator. -->
+  <div id="ycn-gate" class="ycn-gate">
+    <div class="ycn-eyebrow">Restricted</div>
+    <h2 id="ycn-gate-h">Checking your access&hellip;</h2>
+    <p id="ycn-gate-p">One moment.</p>
+    <div id="ycn-gate-actions" class="ycn-btnrow" style="justify-content:center" hidden>
+      <a class="ycn-btn" href="signin.html">Sign in</a>
+    </div>
+  </div>
+
+  <div id="ycn-app" hidden>
+    <header class="ycn-mast">
+      <div class="ycn-eyebrow">Campus network &middot; port records</div>
+      <h1>Network Map</h1>
+      <p>Every switch, every port, drawn the way it looks on the rack. Click a port to record what is plugged into it. Changes are saved to the school database straight away.</p>
+      <p style="margin-top:9px;font-size:13.5px;color:var(--ycn-unknown)"><b>The E-Lab rack was re-checked against a photograph</b> and no longer matches the old spreadsheet &mdash; an undocumented 24-port NETGEAR switch is carrying much of the building. Start with the open questions.</p>
+      <div class="ycn-meta">
+        <div>Switches &amp; routers <b id="ycn-m-dev">&mdash;</b></div>
+        <div>Ports on record <b id="ycn-m-port">&mdash;</b></div>
+        <div>Free ports <b id="ycn-m-free">&mdash;</b></div>
+        <div>Need checking <b id="ycn-m-unk">&mdash;</b></div>
+        <div>Last edit <b id="ycn-m-last">never</b></div>
+      </div>
+    </header>
+
+    <div class="ycn-steps">
+      <div><b>Step 1</b><span>Find your room in the map below and open it.</span></div>
+      <div><b>Step 2</b><span>Match the coloured squares to the real switch &mdash; port 1 is top-left.</span></div>
+      <div><b>Step 3</b><span>Click a port, set what it is, type what it goes to, Save.</span></div>
+      <div><b>Step 4</b><span>Red ports are the unanswered questions. Clear those first.</span></div>
+    </div>
+
+    <section class="ycn-sec">
+      <div class="ycn-shead"><h2>How the campus connects</h2></div>
+      <p class="ycn-dek">Drawn from the cables on record, not written by hand &mdash; so it cannot disagree with the port pages below. A solid line is a cable with both ends recorded; a dashed red line reaches a switch whose far port nobody has written down. Click a box to open that switch.</p>
+      <div class="ycn-diagram" id="ycn-diagram"></div>
+      <div id="ycn-diagram-notes"></div>
+    </section>
+
+    <section class="ycn-sec">
+      <div class="ycn-shead"><h2>Rooms</h2></div>
+      <p class="ycn-dek">Each bar shows how that room&rsquo;s ports are spent. Click a room to open its switches.</p>
+      <div class="ycn-rooms" id="ycn-roomcards"></div>
+    </section>
+
+    <section class="ycn-sec">
+      <div class="ycn-shead"><h2>What the colours mean</h2></div>
+      <div class="ycn-legend" id="ycn-legend"></div>
+    </section>
+
+    <section class="ycn-sec" id="ycn-sec-plate">
+      <div class="ycn-shead"><h2>Port records</h2><span class="ycn-eyebrow" id="ycn-plate-count"></span></div>
+      <p class="ycn-dek">Ports are laid out like the front of the switch: odd numbers on the top row, even below. Uplink and stacking ports sit in their own bay on the right.</p>
+      <div class="ycn-tabs" id="ycn-tabs" role="tablist"></div>
+      <div id="ycn-plates"></div>
+    </section>
+
+    <section class="ycn-sec">
+      <div class="ycn-shead"><h2>Open questions</h2><span class="ycn-eyebrow">work through these on site</span></div>
+      <p class="ycn-dek">Thirteen things to settle on site, hardest first. The top five come from the E-Lab rack photograph.</p>
+      <div id="ycn-questions"></div>
+    </section>
+
+    <section class="ycn-sec">
+      <div class="ycn-shead"><h2>Equipment list</h2></div>
+      <p class="ycn-dek">Every managed device on record, where it lives, and how much room is left on it.</p>
+      <div class="ycn-tbl"><table><thead><tr>
+        <th>Device</th><th>Room</th><th class="num">Ports</th><th class="num">In use</th><th class="num">Free</th><th class="num">Unclear</th>
+      </tr></thead><tbody id="ycn-inv"></tbody></table></div>
+    </section>
+
+    <div class="ycn-foot">
+      <div>Seeded from <span class="ycn-mono">NetworkDiagram_R1.xlsx</span> &middot; E-Lab corrected against a rack photograph, September 2026</div>
+      <button class="ycn-btn ghost" id="ycn-export">Download as CSV</button>
+    </div>
+  </div>
+</main>
+
+<div id="ycn-insp-host"></div>
+
+<!-- BEGIN SHARED FOOTER -->
+<footer class="footer-redesign redesign">
+    <div class="footer-container">
+      <div class="footer-bottom" style="border:none;">
+        <p>© 2026 York Castle High School. All rights reserved.</p>
+        <div class="footer-bottom-links">
+          <a href="privacy-policy.html">Privacy Policy</a>
+          <a href="terms-of-service.html">Terms of Service</a>
+          <a href="contact-us.html">Contact</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+    <!-- END SHARED FOOTER -->
+<script src="js/site-nav.js"></script>
+<script>
+/**
+ * Network map page.
+ *
+ * Reads and writes /api/network, which is ADMIN-only. The topology tiers and
+ * the open-questions list below are commentary rather than records, so they
+ * live in this file; everything about an actual port comes from the database.
+ */
+(function () {
+  'use strict';
+
+  var CONTENT = {
+ "topology": {
+  "tiers": [
+   {
+    "n": "Internet",
+    "note": "Fibre service handoff",
+    "nodes": [
+     {
+      "t": "FLOW fibre service",
+      "sub": "Lands on SFP 10 of the Cisco Catalyst 1300 in the E-Lab rack",
+      "kind": "isp"
+     }
+    ]
+   },
+   {
+    "n": "Edge",
+    "note": "First devices inside the building",
+    "nodes": [
+     {
+      "t": "Cisco Catalyst 1300",
+      "sub": "SFP 10 \u2192 FLOW \u00b7 Port 1 \u2192 Juniper 0/0 \u00b7 replaced the SG300-10MP in the sheet",
+      "kind": "dev",
+      "id": "e-lab--cisco-catalyst-1300-series"
+     },
+     {
+      "t": "Juniper SRX320",
+      "sub": "0/0 \u2192 Catalyst \u00b7 0/2 \u2192 Dream Machine Pro WAN",
+      "kind": "dev",
+      "id": "e-lab--juniper-srx320"
+     }
+    ]
+   },
+   {
+    "n": "Core",
+    "note": "The gateway \u2014 but it is feeding far less than the sheet says",
+    "nodes": [
+     {
+      "t": "Dream Machine Pro",
+      "sub": "WAN 9 \u2190 Juniper \u00b7 port 1 \u2192 PowerEdge R420 \u00b7 port 2 \u2192 unidentified \u00b7 ports 3\u20138 all empty",
+      "kind": "core",
+      "id": "e-lab--dream-machine-pro"
+     }
+    ]
+   },
+   {
+    "n": "Distribution",
+    "note": "Where the building most likely hangs off \u2014 unconfirmed",
+    "nodes": [
+     {
+      "t": "NETGEAR ProSafe 24-port",
+      "sub": "Not in the spreadsheet. Heavily patched, both SFP cages on fibre. Almost certainly what now feeds the rest of campus.",
+      "kind": "flag",
+      "id": "e-lab--netgear-prosafe-24-port-smart-switch"
+     },
+     {
+      "t": "Aruba Instant On 1830",
+      "sub": "Port 3 \u2192 Staff Room AP \u00b7 port 8 is an uplink to somewhere unrecorded",
+      "kind": "dev",
+      "id": "e-lab--aruba-instant-on-1830"
+     },
+     {
+      "t": "Dell PowerEdge R420",
+      "sub": "Dream Machine Pro port 1, 10.0.0.2",
+      "kind": "srv"
+     },
+     {
+      "t": "Cisco SRW248G4 stack \u00b7 Dell 3524 \u00d72",
+      "sub": "96 + 48 desktop ports on the sheet, but neither unit is in this rack photo \u2014 location unconfirmed",
+      "kind": "flag"
+     }
+    ]
+   }
+  ],
+  "rooms": [
+   {
+    "key": "E_LAB",
+    "up": "Directly on the E-Lab rack",
+    "ok": false,
+    "why": "The rack no longer matches the spreadsheet \u2014 see the open questions below."
+   },
+   {
+    "key": "MAINOOFICE",
+    "up": "Dream Machine Pro WAN SFP 10 \u2192 Main Office",
+    "ok": false,
+    "why": "The sheet records no port connections for any of the six Main Office devices, and the SFP link itself is not visible in the photo."
+   },
+   {
+    "key": "Bis_Room",
+    "up": "Was Dell 3524 #1 G1 SFP \u2014 now more likely the NETGEAR fibre",
+    "ok": false,
+    "why": "Port 11 on the Business Room Dell 3524 is marked \u201cUplink?\u201d with nothing recorded on it."
+   },
+   {
+    "key": "Library",
+    "up": "Was Dell 3524 #1 G2 SFP \u2014 now more likely the NETGEAR fibre",
+    "ok": false,
+    "why": "LGS326 #2 SFP 25 is marked Uplink with no destination, and nothing records how LGS326 #1 joins #2."
+   },
+   {
+    "key": "CAPE_LAB",
+    "up": "Not recorded",
+    "ok": false,
+    "why": "NEXXT ASFRM2400R #2 port 12 is marked \u201c?\u201d as the uplink."
+   },
+   {
+    "key": "CAD_LAB",
+    "up": "Not recorded",
+    "ok": false,
+    "why": "NEXXT Axis2400R #2 has two ports (18 and 21) both marked \u201c?\u201d as possible uplinks."
+   },
+   {
+    "key": "Chill_Room",
+    "up": "Not recorded",
+    "ok": false,
+    "why": "No uplink appears anywhere in the Chill Room sheet \u2014 the three switches only link to each other."
+   }
+  ]
+ },
+ "questions": [
+  {
+   "room": "E_LAB",
+   "t": "A 24-port NETGEAR switch is missing from the records entirely",
+   "d": "The rack photo shows a NETGEAR ProSafe 24-port Gigabit smart switch at the top, patched from the panel above it with around a dozen link lights on and orange duplex fibre running out of both SFP cages. It appears nowhere in the spreadsheet.",
+   "a": "Document all 26 ports. Start with the two fibre runs \u2014 they are the most likely feed for the Business Room and Library."
+  },
+  {
+   "room": "E_LAB",
+   "t": "The Dream Machine Pro has stopped feeding the building",
+   "d": "The sheet has it driving five downstream switches from ports 3\u20138. In the photo those six ports are empty; only port 1 (PowerEdge R420), port 2 and WAN 9 are patched.",
+   "a": "Find out where the SRW248G4 stack, the Dell 3524s, the Aruba and the Auditorium AP get their feed now. The NETGEAR is the obvious candidate."
+  },
+  {
+   "room": "E_LAB",
+   "t": "The edge switch has been swapped and nobody updated the sheet",
+   "d": "The spreadsheet lists a Cisco SG300-10MP. The rack has a Cisco Catalyst 1300 Series \u2014 the same 8 PoE + 2 copper + 2 SFP layout, so a like-for-like replacement. Only port 1 and SFP 10 are patched; the sheet has the Juniper on port 2.",
+   "a": "Confirm the model and serial, then retire the SG300 entry. Check what the module in SFP 9 is for."
+  },
+  {
+   "room": "E_LAB",
+   "t": "Neither the SRW248G4 stack nor the Dell 3524s are in this rack",
+   "d": "That is 164 ports of the spreadsheet\u2019s E-Lab \u2014 the two 48-port Cisco units and both Dell PowerConnect 3524s \u2014 none of which appear in the photo.",
+   "a": "Photograph the rack or cabinet they actually live in, and note it against each unit."
+  },
+  {
+   "room": "E_LAB",
+   "t": "Two links moved and the far ends aren\u2019t recorded",
+   "d": "The Juniper\u2019s downlink is now on 0/2, not 0/3. The Aruba 1830\u2019s uplink is now on port 8, not port 7 \u2014 and the Dream Machine Pro port it used to reach is empty. Dream Machine Pro port 2 also has a cable the sheet knows nothing about.",
+   "a": "Trace all three and record both ends."
+  },
+  {
+   "room": "MAINOOFICE",
+   "t": "Main Office has 102 ports and no connection data at all",
+   "d": "T-Marc, Linksys E1200, NEXXT PoE, PoE Switch, Cisco SG200-50 and TP-Link TLSG1024 are all listed port-by-port with every Connection cell empty.",
+   "a": "Walk the Main Office rack. For each port, record whether it is empty, and if not, what it goes to."
+  },
+  {
+   "room": "CAD_LAB",
+   "t": "CAD Lab has two possible uplinks and no confirmed one",
+   "d": "NEXXT Axis2400R #2 ports 18 and 21 are both \u201c?\u201d with description \u201cUplink?\u201d.",
+   "a": "Unplug one at a time and see which drops the lab. Record the far end."
+  },
+  {
+   "room": "CAPE_LAB",
+   "t": "CAPE Lab uplink is unconfirmed",
+   "d": "NEXXT ASFRM2400R #2 port 12 is marked \u201c?\u201d / Uplink. Worth noting: a cable labelled NEXXT is visible going into the E-Lab rack in the photo.",
+   "a": "Trace the cable from port 12 and record where it lands."
+  },
+  {
+   "room": "Chill_Room",
+   "t": "Chill Room has no uplink recorded anywhere",
+   "d": "The Dell 3524, Aruba 1830 and PoE switch only reference each other. Nothing leaves the room on paper.",
+   "a": "Find the cable that leaves the room and record which switch and port it leaves from."
+  },
+  {
+   "room": "Bis_Room",
+   "t": "Business Room uplink port is blank",
+   "d": "Dell 3524 port 11 is described \u201cUplink?\u201d with an empty Connection cell. The Business Room PoE switch has eight ports with nothing recorded.",
+   "a": "Confirm what port 11 runs back to, and label the PoE switch ports."
+  },
+  {
+   "room": "Library",
+   "t": "The two Library switches aren\u2019t linked on paper",
+   "d": "LGS326 #2 SFP 25 is marked Uplink with no destination, and no port on either switch records a link between #1 and #2 \u2014 yet both are clearly live.",
+   "a": "Find the cable between the two LGS326 units and record both ends, plus where SFP 25 goes."
+  },
+  {
+   "room": "E_LAB",
+   "t": "Second Cisco SRW248G4 is unnamed in the sheet",
+   "d": "Rows 93\u2013146 of the E-Lab sheet list 54 more ports with no device name in column A. From the stacking and uplink entries these are the second SRW248G4.",
+   "a": "Confirm the model and the label on the physical unit, then name it properly."
+  },
+  {
+   "room": "Bis_Room",
+   "t": "Three rooms only say \u201cUsed\u201d or \u201cUnused\u201d",
+   "d": "Business Room, Library and Chill Room record whether a port is occupied but never what is plugged into it.",
+   "a": "As you go, replace \u201cUsed\u201d with the actual device or wall-plate number."
+  }
+ ]
+};
+
+  var LEGEND = [
+    ['USED',    'Live',           'Something is plugged in and working'],
+    ['FREE',    'Free',           'Empty — available for a new drop'],
+    ['UPLINK',  'Uplink',         'Carries traffic toward the core / internet'],
+    ['TRUNK',   'Switch to switch', 'Feeds another switch, or stacks two together'],
+    ['AP',      'Wi-Fi AP',       'Feeds a wireless access point'],
+    ['UNKNOWN', 'Needs checking', 'Blank or unresolved in the records']
+  ];
+  var LEGMAP = {};
+  LEGEND.forEach(function (l) { LEGMAP[l[0]] = l; });
+  function leg(status) { return LEGMAP[status] || LEGMAP.UNKNOWN; }
+  var ORDER = ['USED', 'FREE', 'UPLINK', 'TRUNK', 'AP', 'UNKNOWN'];
+
+  var API = (window.API_BASE_URL || '/api') + '/network';
+  var state = { rooms: [], summary: null, activeRoom: null, sel: null, ports: {} };
+
+  function esc(value) {
+    return String(value == null ? '' : value).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  function token() {
+    try { return localStorage.getItem('token'); } catch (e) { return null; }
+  }
+
+  function api(method, path, body) {
+    var options = { method: method, headers: { 'Content-Type': 'application/json' } };
+    var t = token();
+    if (t) options.headers.Authorization = 'Bearer ' + t;
+    if (body) options.body = JSON.stringify(body);
+    return fetch(API + path, options).then(function (response) {
+      if (response.status === 401 || response.status === 403) {
+        var denied = new Error('denied');
+        denied.status = response.status;
+        throw denied;
+      }
+      return response.json().then(function (data) {
+        if (!response.ok) throw new Error(data.error || data.message || 'Request failed');
+        return data;
+      });
+    });
+  }
+
+  function toast(message) {
+    var el = document.createElement('div');
+    el.className = 'ycn-toast';
+    el.textContent = message;
+    document.body.appendChild(el);
+    setTimeout(function () { el.remove(); }, 2600);
+  }
+
+  function gate(heading, note, showSignIn) {
+    document.getElementById('ycn-gate-h').textContent = heading;
+    document.getElementById('ycn-gate-p').textContent = note;
+    document.getElementById('ycn-gate-actions').hidden = !showSignIn;
+  }
+
+
+  /* ---- diagram ------------------------------------------------------- */
+  /**
+   * Lay the network out from the cables on record.
+   *
+   * Tier 0 is whatever touches the outside world - a port whose free-text
+   * connection names the ISP. Everything else is placed by how many cables it
+   * sits from there. A switch no cable reaches is not hidden: it goes in a final
+   * "nothing on record reaches these" tier, which is the honest rendering of a
+   * closet whose uplink nobody has written down, and the most useful thing on
+   * the page.
+   */
+  var ISP_RE = /\bflow\b|\bstarlink\b|\bisp\b/i;
+
+  function buildGraph() {
+    var nodes = {};     // deviceId -> node
+    var edges = [];
+
+    state.rooms.forEach(function (room) {
+      room.devices.forEach(function (device) {
+        nodes[device.id] = {
+          id: device.id, name: device.name, room: room.label, roomKey: room.key,
+          ports: device.ports.length, free: device.counts.FREE,
+          unknown: device.counts.UNKNOWN, depth: null, isp: false
+        };
+      });
+    });
+
+    var seen = {};
+    state.rooms.forEach(function (room) {
+      room.devices.forEach(function (device) {
+        device.ports.forEach(function (port) {
+          if (ISP_RE.test(port.connection || '')) nodes[device.id].isp = true;
+
+          var farDevice = port.linkedDeviceId;
+          if (!farDevice || !nodes[farDevice]) return;
+
+          // One edge per cable, not one per end.
+          var key = [device.id, farDevice].sort().join('|') + '|' + (port.linkedPortId || port.id);
+          var pairKey = [device.id, farDevice].sort().join('|');
+          if (seen[pairKey]) return;
+          seen[pairKey] = true;
+
+          edges.push({
+            a: device.id, b: farDevice,
+            label: port.label,
+            exact: !!port.linkedPortId,
+            portId: port.id
+          });
+        });
+      });
+    });
+
+    // Depth by breadth-first walk out from the devices that face the ISP.
+    var queue = [];
+    Object.keys(nodes).forEach(function (id) {
+      if (nodes[id].isp) { nodes[id].depth = 0; queue.push(id); }
+    });
+    var adjacency = {};
+    edges.forEach(function (e) {
+      (adjacency[e.a] = adjacency[e.a] || []).push(e.b);
+      (adjacency[e.b] = adjacency[e.b] || []).push(e.a);
+    });
+    while (queue.length) {
+      var id = queue.shift();
+      (adjacency[id] || []).forEach(function (next) {
+        if (nodes[next].depth === null) {
+          nodes[next].depth = nodes[id].depth + 1;
+          queue.push(next);
+        }
+      });
+    }
+
+    return { nodes: nodes, edges: edges };
+  }
+
+  var TIER_NAMES = ['Faces the internet', 'One cable in', 'Two cables in', 'Three cables in', 'Four cables in'];
+  var PER_ROW = 5;   // wrap wide tiers, so a row never runs off the canvas
+
+  /** Group the devices no cable reaches from the internet into their own
+   *  connected clusters, so a stacked pair still shows its cable to each other
+   *  rather than being listed as two unrelated strays. */
+  function components(nodeIds, edges) {
+    var adjacency = {};
+    edges.forEach(function (e) {
+      if (nodeIds.indexOf(e.a) === -1 || nodeIds.indexOf(e.b) === -1) return;
+      (adjacency[e.a] = adjacency[e.a] || []).push(e.b);
+      (adjacency[e.b] = adjacency[e.b] || []).push(e.a);
+    });
+    var seen = {}, out = [];
+    nodeIds.forEach(function (id) {
+      if (seen[id]) return;
+      var group = [], queue = [id];
+      seen[id] = true;
+      while (queue.length) {
+        var cur = queue.shift();
+        group.push(cur);
+        (adjacency[cur] || []).forEach(function (n) { if (!seen[n]) { seen[n] = true; queue.push(n); } });
+      }
+      out.push(group);
+    });
+    return out;
+  }
+
+  function drawDiagram() {
+    var g = buildGraph();
+    var tiers = {}, loose = [];
+
+    Object.keys(g.nodes).forEach(function (id) {
+      var n = g.nodes[id];
+      if (n.depth === null) loose.push(id);
+      else (tiers[n.depth] = tiers[n.depth] || []).push(n);
+    });
+
+    var bands = [];
+    Object.keys(tiers).map(Number).sort(function (a, b) { return a - b; }).forEach(function (d) {
+      bands.push({ label: TIER_NAMES[d] || ('Tier ' + d), nodes: tiers[d] });
+    });
+
+    var looseCount = loose.length;
+    if (looseCount) {
+      // Keep each cluster together and in reading order, so the pairs are obvious.
+      var groups = components(loose, g.edges)
+        .map(function (grp) {
+          return grp.map(function (id) { return g.nodes[id]; })
+                    .sort(function (a, b) { return a.name.localeCompare(b.name); });
+        })
+        .sort(function (a, b) { return b.length - a.length || a[0].room.localeCompare(b[0].room); });
+      // Pack whole clusters into rows. A cluster is never split, so the cable
+      // between a stacked pair stays a short arc instead of swooping across the
+      // diagram to the row below.
+      var packed = [[]];
+      groups.forEach(function (grp) {
+        var row = packed[packed.length - 1];
+        if (row.length && row.length + grp.length > PER_ROW) { packed.push([]); row = packed[packed.length - 1]; }
+        grp.forEach(function (n) { row.push(n); });
+      });
+      packed.forEach(function (row, i) {
+        if (row.length) bands.push({ label: i === 0 ? 'Not joined to the core on paper' : '', nodes: row, loose: true, packed: true });
+      });
+    }
+
+    // Wrap each band to PER_ROW, so nothing runs off the side.
+    var rows = [];
+    bands.forEach(function (band) {
+      if (band.packed) { rows.push(band); return; }
+      for (var i = 0; i < band.nodes.length; i += PER_ROW) {
+        rows.push({
+          label: i === 0 ? band.label : '',
+          nodes: band.nodes.slice(i, i + PER_ROW),
+          loose: band.loose
+        });
+      }
+    });
+
+    var BW = 188, BH = 52, GAPX = 24, GAPY = 74, PADX = 22, PADT = 14;
+    var width = PADX * 2 + PER_ROW * BW + (PER_ROW - 1) * GAPX;
+    var height = PADT;
+    var pos = {};
+
+    // A row whose members are cabled to each other gets an arc over the top, so
+    // it needs headroom or the arc rides over the tier label.
+    var sameRowPairs = {};
+    rows.forEach(function (row, ri) {
+      row.ids = row.nodes.map(function (n) { return n.id; });
+      sameRowPairs[ri] = g.edges.some(function (e) {
+        return row.ids.indexOf(e.a) !== -1 && row.ids.indexOf(e.b) !== -1;
+      });
+    });
+
+    rows.forEach(function (row, ri) {
+      row.hasArc = sameRowPairs[ri];
+      row.y = height + (row.label ? 28 : 6) + (row.hasArc ? 34 : 0);
+      var rowW = row.nodes.length * BW + (row.nodes.length - 1) * GAPX;
+      var x0 = (width - rowW) / 2;
+      row.nodes.forEach(function (n, ci) {
+        pos[n.id] = { x: x0 + ci * (BW + GAPX), y: row.y, w: BW, h: BH };
+      });
+      height = row.y + BH + GAPY;
+    });
+    height = height - GAPY + PADT;
+
+    var svg = '<svg viewBox="0 0 ' + width + ' ' + height + '" width="' + width + '" height="' + height
+      + '" role="img" aria-label="Network diagram generated from the recorded cables">';
+
+    g.edges.forEach(function (e) {
+      var A = pos[e.a], B = pos[e.b];
+      if (!A || !B) return;
+      // Both ends off the core and on different rows: the line would cross the
+      // whole drawing to say something the two boxes already sit next to.
+      if (g.nodes[e.a].depth === null && g.nodes[e.b].depth === null && A.y !== B.y) return;
+      var cls = 'ycn-edge' + (e.exact ? '' : ' partial');
+      var d, lx, ly;
+      if (A.y === B.y) {
+        // Same row: a shallow arc over the top of both boxes.
+        var ax = A.x + A.w / 2, bx = B.x + B.w / 2, top = A.y;
+        d = 'M' + ax + ',' + top + ' C' + ax + ',' + (top - 34) + ' ' + bx + ',' + (top - 34) + ' ' + bx + ',' + top;
+        lx = (ax + bx) / 2; ly = top - 20;
+      } else {
+        var up = A.y < B.y ? A : B, dn = A.y < B.y ? B : A;
+        var ux = up.x + up.w / 2, uy = up.y + up.h;
+        var dx = dn.x + dn.w / 2, dy = dn.y;
+        var mid = (uy + dy) / 2;
+        d = 'M' + ux + ',' + uy + ' C' + ux + ',' + mid + ' ' + dx + ',' + mid + ' ' + dx + ',' + dy;
+        lx = ux + 6; ly = uy + 13;
+      }
+      svg += '<path class="' + cls + '" d="' + d + '"></path>';
+      svg += '<text class="ycn-elabel" x="' + lx + '" y="' + ly + '" text-anchor="' + (A.y === B.y ? 'middle' : 'start') + '">'
+           + esc(e.label) + '</text>';
+    });
+
+    rows.forEach(function (row) {
+      if (row.label) {
+        // Clear the arc when this row has one, or the two collide.
+        var labelY = row.y - (row.hasArc ? 48 : 12);
+        svg += '<text class="ycn-tierlab" x="' + PADX + '" y="' + labelY + '">' + esc(row.label) + '</text>';
+      }
+      row.nodes.forEach(function (n) {
+        var p = pos[n.id];
+        var fill = row.loose ? 'var(--ycn-unknown-bg)' : (n.isp ? 'var(--yc-gold-soft)' : 'var(--yc-cream)');
+        var stroke = row.loose ? 'var(--ycn-unknown)' : (n.isp ? 'var(--yc-gold)' : 'var(--yc-line)');
+        var meta = n.room + ' · ' + n.ports + 'p · ' + n.free + ' free';
+        svg += '<g class="ycn-dnode" tabindex="0" role="button" data-room="' + esc(n.roomKey) + '"'
+          + ' aria-label="' + esc(n.name + ', ' + meta) + '">'
+          + '<rect x="' + p.x + '" y="' + p.y + '" width="' + p.w + '" height="' + p.h
+          + '" rx="3" fill="' + fill + '" stroke="' + stroke + '"></rect>'
+          + '<text class="dn" x="' + (p.x + 11) + '" y="' + (p.y + 21) + '">' + esc(trunc(n.name, 25)) + '</text>'
+          + '<text class="dm" x="' + (p.x + 11) + '" y="' + (p.y + 38) + '">' + esc(trunc(meta, 26)) + '</text>'
+          + '</g>';
+      });
+    });
+
+    svg += '</svg>';
+    document.getElementById('ycn-diagram').innerHTML = svg;
+
+    Array.prototype.forEach.call(document.querySelectorAll('.ycn-dnode'), function (node) {
+      function open() {
+        state.activeRoom = node.dataset.room;
+        drawTabs(); drawPlates();
+        document.getElementById('ycn-sec-plate').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      node.addEventListener('click', open);
+      node.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+      });
+    });
+
+    var partial = g.edges.filter(function (e) { return !e.exact; }).length;
+    var notes = '';
+    if (looseCount) {
+      notes += '<div class="ycn-note-line"><b>Gap</b><span>' + looseCount
+        + ' switch' + (looseCount === 1 ? '' : 'es') + ' with no cable on record leading back to the core. '
+        + 'Some are cabled to each other — the missing piece is the uplink out of the room. '
+        + 'Record either end and they join the diagram above.</span></div>';
+    }
+    if (partial) {
+      notes += '<div class="ycn-note-line"><b>Half known</b><span>' + partial
+        + ' cable' + (partial === 1 ? '' : 's') + ' where the far switch is recorded but not the far port — drawn dashed. '
+        + 'Open the port and pick the far port to finish it.</span></div>';
+    }
+    document.getElementById('ycn-diagram-notes').innerHTML = notes;
+  }
+
+  function trunc(s, n) { return s.length > n ? s.slice(0, n - 1) + '…' : s; }
+
+  function roomByKey(key) {
+    return state.rooms.filter(function (r) { return r.key === key; })[0];
+  }
+
+  function roomTotals(room) {
+    var totals = { USED: 0, FREE: 0, UPLINK: 0, TRUNK: 0, AP: 0, UNKNOWN: 0 };
+    var count = 0;
+    room.devices.forEach(function (device) {
+      ORDER.forEach(function (key) { totals[key] += device.counts[key]; });
+      count += device.ports.length;
+    });
+    return { totals: totals, count: count };
+  }
+
+  /* ---- room cards --------------------------------------------------- */
+  function drawRooms() {
+    var html = '';
+    var riser = '';
+
+    CONTENT.topology.rooms.forEach(function (meta) {
+      var room = roomByKey(meta.key);
+      if (!room) return;
+      var t = roomTotals(room);
+      var bar = ORDER.map(function (key) {
+        return t.totals[key]
+          ? '<i class="' + key + '" style="width:' + (t.totals[key] / t.count * 100).toFixed(2) + '%"></i>'
+          : '';
+      }).join('');
+
+      html += '<button class="ycn-rm' + (meta.ok ? '' : ' flag') + '" data-room="' + esc(meta.key) + '">'
+        + '<span class="rt"><b>' + esc(room.label) + '</b><span>' + room.devices.length
+        + ' switches &middot; ' + t.count + ' ports</span></span>'
+        + '<span class="ycn-bar">' + bar + '</span>'
+        + '<span class="up"><span class="dot"></span><span>' + esc(meta.up) + '</span></span>'
+        + (meta.why ? '<span class="why">' + esc(meta.why) + '</span>' : '')
+        + '</button>';
+
+      riser += '<div class="ycn-node ' + (meta.ok ? 'dev' : 'flag') + '"><div class="t">'
+        + esc(room.label) + '</div><div class="s">' + esc(meta.up) + '</div></div>';
+    });
+
+    document.getElementById('ycn-roomcards').innerHTML = html;
+
+    Array.prototype.forEach.call(document.querySelectorAll('.ycn-rm'), function (button) {
+      button.addEventListener('click', function () {
+        state.activeRoom = button.dataset.room;
+        drawTabs();
+        drawPlates();
+        document.getElementById('ycn-sec-plate').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  }
+
+  /* ---- legend ------------------------------------------------------- */
+  function drawLegend() {
+    document.getElementById('ycn-legend').innerHTML = LEGEND.map(function (l) {
+      var style = l[0] === 'FREE'
+        ? 'border-color:var(--ycn-free)'
+        : 'background:var(--ycn-' + l[0].toLowerCase() + ');border-color:var(--ycn-' + l[0].toLowerCase() + ')';
+      return '<div><span class="sw" style="' + style + '"></span><span><b>' + esc(l[1])
+        + '</b> &mdash; <span class="d">' + esc(l[2]) + '</span></span></div>';
+    }).join('');
+  }
+
+  /* ---- tabs --------------------------------------------------------- */
+  function drawTabs() {
+    document.getElementById('ycn-tabs').innerHTML = state.rooms.map(function (room) {
+      return '<button class="ycn-tab" role="tab" data-room="' + esc(room.key) + '" aria-selected="'
+        + (room.key === state.activeRoom) + '">' + esc(room.label) + '</button>';
+    }).join('');
+    Array.prototype.forEach.call(document.querySelectorAll('.ycn-tab'), function (button) {
+      button.addEventListener('click', function () {
+        state.activeRoom = button.dataset.room;
+        drawTabs();
+        drawPlates();
+      });
+    });
+  }
+
+  /* ---- faceplates --------------------------------------------------- */
+  function drawPlates() {
+    var room = roomByKey(state.activeRoom);
+    if (!room) return;
+    var html = '';
+
+    room.devices.forEach(function (device) {
+      var numeric = [];
+      var bay = [];
+      device.ports.forEach(function (port) {
+        if (/^\d+$/.test(port.label) && !/SFP/i.test(port.connector)) numeric.push(port);
+        else bay.push(port);
+      });
+
+      function cell(port) {
+        var title = 'Port ' + port.label + ' (' + port.connector + ') — ' + leg(port.status)[1]
+          + (port.connection ? ': ' + port.connection : '');
+        return '<button class="ycn-pt ' + esc(port.status) + (/SFP/i.test(port.connector) ? ' sfp' : '')
+          + (port.edited ? ' edited' : '') + (state.sel === port.id ? ' sel' : '') + '"'
+          + ' data-port="' + esc(port.id) + '" title="' + esc(title) + '" aria-label="' + esc(title) + '">'
+          + esc(port.label) + '</button>';
+      }
+
+      function bank(list) {
+        var out = '';
+        for (var i = 0; i < list.length; i += 2) {
+          out += '<div>' + cell(list[i]) + '</div>';
+          out += '<div>' + (list[i + 1] ? cell(list[i + 1]) : '') + '</div>';
+        }
+        return out;
+      }
+
+      html += '<div class="ycn-sw"><div class="ycn-sw-head">'
+        + '<span class="n">' + esc(device.name)
+        + (device.photoVerified ? ' <span class="ycn-tag ok">checked against photo</span>' : '') + '</span>'
+        + '<span class="c"><span><b>' + device.ports.length + '</b> ports</span>'
+        + '<span><b>' + device.counts.FREE + '</b> free</span>'
+        + (device.counts.UNKNOWN
+            ? '<span style="color:var(--ycn-unknown)"><b style="color:var(--ycn-unknown)">'
+              + device.counts.UNKNOWN + '</b> to check</span>'
+            : '')
+        + '</span></div>'
+        + (device.note ? '<div class="ycn-note"><b>Note</b><span>' + esc(device.note) + '</span></div>' : '')
+        + '<div class="ycn-plate"><div class="ycn-plate-in">';
+
+      if (numeric.length) {
+        html += '<div><div class="ycn-baylab">Access ports 1&ndash;'
+          + esc(numeric[numeric.length - 1].label) + '</div><div class="ycn-bank">'
+          + bank(numeric) + '</div></div>';
+      }
+      if (bay.length) {
+        html += '<div class="' + (numeric.length ? 'ycn-bay' : '') + '"><div class="ycn-baylab">'
+          + (numeric.length ? 'Uplink / stacking bay' : 'Ports') + '</div><div class="ycn-bank">'
+          + bank(bay) + '</div></div>';
+      }
+      html += '</div></div></div>';
+    });
+
+    document.getElementById('ycn-plates').innerHTML = html;
+
+    var t = roomTotals(room);
+    document.getElementById('ycn-plate-count').textContent =
+      room.label + ' · ' + t.count + ' ports · ' + t.totals.FREE + ' free';
+
+    Array.prototype.forEach.call(document.querySelectorAll('.ycn-pt'), function (button) {
+      button.addEventListener('click', function () { openInspector(button.dataset.port); });
+    });
+  }
+
+  /* ---- inspector ---------------------------------------------------- */
+  function openInspector(portId) {
+    var entry = state.ports[portId];
+    if (!entry) return;
+    var port = entry.port;
+    var device = entry.device;
+    state.sel = portId;
+
+    var chips = LEGEND.map(function (l) {
+      var style = l[0] === 'FREE'
+        ? 'border-color:var(--ycn-free)'
+        : 'background:var(--ycn-' + l[0].toLowerCase() + ');border-color:var(--ycn-' + l[0].toLowerCase() + ')';
+      return '<button class="ycn-chip" data-status="' + l[0] + '" aria-pressed="'
+        + (l[0] === port.status) + '"><span class="sw" style="' + style + '"></span>' + esc(l[1]) + '</button>';
+    }).join('');
+
+    document.getElementById('ycn-insp-host').innerHTML =
+      '<aside class="ycn-insp" role="dialog" aria-label="Edit port">'
+      + '<button class="ycn-x" id="ycn-insp-x" aria-label="Close">&times;</button>'
+      + '<div><div class="ycn-eyebrow">' + esc(entry.roomLabel) + '</div>'
+      + '<h3>' + esc(device.name) + ' &middot; port ' + esc(port.label) + '</h3></div>'
+      + '<div class="sub">' + esc(port.connector) + ' connector</div>'
+      + '<div class="ycn-fld"><label>What is this port doing?</label>'
+      + '<div class="ycn-chips" id="ycn-chips">' + chips + '</div></div>'
+      + '<div class="ycn-fld"><label>Connected to</label><input id="ycn-f-c" value="' + esc(port.connection)
+      + '" placeholder="e.g. Desktop 14, or Aruba 1830 port 7"></div>'
+      + '<div class="ycn-fld"><label>Note</label><textarea id="ycn-f-n" placeholder="Wall plate number, VLAN, why it is patched this way">'
+      + esc(port.note) + '</textarea></div>'
+      + linkEditor(port)
+      + '<div class="ycn-btnrow"><button class="ycn-btn" id="ycn-f-save">Save</button>'
+      + (port.edited ? '<button class="ycn-btn ghost" id="ycn-f-reset">Undo to original</button>' : '')
+      + '</div>'
+      + '<div class="ycn-orig">Originally recorded as <b>' + esc(leg(port.source.status)[1]) + '</b>'
+      + (port.source.connection ? ' &middot; <b>' + esc(port.source.connection) + '</b>' : '')
+      + (port.source.note ? '<br>' + esc(port.source.note) : '')
+      + (port.updatedByName
+          ? '<br>Last changed by ' + esc(port.updatedByName)
+            + ' on ' + esc(new Date(port.updatedAt).toLocaleDateString())
+          : '')
+      + '</div></aside>';
+
+    var status = port.status;
+    Array.prototype.forEach.call(document.querySelectorAll('#ycn-chips .ycn-chip'), function (chip) {
+      chip.addEventListener('click', function () {
+        status = chip.dataset.status;
+        Array.prototype.forEach.call(document.querySelectorAll('#ycn-chips .ycn-chip'), function (other) {
+          other.setAttribute('aria-pressed', String(other.dataset.status === status));
+        });
+        // A port being released should not keep the old cable's description.
+        if (status === 'FREE') {
+          document.getElementById('ycn-f-c').value = '';
+          document.getElementById('ycn-f-n').value = '';
+        }
+      });
+    });
+
+    var devSelect = document.getElementById('ycn-f-dev');
+    var portSelect = document.getElementById('ycn-f-port');
+    devSelect.addEventListener('change', function () {
+      portSelect.innerHTML = farPortOptions(devSelect.value, null, portId);
+    });
+
+    document.getElementById('ycn-insp-x').addEventListener('click', closeInspector);
+
+    document.getElementById('ycn-f-save').addEventListener('click', function () {
+      var button = this;
+      button.disabled = true;
+      api('PUT', '/ports/' + portId, {
+        status: status,
+        connection: document.getElementById('ycn-f-c').value,
+        note: document.getElementById('ycn-f-n').value,
+        linkedPortId: portSelect.value || null,
+        linkedDeviceId: devSelect.value || null
+      }).then(function () {
+        // A cable touches two ports and possibly detaches two others, so take a
+        // fresh copy of the map rather than trying to patch it in place.
+        return refresh();
+      }).then(function () {
+        closeInspector();
+        toast('Saved');
+      }).catch(function (error) {
+        button.disabled = false;
+        toast(error.status ? 'Your session has expired — sign in again' : 'Could not save — try again');
+      });
+    });
+
+    var resetButton = document.getElementById('ycn-f-reset');
+    if (resetButton) {
+      resetButton.addEventListener('click', function () {
+        this.disabled = true;
+        api('POST', '/ports/' + portId + '/reset')
+          .then(refresh)
+          .then(function () { closeInspector(); toast('Reset to the original record'); })
+          .catch(function () { toast('Could not reset — try again'); });
+      });
+    }
+
+    drawPlates();
+  }
+
+  /**
+   * The cable picker. Choosing a far switch and a far port is what draws a line
+   * on the diagram, so this is the control that makes the diagram editable.
+   */
+  function linkEditor(port) {
+    var current = port.linkedPortId ? state.ports[port.linkedPortId] : null;
+    var farDevice = port.linkedDeviceId;
+
+    var devOptions = '<option value="">— nothing / not a switch —</option>'
+      + state.devices.map(function (entry) {
+          var sel = entry.device.id === farDevice ? ' selected' : '';
+          return '<option value="' + esc(entry.device.id) + '"' + sel + '>'
+            + esc(entry.device.name) + '  (' + esc(entry.roomLabel) + ')</option>';
+        }).join('');
+
+    var portOptions = farPortOptions(farDevice, port.linkedPortId, port.id);
+
+    return '<div class="ycn-fld" style="border-top:1px solid var(--yc-line);padding-top:14px">'
+      + '<label>Cable goes to</label>'
+      + '<select id="ycn-f-dev">' + devOptions + '</select>'
+      + '<select id="ycn-f-port" style="margin-top:6px">' + portOptions + '</select>'
+      + '<p style="margin:6px 0 0;font-size:12.5px;color:var(--yc-ink-3)">'
+      + (current
+          ? 'Currently ' + esc(current.device.name) + ' port ' + esc(current.port.label) + '.'
+          : farDevice
+            ? 'Goes to a switch, but nobody has recorded which port — pick one and the line stops being dashed.'
+            : 'Leave empty for a desktop, an access point or anything that is not a switch on this page.')
+      + '</p></div>';
+  }
+
+  function farPortOptions(deviceId, selectedPortId, excludePortId) {
+    if (!deviceId) return '<option value="">— which port? —</option>';
+    var entry = state.devices.filter(function (d) { return d.device.id === deviceId; })[0];
+    if (!entry) return '<option value="">— which port? —</option>';
+    return '<option value="">— which port? (leave blank if unknown) —</option>'
+      + entry.device.ports.filter(function (p) { return p.id !== excludePortId; }).map(function (p) {
+          var taken = p.linkedPortId && p.linkedPortId !== excludePortId;
+          return '<option value="' + esc(p.id) + '"' + (p.id === selectedPortId ? ' selected' : '') + '>'
+            + esc(p.label) + ' (' + esc(p.connector) + ')' + (taken ? ' — already cabled' : '') + '</option>';
+        }).join('');
+  }
+
+  function closeInspector() {
+    state.sel = null;
+    document.getElementById('ycn-insp-host').innerHTML = '';
+    drawPlates();
+  }
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && state.sel) closeInspector();
+  });
+
+  /**
+   * Fold one saved port back into the loaded map, rather than refetching all
+   * 567 of them for a one-field change.
+   */
+  function applyPort(portId, updated) {
+    var entry = state.ports[portId];
+    if (!entry) return;
+    var device = entry.device;
+    var index = device.ports.findIndex(function (p) { return p.id === portId; });
+    if (index === -1) return;
+
+    device.counts[device.ports[index].status] -= 1;
+    device.counts[updated.status] += 1;
+    device.ports[index] = updated;
+    entry.port = updated;
+
+    render();
+  }
+
+  function refresh() {
+    return api('GET', '').then(function (data) {
+      state.rooms = data.rooms;
+      state.ports = {};
+      state.devices = [];
+      state.rooms.forEach(function (room) {
+        room.devices.forEach(function (device) {
+          state.devices.push({ device: device, roomLabel: room.label });
+          device.ports.forEach(function (port) {
+            state.ports[port.id] = { port: port, device: device, roomLabel: room.label };
+          });
+        });
+      });
+      render();
+    });
+  }
+
+  /* ---- summary and inventory ---------------------------------------- */
+  function render() {
+    var deviceCount = 0;
+    var portCount = 0;
+    var free = 0;
+    var unknown = 0;
+    var lastEdit = null;
+    var rows = '';
+
+    state.rooms.forEach(function (room) {
+      room.devices.forEach(function (device) {
+        deviceCount += 1;
+        portCount += device.ports.length;
+        free += device.counts.FREE;
+        unknown += device.counts.UNKNOWN;
+
+        var inUse = device.counts.USED + device.counts.UPLINK + device.counts.TRUNK + device.counts.AP;
+        rows += '<tr><td>' + esc(device.name) + '</td>'
+          + '<td class="rn">' + esc(room.label) + '</td>'
+          + '<td class="num">' + device.ports.length + '</td>'
+          + '<td class="num">' + inUse + '</td>'
+          + '<td class="num">' + device.counts.FREE + '</td>'
+          + '<td class="num"' + (device.counts.UNKNOWN ? ' style="color:var(--ycn-unknown);font-weight:600"' : '') + '>'
+          + (device.counts.UNKNOWN || '—') + '</td></tr>';
+
+        device.ports.forEach(function (port) {
+          if (port.updatedByName && (!lastEdit || port.updatedAt > lastEdit)) lastEdit = port.updatedAt;
+        });
+      });
+    });
+
+    document.getElementById('ycn-m-dev').textContent = deviceCount;
+    document.getElementById('ycn-m-port').textContent = portCount;
+    document.getElementById('ycn-m-free').textContent = free;
+    document.getElementById('ycn-m-unk').textContent = unknown;
+    document.getElementById('ycn-m-last').textContent = lastEdit
+      ? new Date(lastEdit).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+      : 'never';
+    document.getElementById('ycn-inv').innerHTML = rows;
+
+    drawRooms();
+    drawPlates();
+    drawDiagram();
+  }
+
+  /* ---- questions ----------------------------------------------------- */
+  function drawQuestions() {
+    document.getElementById('ycn-questions').innerHTML = CONTENT.questions.map(function (question) {
+      var room = roomByKey(question.room);
+      return '<div class="ycn-q"><div class="qt"><b>' + esc(question.t) + '</b>'
+        + '<span class="ycn-tag">' + esc(room ? room.label : question.room) + '</span></div>'
+        + '<p>' + esc(question.d) + '</p>'
+        + '<div class="todo"><b>To do</b><span>' + esc(question.a) + '</span></div></div>';
+    }).join('');
+  }
+
+  /* ---- export -------------------------------------------------------- */
+  document.getElementById('ycn-export').addEventListener('click', function () {
+    var headers = {};
+    var t = token();
+    if (t) headers.Authorization = 'Bearer ' + t;
+    fetch(API + '/export.csv', { headers: headers })
+      .then(function (response) {
+        if (!response.ok) throw new Error('export failed');
+        return response.blob();
+      })
+      .then(function (blob) {
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = 'network-map.csv';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      })
+      .catch(function () { toast('Could not build the CSV — try again'); });
+  });
+
+  /* ---- boot ---------------------------------------------------------- */
+  if (!token()) {
+    gate('Administrators only', 'The network map is restricted. Sign in with an administrator account to open it.', true);
+  } else {
+    api('GET', '').then(function (data) {
+      state.rooms = data.rooms;
+      state.summary = data.summary;
+      state.activeRoom = data.rooms.length ? data.rooms[0].key : null;
+
+      // Flat indexes so a port click - and the link picker - resolve without
+      // walking every room.
+      state.devices = [];
+      state.rooms.forEach(function (room) {
+        room.devices.forEach(function (device) {
+          state.devices.push({ device: device, roomLabel: room.label });
+          device.ports.forEach(function (port) {
+            state.ports[port.id] = { port: port, device: device, roomLabel: room.label };
+          });
+        });
+      });
+
+      document.getElementById('ycn-gate').hidden = true;
+      document.getElementById('ycn-app').hidden = false;
+
+      drawDiagram();
+      drawLegend();
+      drawQuestions();
+      drawTabs();
+      render();
+    }).catch(function (error) {
+      if (error.status === 403) {
+        gate('Administrators only',
+          'You are signed in, but this page is limited to administrator accounts. Ask an administrator if you need access.',
+          false);
+      } else if (error.status === 401) {
+        gate('Your session has expired', 'Sign in again to open the network map.', true);
+      } else {
+        gate('The map could not be loaded',
+          'The server did not answer. Refresh the page, and if it keeps happening the database may not have been seeded yet.',
+          false);
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -46,6 +46,7 @@ import healthRoutes from './routes/health.js';
 import dataSubjectRoutes from './routes/dataSubject.js';
 import consentRoutes from './routes/consent.js';
 import cronRoutes from './routes/cron.js';
+import networkRoutes from './routes/network.js';
 import { initEmailService } from './services/emailService.js';
 
 // Load environment variables
@@ -604,6 +605,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/data-subject', dataSubjectRoutes);
 app.use('/api/consent', consentRoutes);
 app.use('/api/cron', cronRoutes);
+app.use('/api/network', networkRoutes);
 
 // CRITICAL: Serve root index.html FIRST, before any static middleware
 // This ensures the correct file is served and prevents admin dashboard from being served at root

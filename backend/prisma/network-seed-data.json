@@ -1,0 +1,4835 @@
+[
+ {
+  "slug": "e-lab--cisco-catalyst-1300-series",
+  "name": "Cisco Catalyst 1300 Series",
+  "roomKey": "E_LAB",
+  "roomLabel": "E-Lab / Core",
+  "sortOrder": 0,
+  "note": "Replaces the Cisco SG300-10MP listed in the spreadsheet. Same layout: 8 PoE ports, 2 copper, 2 SFP.",
+  "photoVerified": true,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45 PoE",
+    "status": "USED",
+    "connection": "Juniper SRX320 port 0/0",
+    "note": "Downlink \u2014 confirm the far end"
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45 PoE",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45 PoE",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45 PoE",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45 PoE",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45 PoE",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45 PoE",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45 PoE",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 8,
+    "label": "9",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 9,
+    "label": "10",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 10,
+    "label": "9",
+    "connector": "SFP",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Module fitted with fibre attached \u2014 destination not known"
+   },
+   {
+    "position": 11,
+    "label": "10",
+    "connector": "SFP",
+    "status": "UPLINK",
+    "connection": "FLOW",
+    "note": "Uplink \u2014 the fibre service handoff"
+   }
+  ]
+ },
+ {
+  "slug": "e-lab--netgear-prosafe-24-port-smart-switch",
+  "name": "NETGEAR ProSafe 24-port Smart Switch",
+  "roomKey": "E_LAB",
+  "roomLabel": "E-Lab / Core",
+  "sortOrder": 1,
+  "note": "Missing entirely from the spreadsheet. Around a dozen link LEDs were lit in the photo and both SFP cages carry fibre \u2014 this switch is doing real work.",
+  "photoVerified": true,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 8,
+    "label": "9",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 9,
+    "label": "10",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 10,
+    "label": "11",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 11,
+    "label": "12",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 12,
+    "label": "13",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 13,
+    "label": "14",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 14,
+    "label": "15",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 15,
+    "label": "16",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 16,
+    "label": "17",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 17,
+    "label": "18",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 18,
+    "label": "19",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 19,
+    "label": "20",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 20,
+    "label": "21",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 21,
+    "label": "22",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 22,
+    "label": "23",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 23,
+    "label": "24",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Not in the spreadsheet \u2014 record what this goes to"
+   },
+   {
+    "position": 24,
+    "label": "SFP1",
+    "connector": "SFP",
+    "status": "UPLINK",
+    "connection": "?",
+    "note": "Orange duplex fibre fitted and running out of the rack"
+   },
+   {
+    "position": 25,
+    "label": "SFP2",
+    "connector": "SFP",
+    "status": "UPLINK",
+    "connection": "?",
+    "note": "Fibre fitted \u2014 destination not known"
+   }
+  ]
+ },
+ {
+  "slug": "e-lab--juniper-srx320",
+  "name": "Juniper SRX320",
+  "roomKey": "E_LAB",
+  "roomLabel": "E-Lab / Core",
+  "sortOrder": 2,
+  "note": null,
+  "photoVerified": true,
+  "ports": [
+   {
+    "position": 0,
+    "label": "0/0",
+    "connector": "RJ45",
+    "status": "UPLINK",
+    "connection": "Cisco Catalyst 1300 port 1",
+    "note": "Uplink"
+   },
+   {
+    "position": 1,
+    "label": "0/1",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 2,
+    "label": "0/2",
+    "connector": "RJ45",
+    "status": "TRUNK",
+    "connection": "Dream Machine Pro WAN 9",
+    "note": "Downlink \u2014 moved here from 0/3"
+   },
+   {
+    "position": 3,
+    "label": "0/3",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": "Was the Dream Machine Pro link in the spreadsheet"
+   },
+   {
+    "position": 4,
+    "label": "0/4",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 5,
+    "label": "0/5",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 6,
+    "label": "0/6",
+    "connector": "SFP",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 7,
+    "label": "0/7",
+    "connector": "SFP",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   }
+  ]
+ },
+ {
+  "slug": "e-lab--dream-machine-pro",
+  "name": "Dream Machine Pro",
+  "roomKey": "E_LAB",
+  "roomLabel": "E-Lab / Core",
+  "sortOrder": 3,
+  "note": null,
+  "photoVerified": true,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Dell PowerEdge R420",
+    "note": "10.0.0.2"
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Cable fitted \u2014 the spreadsheet has nothing on this port"
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": "Empty now \u2014 spreadsheet had Dell PowerConnect 3524 #1"
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": "Empty now \u2014 spreadsheet had Auditorium AP"
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": "Empty now \u2014 spreadsheet had Cisco SRW248G4 #2"
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": "Empty now \u2014 spreadsheet had Aruba 1830"
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": "Empty now \u2014 spreadsheet had ThinkCentre"
+   },
+   {
+    "position": 8,
+    "label": "9",
+    "connector": "RJ45(WAN)",
+    "status": "UPLINK",
+    "connection": "Juniper SRX320 port 0/2",
+    "note": "Uplink"
+   },
+   {
+    "position": 9,
+    "label": "10",
+    "connector": "SFP(WAN)",
+    "status": "UPLINK",
+    "connection": "Main Office",
+    "note": "Uplink \u2014 not visible in the photo, still unconfirmed"
+   },
+   {
+    "position": 10,
+    "label": "11",
+    "connector": "SFP",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   }
+  ]
+ },
+ {
+  "slug": "e-lab--aruba-instant-on-1830",
+  "name": "Aruba Instant On 1830",
+  "roomKey": "E_LAB",
+  "roomLabel": "E-Lab / Core",
+  "sortOrder": 4,
+  "note": null,
+  "photoVerified": true,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": "Empty now \u2014 spreadsheet had the E-Lab AP"
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "AP",
+    "connection": "Staff Room",
+    "note": "AP"
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": "Empty now \u2014 spreadsheet had \"temporal use\""
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": "Was the Dream Machine Pro uplink in the spreadsheet"
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": "Uplink \u2014 cable fitted, far end not known (the Dream Machine Pro port it used to reach is now empty)"
+   }
+  ]
+ },
+ {
+  "slug": "e-lab--cisco-srw248g4-1",
+  "name": "Cisco SRW248G4_#1",
+  "roomKey": "E_LAB",
+  "roomLabel": "E-Lab / Core",
+  "sortOrder": 5,
+  "note": "Not visible in the rack photo \u2014 confirm where this unit physically lives.",
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 8,
+    "label": "9",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 9,
+    "label": "10",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 10,
+    "label": "11",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 11,
+    "label": "12",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 12,
+    "label": "13",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 13,
+    "label": "14",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 14,
+    "label": "15",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 15,
+    "label": "16",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 16,
+    "label": "17",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 17,
+    "label": "18",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 18,
+    "label": "19",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 19,
+    "label": "20",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 20,
+    "label": "21",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 21,
+    "label": "22",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 22,
+    "label": "23",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 23,
+    "label": "24",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 24,
+    "label": "25",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 25,
+    "label": "26",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 26,
+    "label": "27",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 27,
+    "label": "28",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 28,
+    "label": "29",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 29,
+    "label": "30",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 30,
+    "label": "31",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 31,
+    "label": "32",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 32,
+    "label": "33",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 33,
+    "label": "34",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 34,
+    "label": "35",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 35,
+    "label": "36",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 36,
+    "label": "37",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 37,
+    "label": "38",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 38,
+    "label": "39",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 39,
+    "label": "40",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 40,
+    "label": "41",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 41,
+    "label": "42",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 42,
+    "label": "43",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 43,
+    "label": "44",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 44,
+    "label": "45",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 45,
+    "label": "46",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 46,
+    "label": "47",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 47,
+    "label": "48",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 48,
+    "label": "G1",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 49,
+    "label": "G2",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 50,
+    "label": "G3",
+    "connector": "RJ45",
+    "status": "TRUNK",
+    "connection": "Cisco SRW248G4_#2",
+    "note": "Stacking"
+   },
+   {
+    "position": 51,
+    "label": "G4",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 52,
+    "label": "G3",
+    "connector": "SFP",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 53,
+    "label": "G4",
+    "connector": "SFP",
+    "status": "USED",
+    "connection": "Desktop in Sr_Lab",
+    "note": "DHCP"
+   }
+  ]
+ },
+ {
+  "slug": "e-lab--cisco-srw248g4-2",
+  "name": "Cisco SRW248G4_#2",
+  "roomKey": "E_LAB",
+  "roomLabel": "E-Lab / Core",
+  "sortOrder": 6,
+  "note": "Not visible in the rack photo \u2014 confirm where this unit physically lives.",
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 8,
+    "label": "9",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 9,
+    "label": "10",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 10,
+    "label": "11",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 11,
+    "label": "12",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 12,
+    "label": "13",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 13,
+    "label": "14",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 14,
+    "label": "15",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 15,
+    "label": "16",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 16,
+    "label": "17",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 17,
+    "label": "18",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 18,
+    "label": "19",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 19,
+    "label": "20",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 20,
+    "label": "21",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 21,
+    "label": "22",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 22,
+    "label": "23",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 23,
+    "label": "24",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 24,
+    "label": "25",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 25,
+    "label": "26",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 26,
+    "label": "27",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 27,
+    "label": "28",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 28,
+    "label": "29",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 29,
+    "label": "30",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 30,
+    "label": "31",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 31,
+    "label": "32",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 32,
+    "label": "33",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 33,
+    "label": "34",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 34,
+    "label": "35",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 35,
+    "label": "36",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 36,
+    "label": "37",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 37,
+    "label": "38",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 38,
+    "label": "39",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 39,
+    "label": "40",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 40,
+    "label": "41",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 41,
+    "label": "42",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 42,
+    "label": "43",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 43,
+    "label": "44",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 44,
+    "label": "45",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 45,
+    "label": "46",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 46,
+    "label": "47",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 47,
+    "label": "48",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 48,
+    "label": "G1",
+    "connector": "RJ45",
+    "status": "TRUNK",
+    "connection": "Cisco SRW248G4_#1",
+    "note": "Stacking"
+   },
+   {
+    "position": 49,
+    "label": "G2",
+    "connector": "RJ45",
+    "status": "UPLINK",
+    "connection": "Dream Machine Pro",
+    "note": "Uplink"
+   },
+   {
+    "position": 50,
+    "label": "G3",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 51,
+    "label": "G4",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 52,
+    "label": "G3",
+    "connector": "SFP",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 53,
+    "label": "G4",
+    "connector": "SFP",
+    "status": "USED",
+    "connection": "Desktop in Jr_Lab",
+    "note": "DHCP"
+   }
+  ]
+ },
+ {
+  "slug": "e-lab--dell-power-connect-3524-1",
+  "name": "Dell Power Connect  3524 #1",
+  "roomKey": "E_LAB",
+  "roomLabel": "E-Lab / Core",
+  "sortOrder": 7,
+  "note": "Not visible in the rack photo \u2014 confirm where this unit physically lives.",
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45",
+    "status": "TRUNK",
+    "connection": "Dell Power Connect  3524 #2",
+    "note": "Stacking"
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 8,
+    "label": "9",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 9,
+    "label": "10",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 10,
+    "label": "11",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 11,
+    "label": "12",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 12,
+    "label": "13",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 13,
+    "label": "14",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 14,
+    "label": "15",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 15,
+    "label": "16",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 16,
+    "label": "17",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 17,
+    "label": "18",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 18,
+    "label": "19",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 19,
+    "label": "20",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 20,
+    "label": "21",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 21,
+    "label": "22",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 22,
+    "label": "23",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 23,
+    "label": "24",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 24,
+    "label": "G1",
+    "connector": "SFP",
+    "status": "TRUNK",
+    "connection": "Business Room",
+    "note": "Downlink"
+   },
+   {
+    "position": 25,
+    "label": "G2",
+    "connector": "SFP",
+    "status": "TRUNK",
+    "connection": "Library",
+    "note": "Downlink"
+   },
+   {
+    "position": 26,
+    "label": "G3",
+    "connector": "RJ45(Stacking)",
+    "status": "UPLINK",
+    "connection": "Dream Machine Pro",
+    "note": "Uplink"
+   },
+   {
+    "position": 27,
+    "label": "G4",
+    "connector": "RJ45(Stacking)",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   }
+  ]
+ },
+ {
+  "slug": "e-lab--dell-power-connect-3524-2",
+  "name": "Dell Power Connect  3524 #2",
+  "roomKey": "E_LAB",
+  "roomLabel": "E-Lab / Core",
+  "sortOrder": 8,
+  "note": "Not visible in the rack photo \u2014 confirm where this unit physically lives.",
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 8,
+    "label": "9",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 9,
+    "label": "10",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 10,
+    "label": "11",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 11,
+    "label": "12",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 12,
+    "label": "13",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 13,
+    "label": "14",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 14,
+    "label": "15",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 15,
+    "label": "16",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 16,
+    "label": "17",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 17,
+    "label": "18",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 18,
+    "label": "19",
+    "connector": "RJ45",
+    "status": "TRUNK",
+    "connection": "Dell Power Connect  3524 #1",
+    "note": "Stacking"
+   },
+   {
+    "position": 19,
+    "label": "20",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 20,
+    "label": "21",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 21,
+    "label": "22",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 22,
+    "label": "23",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 23,
+    "label": "24",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in E_LAB",
+    "note": "DHCP"
+   },
+   {
+    "position": 24,
+    "label": "G1",
+    "connector": "SFP",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 25,
+    "label": "G2",
+    "connector": "SFP",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 26,
+    "label": "G3",
+    "connector": "RJ45(Stacking)",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 27,
+    "label": "G4",
+    "connector": "RJ45(Stacking)",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   }
+  ]
+ },
+ {
+  "slug": "mainoofice--t-marc",
+  "name": "T-Marc",
+  "roomKey": "MAINOOFICE",
+  "roomLabel": "Main Office",
+  "sortOrder": 0,
+  "note": null,
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "WAN",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 1,
+    "label": "2/1",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 2,
+    "label": "2/2",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 3,
+    "label": "2/3",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 4,
+    "label": "2/4",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 5,
+    "label": "3/1(RJ45)",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 6,
+    "label": "3/1(SFP)",
+    "connector": "SFP",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   }
+  ]
+ },
+ {
+  "slug": "mainoofice--linksys-e1200",
+  "name": "Linksys E1200",
+  "roomKey": "MAINOOFICE",
+  "roomLabel": "Main Office",
+  "sortOrder": 1,
+  "note": null,
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 4,
+    "label": "INT",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   }
+  ]
+ },
+ {
+  "slug": "mainoofice--nexxt-poe-switch",
+  "name": "NEXXT PoE Switch",
+  "roomKey": "MAINOOFICE",
+  "roomLabel": "Main Office",
+  "sortOrder": 2,
+  "note": null,
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "AP",
+    "connection": null,
+    "note": "AP"
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "AP",
+    "connection": null,
+    "note": "AP"
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "AP",
+    "connection": null,
+    "note": "AP"
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45",
+    "status": "AP",
+    "connection": null,
+    "note": "AP"
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 8,
+    "label": "9",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   }
+  ]
+ },
+ {
+  "slug": "mainoofice--poe-switch",
+  "name": "POE Switch",
+  "roomKey": "MAINOOFICE",
+  "roomLabel": "Main Office",
+  "sortOrder": 3,
+  "note": null,
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "AP",
+    "connection": null,
+    "note": "AP"
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "AP",
+    "connection": null,
+    "note": "AP"
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   }
+  ]
+ },
+ {
+  "slug": "mainoofice--cisco-sg200-50",
+  "name": "Cisco SG200-50",
+  "roomKey": "MAINOOFICE",
+  "roomLabel": "Main Office",
+  "sortOrder": 4,
+  "note": null,
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 8,
+    "label": "9",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 9,
+    "label": "10",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 10,
+    "label": "11",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 11,
+    "label": "12",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 12,
+    "label": "13",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 13,
+    "label": "14",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 14,
+    "label": "15",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 15,
+    "label": "16",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 16,
+    "label": "17",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 17,
+    "label": "18",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 18,
+    "label": "19",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 19,
+    "label": "20",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 20,
+    "label": "21",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 21,
+    "label": "22",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 22,
+    "label": "23",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 23,
+    "label": "24",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 24,
+    "label": "25",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 25,
+    "label": "26",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 26,
+    "label": "27",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 27,
+    "label": "28",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 28,
+    "label": "29",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 29,
+    "label": "30",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 30,
+    "label": "31",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 31,
+    "label": "32",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 32,
+    "label": "33",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 33,
+    "label": "34",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 34,
+    "label": "35",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 35,
+    "label": "36",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 36,
+    "label": "37",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 37,
+    "label": "38",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 38,
+    "label": "39",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 39,
+    "label": "40",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 40,
+    "label": "41",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 41,
+    "label": "42",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 42,
+    "label": "43",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 43,
+    "label": "44",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 44,
+    "label": "45",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 45,
+    "label": "46",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 46,
+    "label": "47",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 47,
+    "label": "48",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 48,
+    "label": "49",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 49,
+    "label": "49",
+    "connector": "SFP",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 50,
+    "label": "50",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 51,
+    "label": "50",
+    "connector": "SFP",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   }
+  ]
+ },
+ {
+  "slug": "mainoofice--tp-link-tlsg1024",
+  "name": "Tp-link TLSG1024",
+  "roomKey": "MAINOOFICE",
+  "roomLabel": "Main Office",
+  "sortOrder": 5,
+  "note": null,
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 8,
+    "label": "9",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 9,
+    "label": "10",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 10,
+    "label": "11",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 11,
+    "label": "12",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 12,
+    "label": "13",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 13,
+    "label": "14",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 14,
+    "label": "15",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 15,
+    "label": "16",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 16,
+    "label": "17",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 17,
+    "label": "18",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 18,
+    "label": "19",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 19,
+    "label": "20",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 20,
+    "label": "21",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 21,
+    "label": "22",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 22,
+    "label": "23",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 23,
+    "label": "24",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   }
+  ]
+ },
+ {
+  "slug": "cape-lab--nexxt-asfrm2400r-1",
+  "name": "NEXXT ASFRM2400R_#1",
+  "roomKey": "CAPE_LAB",
+  "roomLabel": "CAPE Lab",
+  "sortOrder": 0,
+  "note": null,
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 8,
+    "label": "9",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 9,
+    "label": "10",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 10,
+    "label": "11",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 11,
+    "label": "12",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 12,
+    "label": "13",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 13,
+    "label": "14",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 14,
+    "label": "15",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 15,
+    "label": "16",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 16,
+    "label": "17",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 17,
+    "label": "18",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 18,
+    "label": "19",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 19,
+    "label": "20",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 20,
+    "label": "21",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 21,
+    "label": "22",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 22,
+    "label": "23",
+    "connector": "RJ45",
+    "status": "TRUNK",
+    "connection": "NEXXT ASFRM2400R_#2",
+    "note": "Stacking"
+   },
+   {
+    "position": 23,
+    "label": "24",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   }
+  ]
+ },
+ {
+  "slug": "cape-lab--nexxt-asfrm2400r-2",
+  "name": "NEXXT ASFRM2400R_#2",
+  "roomKey": "CAPE_LAB",
+  "roomLabel": "CAPE Lab",
+  "sortOrder": 1,
+  "note": null,
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45",
+    "status": "AP",
+    "connection": "Cafeteria",
+    "note": "AP"
+   },
+   {
+    "position": 8,
+    "label": "9",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 9,
+    "label": "10",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 10,
+    "label": "11",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 11,
+    "label": "12",
+    "connector": "RJ45",
+    "status": "UPLINK",
+    "connection": "?",
+    "note": "Uplink"
+   },
+   {
+    "position": 12,
+    "label": "13",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 13,
+    "label": "14",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 14,
+    "label": "15",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 15,
+    "label": "16",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 16,
+    "label": "17",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 17,
+    "label": "18",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 18,
+    "label": "19",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 19,
+    "label": "20",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 20,
+    "label": "21",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 21,
+    "label": "22",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 22,
+    "label": "23",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 23,
+    "label": "24",
+    "connector": "RJ45",
+    "status": "TRUNK",
+    "connection": "NEXXT ASFRM2400R_#1",
+    "note": "Stacking"
+   }
+  ]
+ },
+ {
+  "slug": "cad-lab--nexxt-axis2400r-1",
+  "name": "NEXXT Axis2400R_#1",
+  "roomKey": "CAD_LAB",
+  "roomLabel": "CAD Lab",
+  "sortOrder": 0,
+  "note": null,
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 8,
+    "label": "9",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 9,
+    "label": "10",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 10,
+    "label": "11",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 11,
+    "label": "12",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 12,
+    "label": "13",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 13,
+    "label": "14",
+    "connector": "RJ45",
+    "status": "TRUNK",
+    "connection": "NEXXT Axis2400R_#2",
+    "note": "Stacking"
+   },
+   {
+    "position": 14,
+    "label": "15",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 15,
+    "label": "16",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 16,
+    "label": "17",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 17,
+    "label": "18",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 18,
+    "label": "19",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 19,
+    "label": "20",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 20,
+    "label": "21",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 21,
+    "label": "22",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 22,
+    "label": "23",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 23,
+    "label": "24",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   }
+  ]
+ },
+ {
+  "slug": "cad-lab--nexxt-axis2400r-2",
+  "name": "NEXXT Axis2400R_#2",
+  "roomKey": "CAD_LAB",
+  "roomLabel": "CAD Lab",
+  "sortOrder": 1,
+  "note": null,
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 8,
+    "label": "9",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 9,
+    "label": "10",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 10,
+    "label": "11",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Desktop in Lab",
+    "note": "DHCP"
+   },
+   {
+    "position": 11,
+    "label": "12",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": "DHCP"
+   },
+   {
+    "position": 12,
+    "label": "13",
+    "connector": "RJ45",
+    "status": "TRUNK",
+    "connection": "NEXXT Axis2400R_#1",
+    "note": "Stacking"
+   },
+   {
+    "position": 13,
+    "label": "14",
+    "connector": "RJ45",
+    "status": "AP",
+    "connection": "CAD_LAB AP#1",
+    "note": "AP"
+   },
+   {
+    "position": 14,
+    "label": "15",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 15,
+    "label": "16",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 16,
+    "label": "17",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 17,
+    "label": "18",
+    "connector": "RJ45",
+    "status": "UPLINK",
+    "connection": "?",
+    "note": "Uplink?"
+   },
+   {
+    "position": 18,
+    "label": "19",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 19,
+    "label": "20",
+    "connector": "RJ45",
+    "status": "AP",
+    "connection": "CAD_LAB AP#2",
+    "note": "AP"
+   },
+   {
+    "position": 20,
+    "label": "21",
+    "connector": "RJ45",
+    "status": "UPLINK",
+    "connection": "?",
+    "note": "Uplink?"
+   },
+   {
+    "position": 21,
+    "label": "22",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 22,
+    "label": "23",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 23,
+    "label": "24",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   }
+  ]
+ },
+ {
+  "slug": "bis-room--dell-power-connect-3524",
+  "name": "Dell Power Connect  3524",
+  "roomKey": "Bis_Room",
+  "roomLabel": "Business Room",
+  "sortOrder": 0,
+  "note": null,
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 8,
+    "label": "9",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 9,
+    "label": "10",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 10,
+    "label": "11",
+    "connector": "RJ45",
+    "status": "UPLINK",
+    "connection": null,
+    "note": "Uplink?"
+   },
+   {
+    "position": 11,
+    "label": "12",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 12,
+    "label": "13",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 13,
+    "label": "14",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 14,
+    "label": "15",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 15,
+    "label": "16",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 16,
+    "label": "17",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 17,
+    "label": "18",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 18,
+    "label": "19",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 19,
+    "label": "20",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 20,
+    "label": "21",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 21,
+    "label": "22",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 22,
+    "label": "23",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 23,
+    "label": "24",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 24,
+    "label": "G1",
+    "connector": "SFP",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 25,
+    "label": "G2",
+    "connector": "SFP",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 26,
+    "label": "G3",
+    "connector": "RJ45(Stacking)",
+    "status": "TRUNK",
+    "connection": "PoE Switch",
+    "note": "Stacking"
+   },
+   {
+    "position": 27,
+    "label": "G4",
+    "connector": "RJ45(Stacking)",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   }
+  ]
+ },
+ {
+  "slug": "bis-room--poe-switch",
+  "name": "PoE Switch",
+  "roomKey": "Bis_Room",
+  "roomLabel": "Business Room",
+  "sortOrder": 1,
+  "note": null,
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45",
+    "status": "AP",
+    "connection": null,
+    "note": "AP"
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45",
+    "status": "AP",
+    "connection": null,
+    "note": "AP"
+   },
+   {
+    "position": 8,
+    "label": "LAN1",
+    "connector": "RJ45",
+    "status": "TRUNK",
+    "connection": "Dell Power Connect  3524",
+    "note": "Stacking"
+   },
+   {
+    "position": 9,
+    "label": "LAN2",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   }
+  ]
+ },
+ {
+  "slug": "library--linksys-lgs326-1",
+  "name": "LINKSYS LGS326_#1",
+  "roomKey": "Library",
+  "roomLabel": "Library",
+  "sortOrder": 0,
+  "note": null,
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 8,
+    "label": "9",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 9,
+    "label": "10",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 10,
+    "label": "11",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 11,
+    "label": "12",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 12,
+    "label": "13",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 13,
+    "label": "14",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 14,
+    "label": "15",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 15,
+    "label": "16",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 16,
+    "label": "17",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 17,
+    "label": "18",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 18,
+    "label": "19",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 19,
+    "label": "20",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 20,
+    "label": "21",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 21,
+    "label": "22",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 22,
+    "label": "23",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 23,
+    "label": "24",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 24,
+    "label": "25",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 25,
+    "label": "25",
+    "connector": "SFP",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 26,
+    "label": "26",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 27,
+    "label": "26",
+    "connector": "SFP",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   }
+  ]
+ },
+ {
+  "slug": "library--linksys-lgs326-2",
+  "name": "LINKSYS LGS326_#2",
+  "roomKey": "Library",
+  "roomLabel": "Library",
+  "sortOrder": 1,
+  "note": null,
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "TRUNK",
+    "connection": "PoE Switch",
+    "note": "Stacking"
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 8,
+    "label": "9",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 9,
+    "label": "10",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 10,
+    "label": "11",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 11,
+    "label": "12",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 12,
+    "label": "13",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 13,
+    "label": "14",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 14,
+    "label": "15",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 15,
+    "label": "16",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 16,
+    "label": "17",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 17,
+    "label": "18",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 18,
+    "label": "19",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 19,
+    "label": "20",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 20,
+    "label": "21",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 21,
+    "label": "22",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 22,
+    "label": "23",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 23,
+    "label": "24",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 24,
+    "label": "25",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 25,
+    "label": "25",
+    "connector": "SFP",
+    "status": "UPLINK",
+    "connection": null,
+    "note": "Uplink"
+   },
+   {
+    "position": 26,
+    "label": "26",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 27,
+    "label": "26",
+    "connector": "SFP",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   }
+  ]
+ },
+ {
+  "slug": "library--poe-switch",
+  "name": "POE Switch",
+  "roomKey": "Library",
+  "roomLabel": "Library",
+  "sortOrder": 2,
+  "note": null,
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "AP",
+    "connection": null,
+    "note": "AP"
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "AP",
+    "connection": null,
+    "note": "AP"
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 4,
+    "label": "LAN",
+    "connector": "RJ45",
+    "status": "TRUNK",
+    "connection": "LINKSYS LGS326_#2",
+    "note": "Stacking"
+   }
+  ]
+ },
+ {
+  "slug": "chill-room--dell-power-connect-3524",
+  "name": "Dell Power Connect  3524",
+  "roomKey": "Chill_Room",
+  "roomLabel": "Chill Room",
+  "sortOrder": 0,
+  "note": null,
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 8,
+    "label": "9",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 9,
+    "label": "10",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 10,
+    "label": "11",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 11,
+    "label": "12",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 12,
+    "label": "13",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 13,
+    "label": "14",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 14,
+    "label": "15",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 15,
+    "label": "16",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 16,
+    "label": "17",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 17,
+    "label": "18",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 18,
+    "label": "19",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 19,
+    "label": "20",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 20,
+    "label": "21",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 21,
+    "label": "22",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 22,
+    "label": "23",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 23,
+    "label": "24",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 24,
+    "label": "G1",
+    "connector": "SFP",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 25,
+    "label": "G2",
+    "connector": "SFP",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 26,
+    "label": "G3",
+    "connector": "RJ45(Stacking)",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 27,
+    "label": "G4",
+    "connector": "RJ45(Stacking)",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   }
+  ]
+ },
+ {
+  "slug": "chill-room--aruba1830",
+  "name": "Aruba1830",
+  "roomKey": "Chill_Room",
+  "roomLabel": "Chill Room",
+  "sortOrder": 1,
+  "note": null,
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "USED",
+    "connection": "Used",
+    "note": null
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 4,
+    "label": "5",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 5,
+    "label": "6",
+    "connector": "RJ45",
+    "status": "TRUNK",
+    "connection": "Dell Power Connect  3524",
+    "note": "Stacking"
+   },
+   {
+    "position": 6,
+    "label": "7",
+    "connector": "RJ45",
+    "status": "TRUNK",
+    "connection": "PoE Switch",
+    "note": "Stacking"
+   },
+   {
+    "position": 7,
+    "label": "8",
+    "connector": "RJ45",
+    "status": "FREE",
+    "connection": null,
+    "note": null
+   }
+  ]
+ },
+ {
+  "slug": "chill-room--poe-switch",
+  "name": "POE Switch",
+  "roomKey": "Chill_Room",
+  "roomLabel": "Chill Room",
+  "sortOrder": 2,
+  "note": null,
+  "photoVerified": false,
+  "ports": [
+   {
+    "position": 0,
+    "label": "1",
+    "connector": "RJ45",
+    "status": "AP",
+    "connection": null,
+    "note": "AP"
+   },
+   {
+    "position": 1,
+    "label": "2",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 2,
+    "label": "3",
+    "connector": "RJ45",
+    "status": "AP",
+    "connection": null,
+    "note": "AP"
+   },
+   {
+    "position": 3,
+    "label": "4",
+    "connector": "RJ45",
+    "status": "UNKNOWN",
+    "connection": null,
+    "note": null
+   },
+   {
+    "position": 4,
+    "label": "LAN",
+    "connector": "RJ45",
+    "status": "TRUNK",
+    "connection": "Aruba1830",
+    "note": "Stacking"
+   }
+  ]
+ }
+]

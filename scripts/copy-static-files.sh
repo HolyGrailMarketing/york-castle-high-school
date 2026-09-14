@@ -47,7 +47,14 @@ fi
 #
 #   timetable.html - the 2026-2027 timetable is not final; the school does not
 #                    want it visible to students or parents yet.
-UNPUBLISHED="timetable.html"
+#
+#   network.html   - the network map is an internal IT tool. It names every
+#                    switch, its uplinks and which ports are free. The data
+#                    behind it is already ADMIN-only (see routes/network.js),
+#                    so a visitor would see an empty shell - but an internal
+#                    tool has no reason to sit on the public school website at
+#                    all. Delete this entry when the school wants it reachable.
+UNPUBLISHED="timetable.html network.html"
 
 for html_file in *.html; do
   if [ -f "$html_file" ]; then
