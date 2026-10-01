@@ -113,6 +113,8 @@ const Layout = () => {
     { path: '/booklist',              label: 'Booklist',           icon: '📖', roles: ['ADMIN', 'STAFF'] },
     // One way in to the whole book rental system, which has its own screens.
     { path: '/library',               label: 'Book Rental',        icon: '📗', roles: ['ADMIN', 'STAFF', 'TEACHER'] },
+    // One way in to the fee screens, which share a sub-navigation of their own.
+    { path: '/fees',                  label: 'School Fees',        icon: '🧾', roles: ['ADMIN', 'STAFF'] },
     { path: '/requests',              label: 'Requests',           icon: '📬', roles: ['ADMIN', 'STAFF'] },
     { path: '/data-subject-requests', label: 'Data Subject Rights',icon: '🔒', roles: ['ADMIN'] },
     { path: '/audit-logs',            label: 'Audit Logs',         icon: '📋', roles: ['ADMIN'] },

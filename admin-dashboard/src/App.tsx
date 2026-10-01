@@ -20,6 +20,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Applications from './pages/Applications';
 import SixthFormApplications from './pages/SixthFormApplications';
+import SixthFormStudents from './pages/SixthFormStudents';
 import Users from './pages/Users';
 import BlogPosts from './pages/BlogPosts';
 import Events from './pages/Events';
@@ -31,6 +32,9 @@ import Students from './pages/Students';
 import LibraryDesk from './pages/LibraryDesk';
 import LibraryLoans from './pages/LibraryLoans';
 import LibraryCharges from './pages/LibraryCharges';
+import FeeBalances from './pages/FeeBalances';
+import FeeSchedules from './pages/FeeSchedules';
+import FeePayments from './pages/FeePayments';
 import Requests from './pages/Requests';
 import Analytics from './pages/Analytics';
 import DataSubjectRequests from './pages/DataSubjectRequests';
@@ -100,12 +104,22 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="applications" element={<Applications />} />
             <Route path="sixth-form" element={<SixthFormApplications />} />
+            {/* The enrolled cohort. Office work rather than admissions, so it is
+                narrower than the applicants list above. */}
+            <Route path="sixth-form/students" element={<RoleRoute roles={['ADMIN', 'STAFF', 'TEACHER']}><SixthFormStudents /></RoleRoute>} />
             <Route path="users" element={<RoleRoute roles={['ADMIN', 'STAFF']}><Users /></RoleRoute>} />
             <Route path="blog" element={<BlogPosts />} />
             <Route path="events" element={<Events />} />
             <Route path="courses" element={<Courses />} />
             <Route path="documents" element={<Documents />} />
             <Route path="booklist" element={<RoleRoute roles={['ADMIN', 'STAFF']}><Booklist /></RoleRoute>} />
+            {/* School fees. Three flat routes inside the main shell rather than
+                a layout of their own: this is office work done alongside
+                everything else in the sidebar, unlike the library counter. */}
+            <Route path="fees" element={<Navigate to="/fees/balances" replace />} />
+            <Route path="fees/balances" element={<RoleRoute roles={['ADMIN', 'STAFF']}><FeeBalances /></RoleRoute>} />
+            <Route path="fees/schedules" element={<RoleRoute roles={['ADMIN', 'STAFF']}><FeeSchedules /></RoleRoute>} />
+            <Route path="fees/payments" element={<RoleRoute roles={['ADMIN', 'STAFF']}><FeePayments /></RoleRoute>} />
             <Route path="requests" element={<RoleRoute roles={['ADMIN', 'STAFF']}><Requests /></RoleRoute>} />
             <Route path="data-subject-requests" element={<RoleRoute roles={['ADMIN']}><DataSubjectRequests /></RoleRoute>} />
             <Route path="audit-logs" element={<RoleRoute roles={['ADMIN']}><AuditLogs /></RoleRoute>} />

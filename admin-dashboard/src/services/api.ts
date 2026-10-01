@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { User, Application, SixthFormApplication, SixthFormReadiness, SixthFormInterview, AcceptanceLetterDetails, Course, BlogPost, Event, Document, BooklistEntry, Request, Book, BookCopy, BookCondition, CopyStatus, CopyLabel, GenerateCopiesResult, StudentProfile, StudentLoanSummary, BookCharge, StudentVerification, YearGroupOption, BookLoanRow, LoanSummary, BookChargeRow, ChargeType } from '../types';
+import type { User, Application, SixthFormApplication, SixthFormReadiness, SixthFormInterview, AcceptanceLetterDetails, Course, BlogPost, Event, Document, BooklistEntry, Request, Book, BookCopy, BookCondition, CopyStatus, CopyLabel, GenerateCopiesResult, StudentProfile, StudentLoanSummary, BookCharge, StudentVerification, YearGroupOption, BookLoanRow, LoanSummary, BookChargeRow, ChargeType, FeeSchedule, FeeScheduleItem, FeeAssessmentRow, FeePaymentRow, FeeVoucherRow, VoucherPayload, FeeSummary, FeeSerialCounter, FeeKind, FeePaymentMethod, SixthFormStudentRow, SixthFormCohortSummary, SixthFormStudentDetail } from '../types';
 
 // Use relative path since everything is served from the same server
 // This works in both development and production when served from backend
@@ -284,6 +284,227 @@ class ApiService {
     return response.data as Blob;
   }
 
+  // School fees. The school issues the voucher and records the stamped copy
+  // that comes back from the bank; it never takes the money itself.
+  private feeQuery(params?: Record<string, any>) {
+    if (!params) return '';
+    const entries = Object.entries(params)
+      .filter(([, v]) => v !== undefined && v !== null && v !== '')
+      .map(([k, v]) => [k, String(v)]);
+    return entries.length ? '?' + new URLSearchParams(entries as [string, string][]).toString() : '';
+  }
+
+  async getFeeSchedules(params?: { academicYear?: string; kind?: FeeKind; yearGroup?: number; published?: boolean }) {
+    return this.request<{ schedules: FeeSchedule[]; currentAcademicYear: string | null }>(
+      'GET', `/fees/schedules${this.feeQuery(params)}`);
+  }
+
+  async createFeeSchedule(data: {
+    kind: FeeKind; academicYear?: string; yearGroup?: number | null; term?: number | null;
+    label: string; items: FeeScheduleItem[]; notes?: string;
+  }) {
+    return this.request<{ schedule: FeeSchedule; message: string }>('POST', '/fees/schedules', data);
+  }
+
+  async updateFeeSchedule(id: string, data: {
+    kind?: FeeKind; academicYear?: string; yearGroup?: number | null; term?: number | null;
+    label?: string; items: FeeScheduleItem[]; notes?: string;
+  }) {
+    return this.request<{ schedule: FeeSchedule; affectedFutureIssues: number; message: string }>(
+      'PUT', `/fees/schedules/${id}`, data);
+  }
+
+  async setFeeSchedulePublished(id: string, published: boolean) {
+    return this.request<{ schedule: FeeSchedule; message: string }>(
+      'POST', `/fees/schedules/${id}/${published ? 'publish' : 'unpublish'}`);
+  }
+
+  async deleteFeeSchedule(id: string) {
+    return this.request<{ message: string }>('DELETE', `/fees/schedules/${id}`);
+  }
+
+  async getFeeSerial() {
+    return this.request<{ counter: FeeSerialCounter }>('GET', '/fees/serial');
+  }
+
+  async updateFeeSerial(nextValue: number) {
+    return this.request<{ counter: FeeSerialCounter; message: string }>('PUT', '/fees/serial', { nextValue });
+  }
+
+  async getFeeAssessments(params?: {
+    status?: string; academicYear?: string; term?: number; kind?: FeeKind;
+    formClass?: string; yearGroup?: number; studentId?: string; q?: string;
+    page?: number; limit?: number;
+  }) {
+    return this.request<{ assessments: FeeAssessmentRow[]; pagination: any; summary: FeeSummary }>(
+      'GET', `/fees/assessments${this.feeQuery(params)}`);
+  }
+
+  async createFeeAssessment(data: { studentId: string; scheduleId: string }) {
+    return this.request<{ assessment: FeeAssessmentRow; message: string }>('POST', '/fees/assessments', data);
+  }
+
+  async runFeeAssessments(data: {
+    scheduleId: string; yearGroup?: number; formClass?: string; studentIds?: string[]; dryRun?: boolean;
+  }) {
+    return this.request<{
+      dryRun?: boolean;
+      schedule?: { label: string; kind: FeeKind; term: number | null; termLabel: string | null };
+      students?: number; each?: number; total?: number;
+      sample?: { name: string; formClass: string | null; studentNumber: string | null }[];
+      created?: number; message?: string;
+    }>('POST', '/fees/assessments/run', data);
+  }
+
+  async waiveFeeAssessment(id: string, reason: string, amount?: number) {
+    return this.request<{ assessment: FeeAssessmentRow; message: string }>(
+      'POST', `/fees/assessments/${id}/waive`, { reason, amount });
+  }
+
+  async cancelFeeAssessment(id: string, reason: string) {
+    return this.request<{ assessment: FeeAssessmentRow; message: string }>(
+      'POST', `/fees/assessments/${id}/cancel`, { reason });
+  }
+
+  async getStudentFeeLedger(studentId: string) {
+    return this.request<{
+      student: { id: string; name: string; email: string; formClass: string | null; yearGroup: number | null; studentNumber: string | null };
+      assessments: FeeAssessmentRow[];
+      totals: { charged: number; paid: number; waived: number; balance: number };
+    }>('GET', `/fees/students/${studentId}/ledger`);
+  }
+
+  async issueFeeVoucher(assessmentId: string, amountShown?: number | null) {
+    return this.request<{ voucher: VoucherPayload; message: string }>(
+      'POST', `/fees/assessments/${assessmentId}/vouchers`, { amountShown });
+  }
+
+  async bulkIssueFeeVouchers(data: {
+    assessmentIds?: string[]; scheduleId?: string; formClass?: string;
+    amountShown?: number | null; dryRun?: boolean;
+  }) {
+    return this.request<{
+      dryRun?: boolean; willPrint?: number;
+      sample?: { name: string; formClass: string | null; balance: number }[];
+      vouchers?: VoucherPayload[]; message?: string;
+    }>('POST', '/fees/vouchers/bulk', data);
+  }
+
+  async getFeeVoucher(id: string) {
+    return this.request<{ voucher: VoucherPayload }>('GET', `/fees/vouchers/${id}`);
+  }
+
+  async markFeeVoucherPrinted(id: string) {
+    return this.request<{ voucher: FeeVoucherRow }>('POST', `/fees/vouchers/${id}/printed`);
+  }
+
+  async voidFeeVoucher(id: string, reason: string) {
+    return this.request<{ voucher: FeeVoucherRow; message: string }>(
+      'POST', `/fees/vouchers/${id}/void`, { reason });
+  }
+
+  async recordFeePayment(data: {
+    assessmentId: string; voucherId?: string | null; amount: number; paidOn: string;
+    method: FeePaymentMethod; bankReference?: string; paidInBy?: string; slipSeen?: boolean;
+  }) {
+    return this.request<{
+      payment: FeePaymentRow; assessment: FeeAssessmentRow; overpaid: boolean; message: string;
+    }>('POST', '/fees/payments', data);
+  }
+
+  async reverseFeePayment(id: string, reason: string) {
+    return this.request<{ payment: FeePaymentRow; assessment: FeeAssessmentRow; message: string }>(
+      'POST', `/fees/payments/${id}/reverse`, { reason });
+  }
+
+  async getFeePayments(params?: {
+    from?: string; to?: string; method?: FeePaymentMethod; studentId?: string;
+    includeReversed?: boolean; page?: number; limit?: number;
+  }) {
+    return this.request<{
+      payments: FeePaymentRow[]; pagination: any; summary: { received: number; count: number };
+    }>('GET', `/fees/payments${this.feeQuery(params)}`);
+  }
+
+  async exportFeeAssessmentsCsv(params?: { status?: string; academicYear?: string; term?: number; kind?: FeeKind; formClass?: string; yearGroup?: number }) {
+    const response = await axios.get(`${API_BASE_URL}/fees/assessments/export.csv${this.feeQuery(params)}`, {
+      headers: { Authorization: `Bearer ${this.token}` },
+      responseType: 'blob',
+    });
+    return response.data as Blob;
+  }
+
+  async exportFeePaymentsCsv(params?: { from?: string; to?: string; method?: FeePaymentMethod }) {
+    const response = await axios.get(`${API_BASE_URL}/fees/payments/export.csv${this.feeQuery(params)}`, {
+      headers: { Authorization: `Bearer ${this.token}` },
+      responseType: 'blob',
+    });
+    return response.data as Blob;
+  }
+
+  // Sixth form enrolment: turning an approved applicant into a student.
+  async getEnrolmentCandidates() {
+    return this.request<{
+      candidates: { id: string; name: string; email: string; faculty: string | null; status: string; enrolledAt: string | null; enrolledUserId: string | null; interviewDecision: string | null }[];
+      total: number; enrolled: number; remaining: number;
+    }>('GET', '/sixth-form/enrolment-candidates');
+  }
+
+  async enrolApplicant(id: string, yearGroup: number) {
+    return this.request<{
+      alreadyEnrolled: boolean;
+      student: { id: string; name?: string; yearGroup?: number; formClass?: string };
+      needsEmail?: boolean; message: string;
+    }>('POST', `/sixth-form/${id}/enrol`, { yearGroup });
+  }
+
+  async enrolApplicants(data: { applicationIds: string[]; yearGroup: number; dryRun?: boolean }) {
+    return this.request<{
+      dryRun?: boolean; willEnrol?: number; alreadyEnrolled?: number;
+      skipped?: { id: string; name: string; reason: string }[];
+      missing?: number;
+      sample?: { name: string; email: string; faculty: string | null }[];
+      enrolled?: number; failed?: { id: string; reason: string }[];
+      needsEmail?: number; message?: string;
+    }>('POST', '/sixth-form/enrol', data);
+  }
+
+
+  // The sixth form cohort. One record per student, pulling together the
+  // application, the interview, the fees and the textbooks.
+  async getSixthFormStudents(params?: {
+    yearGroup?: number; formClass?: string; faculty?: string; q?: string; owing?: boolean;
+  }) {
+    return this.request<{
+      students: SixthFormStudentRow[];
+      total: number;
+      summary: SixthFormCohortSummary;
+      faculties: string[];
+    }>('GET', `/sixth-form/students${this.feeQuery(params)}`);
+  }
+
+  async getSixthFormStudent(userId: string) {
+    return this.request<SixthFormStudentDetail>('GET', `/sixth-form/students/${userId}`);
+  }
+
+  async updateSixthFormStudent(userId: string, data: {
+    formClass?: string; studentNumber?: string | null; faculty?: string | null;
+    guardianName?: string | null; guardianPhone?: string | null; guardianEmail?: string | null;
+    notes?: string | null; loanCap?: number | null;
+  }) {
+    return this.request<{ profile: any; faculty: string | null; message: string }>(
+      'PUT', `/sixth-form/students/${userId}`, data);
+  }
+
+  async exportSixthFormStudentsCsv(params?: {
+    yearGroup?: number; formClass?: string; faculty?: string; owing?: boolean;
+  }) {
+    const response = await axios.get(`${API_BASE_URL}/sixth-form/students/export.csv${this.feeQuery(params)}`, {
+      headers: { Authorization: `Bearer ${this.token}` },
+      responseType: 'blob',
+    });
+    return response.data as Blob;
+  }
   // Textbook rental - loans
   async getLoans(params?: { status?: string; overdue?: boolean; formClass?: string; studentId?: string; needsReview?: boolean; page?: number; limit?: number }) {
     const query = params

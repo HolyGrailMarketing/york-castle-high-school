@@ -12,6 +12,7 @@ import { streamLabel, programmeLabel, needsStreamSelection, csecReadiness, forma
 import Modal from '../components/Modal';
 import './Applications.css';
 import PageHelp from '../components/PageHelp';
+import SixthFormSubnav from '../components/SixthFormSubnav';
 import Hint from '../components/Hint';
 
 const NOTIFICATION_TYPES: { value: SixthFormNotificationType; label: string }[] = [
@@ -144,6 +145,13 @@ const SixthFormApplications = () => {
   const [interviewSaving, setInterviewSaving] = useState(false);
   const [interviewError, setInterviewError] = useState('');
 
+  // Enrolment: turning approved applicants into students on the register.
+  const [enrolOpen, setEnrolOpen] = useState(false);
+  const [enrolYear, setEnrolYear] = useState(12);
+  const [enrolPreview, setEnrolPreview] = useState<Awaited<ReturnType<typeof apiService.enrolApplicants>> | null>(null);
+  const [enrolBusy, setEnrolBusy] = useState(false);
+  const [enrolError, setEnrolError] = useState('');
+
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 300);
     return () => clearTimeout(timer);
@@ -224,6 +232,55 @@ const SixthFormApplications = () => {
     setInterview(null);
     setInterviewEditing(false);
     setStatusError('');
+  };
+
+  /**
+   * Enrol one approved applicant.
+   *
+   * Approving an application records a decision; this acts on it. Until it
+   * runs there is no student record, so the applicant cannot be found on the
+   * register, lent a textbook or charged a fee.
+   */
+  const enrolOne = async (app: SixthFormApplication, yearGroup: number) => {
+    setEnrolBusy(true);
+    try {
+      const res = await apiService.enrolApplicant(app.id, yearGroup);
+      alert(res.message);
+      await fetchApplications();
+    } catch (error: any) {
+      alert(error?.error || 'Could not enrol this applicant.');
+    } finally {
+      setEnrolBusy(false);
+    }
+  };
+
+  const previewEnrol = async () => {
+    setEnrolBusy(true); setEnrolError('');
+    try {
+      setEnrolPreview(await apiService.enrolApplicants({
+        applicationIds: Array.from(selectedIds), yearGroup: enrolYear, dryRun: true,
+      }));
+    } catch (error: any) {
+      setEnrolError(error?.error || 'Could not work out who would be enrolled.');
+    } finally {
+      setEnrolBusy(false);
+    }
+  };
+
+  const confirmEnrol = async () => {
+    setEnrolBusy(true); setEnrolError('');
+    try {
+      const res = await apiService.enrolApplicants({
+        applicationIds: Array.from(selectedIds), yearGroup: enrolYear,
+      });
+      alert(res.message);
+      setEnrolOpen(false); setEnrolPreview(null); setSelectedIds(new Set());
+      await fetchApplications();
+    } catch (error: any) {
+      setEnrolError(error?.error || 'Could not enrol these applicants.');
+    } finally {
+      setEnrolBusy(false);
+    }
   };
 
   const handleStatusUpdate = async (id: string, status: string) => {
@@ -351,6 +408,7 @@ const SixthFormApplications = () => {
   return (
     <div className="applications-page">
       <PageHelp pageKey="sixth-form" />
+      <SixthFormSubnav />
       <div className="page-header">
         <h1>Sixth Form Applications</h1>
         <div className="filters">
@@ -410,6 +468,13 @@ const SixthFormApplications = () => {
         >
           Send
         </button>
+        <button
+          className="btn-invite"
+          disabled={selectedIds.size === 0}
+          onClick={() => { setEnrolPreview(null); setEnrolError(''); setEnrolOpen(true); }}
+        >
+          Enrol as students…
+        </button>
       </div>
 
       {!blastMode && applications.length > 0 && selectedIds.size === applications.length && totalCount > applications.length && (
@@ -452,6 +517,7 @@ const SixthFormApplications = () => {
                 <th>Phone</th>
                 <th>Status<Hint term="application-status" /></th>
                 <th>Faculty<Hint term="faculty" /></th>
+                <th>Enrolled<Hint term="enrol" /></th>
                 <th>Notifications</th>
                 <th>Submitted</th>
                 <th className="col-actions">Actions</th>
@@ -487,6 +553,16 @@ const SixthFormApplications = () => {
                       ? <span className="faculty-badge">{app.faculty}</span>
                       : <span className="faculty-badge faculty-badge--none">—</span>}
                   </td>
+                  {/* Approved is a decision; enrolled is whether it has been
+                      acted on. Both are shown, because an approved applicant
+                      who was never enrolled is invisible everywhere else. */}
+                  <td data-label="Enrolled" className="col-nowrap">
+                    {app.enrolledAt
+                      ? <span className="invited-badge">{new Date(app.enrolledAt).toLocaleDateString()}</span>
+                      : app.status === 'APPROVED'
+                        ? <span className="invited-badge invited-badge--none">Not yet</span>
+                        : <span className="invited-badge invited-badge--none">—</span>}
+                  </td>
                   <td data-label="Notifications" className="col-nowrap">
                     {app.notifications && app.notifications.length > 0 ? (
                       <span className="invited-badge" title={new Date(app.notifications[0].sentAt).toLocaleString()}>
@@ -500,6 +576,21 @@ const SixthFormApplications = () => {
                   <td data-label="Actions" className="col-actions">
                     <button onClick={() => openModal(app)} className="btn-view">View</button>
                     <button onClick={() => exportSixthFormApplicationToPDF(app)} className="btn-pdf">PDF</button>
+                    {app.status === 'APPROVED' && !app.enrolledAt && (
+                      <button
+                        className="btn-invite"
+                        disabled={enrolBusy}
+                        onClick={() => {
+                          const year = window.confirm(
+                            `Enrol ${app.firstName} ${app.lastName} as a student.\n\n`
+                            + 'OK for Grade 12, Cancel to choose Grade 13 instead.'
+                          ) ? 12 : 13;
+                          void enrolOne(app, year);
+                        }}
+                      >
+                        Enrol
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -1021,6 +1112,77 @@ const SixthFormApplications = () => {
           </Modal>
         );
       })()}
+
+      {/* Bulk enrolment. Preview then confirm, the same two-step the library
+          uses before raising a term's rental charges: it is a lot of records at
+          once and the preview is what makes it checkable. */}
+      <Modal
+        isOpen={enrolOpen}
+        onClose={() => { setEnrolOpen(false); setEnrolPreview(null); }}
+        title="Enrol as students"
+      >
+        {enrolError && <div className="form-error">{enrolError}</div>}
+
+        {!enrolPreview ? (
+          <>
+            <p className="modal-intro">
+              Approving an application records the decision. Enrolling acts on it: the applicant
+              becomes a student on the register, can be lent a textbook and can be charged a fee.
+            </p>
+            <div className="form-group">
+              <label htmlFor="enrol-year">Which grade</label>
+              <select id="enrol-year" value={enrolYear} onChange={(e) => setEnrolYear(Number(e.target.value))}>
+                <option value={12}>Grade 12 — starting sixth form</option>
+                <option value={13}>Grade 13 — second year</option>
+              </select>
+              <span className="field-hint">
+                Anyone selected who is not approved, or who is already enrolled, is skipped.
+                Running this again does not create a second record for anybody.
+              </span>
+            </div>
+            <div className="modal-footer-actions">
+              <button className="btn-close" onClick={() => setEnrolOpen(false)}>Cancel</button>
+              <button className="btn-invite" disabled={enrolBusy} onClick={previewEnrol}>
+                {enrolBusy ? 'Checking…' : 'Show me who'}
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="modal-intro">
+              Enrol <strong>{enrolPreview.willEnrol}</strong> applicant
+              {enrolPreview.willEnrol === 1 ? '' : 's'} into <strong>Grade {enrolYear}</strong>.
+              {!!enrolPreview.alreadyEnrolled && ` ${enrolPreview.alreadyEnrolled} already enrolled and will be left alone.`}
+              {!!enrolPreview.skipped?.length && ` ${enrolPreview.skipped.length} not approved and will be skipped.`}
+            </p>
+            {/* Same list styling as the notification dialog above — flex with
+                space-between, so the name and the faculty do not run together. */}
+            {enrolPreview.sample && enrolPreview.sample.length > 0 && (
+              <ul className="invite-recipient-list">
+                {enrolPreview.sample.map((c, i) => (
+                  <li key={i}>
+                    <span>{c.name} — {c.email}</span>
+                    {c.faculty && <span className="faculty-badge">{c.faculty}</span>}
+                  </li>
+                ))}
+                {(enrolPreview.willEnrol ?? 0) > enrolPreview.sample.length && (
+                  <li><span>…and {(enrolPreview.willEnrol ?? 0) - enrolPreview.sample.length} more</span></li>
+                )}
+              </ul>
+            )}
+            <div className="modal-footer-actions">
+              <button className="btn-close" onClick={() => setEnrolPreview(null)}>Back</button>
+              <button
+                className="btn-invite"
+                disabled={enrolBusy || !enrolPreview.willEnrol}
+                onClick={confirmEnrol}
+              >
+                {enrolBusy ? 'Enrolling…' : `Enrol ${enrolPreview.willEnrol}`}
+              </button>
+            </div>
+          </>
+        )}
+      </Modal>
     </div>
   );
 };

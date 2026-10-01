@@ -1,0 +1,86 @@
+/* Every class here is prefixed fee-. Page stylesheets in this app are imported
+   globally, so an unprefixed .summary or .filters would collide with another
+   page's and which one wins would depend on route order. */
+
+.fee-page { padding: 0; }
+
+.fee-header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.fee-summary {
+  display: flex; gap: 28px; flex-wrap: wrap;
+  padding: 16px 20px; margin-bottom: 18px;
+  background: #faf8f0; border: 1px solid #ece4c8; border-radius: 8px;
+}
+.fee-summary div { display: flex; flex-direction: column; }
+.fee-summary strong { font-size: 20px; color: #1a1a1a; line-height: 1.2; }
+.fee-summary span { font-size: 12px; color: #6b7280; margin-top: 2px; }
+.fee-summary .is-filtered { padding-left: 28px; border-left: 1px solid #ddd3ad; }
+.fee-summary--inline { background: #fafafa; border-color: #e5e7eb; gap: 20px; padding: 12px 16px; }
+.fee-summary--inline strong { font-size: 16px; }
+
+.fee-filters {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 16px;
+}
+.fee-tab {
+  padding: 7px 14px; font-size: 13px; border: 1px solid #e5e7eb; background: #fff;
+  border-radius: 999px; cursor: pointer; color: #4b5563;
+}
+.fee-tab:hover { border-color: #d4af37; }
+.fee-tab.is-active { background: #1a1a1a; color: #d4af37; border-color: #1a1a1a; font-weight: 600; }
+.fee-filters select { padding: 7px 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; }
+
+.fee-search { display: flex; gap: 6px; margin-left: auto; }
+.fee-search input {
+  padding: 7px 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; min-width: 200px;
+}
+
+.fee-loading { color: #6b7280; padding: 20px 0; }
+
+.fee-num { text-align: right; white-space: nowrap; }
+.fee-sub { display: block; font-size: 12px; color: #6b7280; margin-top: 2px; }
+.fee-waived { display: block; font-size: 12px; color: #92400e; margin-top: 3px; }
+.fee-owing { color: #991b1b; }
+.fee-clear { color: #065f46; }
+/* An overpayment is money the school never held and cannot refund, so it is
+   coloured as something to act on rather than as a credit. */
+.fee-over { color: #92400e; }
+.fee-row--cancelled { opacity: .55; }
+
+.btn-link {
+  background: none; border: none; padding: 2px 0; margin-right: 12px;
+  color: #1d4ed8; font-size: 13px; cursor: pointer; text-decoration: underline;
+}
+.btn-link:hover { color: #1e3a8a; }
+.btn-danger-link { color: #991b1b; }
+.btn-danger-link:hover { color: #7f1d1d; }
+
+.fee-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fee-modal-sub { color: #4b5563; font-size: 13px; margin: 0 0 14px; }
+
+.fee-preview-headline { font-size: 15px; line-height: 1.5; margin: 0 0 12px; }
+.fee-preview-none { color: #6b7280; }
+.fee-preview-list {
+  list-style: none; margin: 0 0 16px; padding: 10px 14px; max-height: 240px; overflow-y: auto;
+  background: #fafafa; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px;
+}
+.fee-preview-list li { display: flex; justify-content: space-between; padding: 3px 0; }
+.fee-preview-list li span { color: #6b7280; font-size: 12px; }
+.fee-preview-more { color: #6b7280; font-style: italic; }
+
+.fee-ledger-item { border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px; margin-top: 14px; }
+.fee-ledger-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.fee-ledger-head span { font-size: 12px; color: #6b7280; }
+.fee-ledger-amt { margin-left: auto; font-weight: 600; color: #1a1a1a !important; font-size: 14px !important; }
+.fee-ledger-lines { width: 100%; margin-top: 8px; font-size: 13px; }
+.fee-ledger-lines td { padding: 2px 0; color: #4b5563; }
+.fee-ledger-payments { margin: 10px 0 0; padding-left: 18px; font-size: 13px; color: #065f46; }
+.fee-ledger-payments .is-reversed { color: #991b1b; text-decoration: line-through; }
+.fee-ledger-payments .is-reversed em { text-decoration: none; }
+
+@media (max-width: 760px) {
+  .fee-form-row { grid-template-columns: 1fr; }
+  .fee-search { margin-left: 0; width: 100%; }
+  .fee-search input { flex: 1; min-width: 0; }
+  .fee-summary { gap: 18px; }
+  .fee-summary .is-filtered { padding-left: 0; border-left: none; }
+}

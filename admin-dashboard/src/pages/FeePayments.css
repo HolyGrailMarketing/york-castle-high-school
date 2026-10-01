@@ -1,0 +1,15 @@
+/* fee- prefix throughout; see FeeBalances.css for why. */
+.fee-pay-filters {
+  display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 16px;
+}
+.fee-pay-filters label {
+  display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #4b5563;
+}
+.fee-pay-filters input[type="date"],
+.fee-pay-filters select {
+  padding: 7px 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px;
+}
+.fee-check { flex-direction: row !important; align-items: center; gap: 6px !important; }
+
+.fee-row--reversed { opacity: .6; }
+.fee-reversed { display: block; font-size: 12px; color: #991b1b; margin-top: 3px; }
