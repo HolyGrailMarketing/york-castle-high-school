@@ -94,6 +94,11 @@ model User {
   bookCharges          BookCharge[]     @relation("BookCharges")
   bookChargesRaised    BookCharge[]     @relation("BookChargesRaised")
 
+  // School fees. Only the student side needs a back-relation; issuedById,
+  // recordedById and the rest stay plain strings like
+  // SixthFormApplication.reviewedBy, because nothing queries "fees I recorded".
+  feeAssessments       FeeAssessment[]  @relation("FeeAssessments")
+
   @@index([email])
   @@index([role])
   @@index([provider])
@@ -157,6 +162,16 @@ model SixthFormApplication {
   reviewedAt      DateTime?
   reviewedBy      String?
   interviewInvitedAt DateTime?     // set when a bulk interview-invitation email is sent; independent of `status`
+  // Enrolment. The applicant becomes a student; the application stays an
+  // application. Deliberately NOT a new ApplicationStatus value: every status
+  // filter, every count, and NOTIFICATION_TYPES.requiresStatus all read
+  // `status`, and APPROVED is still true after they enrol.
+  enrolledAt      DateTime?
+  enrolledById    String?
+  /// The User row that now represents this person as a student. Enrolling an
+  /// application that already carries one is a no-op, which is what makes the
+  /// bulk run safe to repeat after a timeout.
+  enrolledUserId  String?
   userId          String?
   user            User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
   interview       SixthFormInterview?
@@ -169,6 +184,7 @@ model SixthFormApplication {
   // matching line was missed here, so every later `migrate diff` wanted to drop
   // the index. Do not remove.
   @@index([faculty])
+  @@index([enrolledAt])
   // A case-insensitive unique index on lower(email) enforces one application
   // per applicant. Expression indexes can't be declared here, so it lives in
   // migrations/20260820140000_sixth_form_unique_email — do not drop it.
@@ -955,12 +971,17 @@ model NetworkDevice {
   /// True when the unit was confirmed against a rack photograph rather than
   /// only appearing in the spreadsheet.
   photoVerified Boolean       @default(false)
+  /// Set when the unit leaves service. Not a delete: its ports may hold the
+  /// only record of where some cables went. A retired device drops out of the
+  /// map, the diagram and the CSV, and its history stays readable.
+  retiredAt     DateTime?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   ports         NetworkPort[]
   incomingLinks NetworkPort[] @relation("PortToDevice")
 
   @@index([roomKey, sortOrder])
+  @@index([retiredAt])
 }
 
 /// One physical port. Both the current state and the state it was seeded with
@@ -1005,4 +1026,248 @@ model NetworkPort {
   @@index([deviceId])
   @@index([status])
   @@index([linkedDeviceId])
+}
+
+// ---------------------------------------------------------------------------
+// School fees
+//
+// The school does not collect this money. Payment is made at Bank of Nova
+// Scotia, Browns Town, account 39-13: the school issues a three-part paying-in
+// voucher, the student pays at the bank, the bank stamps all three copies, and
+// the student brings the stamped SCHOOL'S COPY back to the office. That piece
+// of paper is the proof of payment, and the office has to be able to produce it.
+//
+// This is NOT the same boundary as BookCharge, and the two must not be merged.
+// BookCharge deliberately has no PAID because the bursary takes that money and
+// keeps its own books, so this system would only ever be guessing. Here the
+// school physically receives and files the evidence, so a payment is a fact
+// this system owns. BookCharge is left exactly as it is.
+//
+// Two kinds of fee, and they behave differently:
+//
+//   INCIDENTAL  annual, and different per grade
+//               (2023-24: Grade 12 J$8,000 over 9 lines, Grade 13 J$6,000 over 7)
+//   SCHOOL_FEE  PER TERM, and the same for both sixth form years
+//               (2023-24: Parents Contribution 20,000 + Building Fund 10,000)
+//
+// Three terms therefore mean three SCHOOL_FEE schedules and three assessments
+// per student per year. Nothing here hardcodes an amount; the school enters the
+// current year's figures and the slip prints what they entered.
+// ---------------------------------------------------------------------------
+
+enum FeeKind {
+  INCIDENTAL
+  SCHOOL_FEE
+}
+
+enum FeeAssessmentStatus {
+  OUTSTANDING
+  SETTLED
+  WAIVED
+  CANCELLED
+}
+
+/// The slips say "Payment must be made by Certified Cheques or Cash only", so
+/// there is no third legal value and the enum is the validation.
+enum FeePaymentMethod {
+  CASH
+  CERTIFIED_CHEQUE
+}
+
+/// What the school charges, for one year - and for SCHOOL_FEE, one term.
+model FeeSchedule {
+  id           String  @id @default(uuid())
+  kind         FeeKind
+  academicYear String // "2026-2027", taken from AcademicTerm, never from new Date()
+  /// 12 or 13 for INCIDENTAL, which differs by grade. Null for SCHOOL_FEE,
+  /// which is the same for both sixth form years.
+  yearGroup    Int?
+  /// 1 | 2 | 3 for SCHOOL_FEE. Null for INCIDENTAL, which is annual.
+  term         Int?
+  /// What the slip is headed: "Incidental Fees", "Parent Contribution".
+  label        String
+  currency     String  @default("JMD")
+  /// Summed from the items and rewritten in the same transaction as every item
+  /// change. A derived cache, in the spirit of BookCopy.status: this is the
+  /// number printed on a slip a parent takes to a bank, so it is never accepted
+  /// from a client.
+  totalAmount  Decimal @default(0) @db.Decimal(10, 2)
+  /// A half-entered schedule must not be issuable, so nothing can be assessed
+  /// against one until someone publishes it.
+  isPublished  Boolean @default(false)
+  notes        String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items       FeeScheduleItem[]
+  assessments FeeAssessment[]
+
+  // The real identity constraint is a hand-written COALESCE unique index in
+  // migrations/20260930130000_add_school_fees. Postgres treats NULLs as
+  // distinct, so a plain @@unique([academicYear, kind, yearGroup, term]) would
+  // happily allow two Christmas school fees - and two assessments means a
+  // parent pays twice. Do not replace it with one.
+  @@index([academicYear, kind])
+  @@index([isPublished])
+}
+
+/// One line on the slip: "ONLINE LIBRARY  2000".
+model FeeScheduleItem {
+  id         String      @id @default(uuid())
+  scheduleId String
+  schedule   FeeSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  label      String
+  amount     Decimal     @db.Decimal(10, 2)
+  sortOrder  Int         @default(0)
+
+  @@unique([scheduleId, label])
+  @@index([scheduleId, sortOrder])
+}
+
+/// What one named student was told they owe.
+///
+/// The kind/year/term/total and the itemised lines are copied here at issue and
+/// never updated. The school edits next year's figures on the schedule; what a
+/// family was handed on paper has to stay exactly what they were handed.
+model FeeAssessment {
+  id         String      @id @default(uuid())
+  studentId  String
+  student    User        @relation("FeeAssessments", fields: [studentId], references: [id], onDelete: Restrict)
+  scheduleId String
+  schedule   FeeSchedule @relation(fields: [scheduleId], references: [id], onDelete: Restrict)
+
+  kind         FeeKind
+  academicYear String
+  term         Int?
+  yearGroup    Int?
+  currency     String  @default("JMD")
+  totalAmount  Decimal @db.Decimal(10, 2)
+  /// The breakdown as it was when the student was told: [{ label, amount }].
+  /// This is what prints on the SCHOOL'S and STUDENT'S copies. JSON rather than
+  /// child rows for the same reason SixthFormApplication.csecResults is JSON -
+  /// nothing queries a single line, and a second table would be one more thing
+  /// to keep immutable.
+  lines        Json
+
+  /// Derived caches, rewritten by services/feeBalances.recomputeAssessment
+  /// inside the same transaction as every payment, reversal, waive and cancel.
+  /// The precedent is BookCopy.status. "Who still owes" is the most-run query
+  /// in this feature, and a correlated SUM per row on every page load is not
+  /// acceptable; scripts/reconcile-fee-balances.js recomputes both from
+  /// FeePayment so drift is detectable rather than theoretical.
+  paidAmount   Decimal             @default(0) @db.Decimal(10, 2)
+  waivedAmount Decimal             @default(0) @db.Decimal(10, 2)
+  status       FeeAssessmentStatus @default(OUTSTANDING)
+
+  issuedAt      DateTime  @default(now())
+  issuedById    String?
+  waivedAt      DateTime?
+  waivedById    String?
+  waiveReason   String?   @db.Text
+  cancelledAt   DateTime?
+  cancelledById String?
+  cancelReason  String?   @db.Text
+  notes         String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  payments FeePayment[]
+  vouchers FeeVoucher[]
+
+  /// The double-issue guard. A student is told once what the Christmas term
+  /// costs. Reprinting a voucher is fine and is a separate row; assessing the
+  /// same fee twice is not.
+  @@unique([studentId, scheduleId])
+  @@index([status, academicYear])
+  @@index([studentId, status])
+  @@index([academicYear, term, status])
+}
+
+/// One printed three-part slip. A student paying in instalments gets several,
+/// which is why this is many-per-assessment.
+model FeeVoucher {
+  id           String        @id @default(uuid())
+  /// The number printed on the slip. Allocated from FeeSerialCounter inside the
+  /// issuing transaction, never MAX(serial)+1, which races.
+  serial       Int           @unique
+  assessmentId String
+  assessment   FeeAssessment @relation(fields: [assessmentId], references: [id], onDelete: Restrict)
+  /// Null is normal and correct: the slip says "PLEASE WRITE IN THE AMOUNT
+  /// BEING PAID", so part-payment is the expected case and the office often
+  /// leaves the box for the parent to fill in.
+  amountShown  Decimal?      @db.Decimal(10, 2)
+
+  issuedAt      DateTime  @default(now())
+  issuedById    String?
+  printedCount  Int       @default(0)
+  lastPrintedAt DateTime?
+  voidedAt      DateTime?
+  voidedById    String?
+  voidReason    String?   @db.Text
+
+  payments FeePayment[]
+
+  @@index([assessmentId])
+  @@index([issuedAt])
+}
+
+/// A stamped bank copy that has come back to the office.
+model FeePayment {
+  id           String        @id @default(uuid())
+  assessmentId String
+  assessment   FeeAssessment @relation(fields: [assessmentId], references: [id], onDelete: Restrict)
+  /// Nullable: a student may return a stamped copy from one of the school's
+  /// pre-printed paper books, which this system never issued.
+  voucherId    String?
+  voucher      FeeVoucher?   @relation(fields: [voucherId], references: [id], onDelete: SetNull)
+
+  amount   Decimal          @db.Decimal(10, 2)
+  currency String           @default("JMD")
+  method   FeePaymentMethod
+  /// The date on the bank's stamp - when the money was actually paid.
+  paidOn   DateTime
+  /// When the office keyed it in, which is often days later. Both are kept,
+  /// because the bank reconciles on the first and the office answers "when did
+  /// you record mine?" with the second.
+  recordedAt   DateTime @default(now())
+  recordedById String?
+  bankReference String?
+  /// The "PAID IN BY" line on every copy. Usually a parent rather than the
+  /// student, which is exactly why the slip asks for it separately.
+  paidInBy     String?
+  /// The stamped SCHOOL'S COPY is physically in the office.
+  slipSeen     Boolean  @default(true)
+
+  /// A payment is never deleted. Reversing subtracts it from the assessment in
+  /// the same transaction and leaves the reason on the record.
+  reversedAt    DateTime?
+  reversedById  String?
+  reverseReason String?   @db.Text
+
+  /// Idempotency key for a double-submitted form, mirroring BookCharge.opId.
+  opId      String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([assessmentId])
+  @@index([paidOn])
+  @@index([recordedAt])
+  @@index([voucherId])
+}
+
+/// Allocates voucher serials, exactly as BarcodeCounter allocates barcodes: a
+/// single row, incremented inside the transaction that creates the vouchers.
+///
+/// nextValue is stored and settable rather than a constant because the school
+/// already has pre-printed paper books in use (a sample slip carries 20115). If
+/// this allocated into the same range, two different slips would carry the same
+/// number and the bank reconciliation would be unrecoverable. The office sets
+/// the starting number once, clear of the paper.
+model FeeSerialCounter {
+  id        String   @id @default("voucher")
+  prefix    String   @default("")
+  nextValue Int      @default(50000)
+  updatedAt DateTime @updatedAt
 }

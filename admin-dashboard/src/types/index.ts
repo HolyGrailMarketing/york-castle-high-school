@@ -98,6 +98,11 @@ export interface SixthFormApplication {
   reviewedAt?: string;
   reviewedBy?: string;
   interviewInvitedAt?: string;
+  /** Set once the approved applicant has been made a student on the register.
+   *  Deliberately separate from `status`: APPROVED stays true afterwards. */
+  enrolledAt?: string | null;
+  enrolledById?: string | null;
+  enrolledUserId?: string | null;
   notifications?: SixthFormNotification[];
   userId?: string;
   user?: User;
@@ -420,3 +425,268 @@ export interface Request {
   updatedAt: string;
 }
 
+
+// ---------------------------------------------------------------------------
+// School fees
+//
+// The school does not take this money: payment is made at the bank against a
+// printed three-part voucher, and the stamped school's copy comes back as proof.
+// ---------------------------------------------------------------------------
+
+export type FeeKind = 'INCIDENTAL' | 'SCHOOL_FEE';
+export type FeeAssessmentStatus = 'OUTSTANDING' | 'SETTLED' | 'WAIVED' | 'CANCELLED';
+export type FeePaymentMethod = 'CASH' | 'CERTIFIED_CHEQUE';
+
+export interface FeeScheduleItem {
+  id?: string;
+  label: string;
+  amount: number;
+  sortOrder?: number;
+}
+
+export interface FeeSchedule {
+  id: string;
+  kind: FeeKind;
+  academicYear: string;
+  yearGroup: number | null;
+  term: number | null;
+  label: string;
+  currency: string;
+  totalAmount: number;
+  isPublished: boolean;
+  notes: string | null;
+  items: FeeScheduleItem[];
+  /** How many students have already been charged this fee. */
+  assessmentCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface FeeStudentRef {
+  id: string;
+  name: string;
+  formClass: string | null;
+  studentNumber: string | null;
+}
+
+export interface FeeAssessmentRow {
+  id: string;
+  kind: FeeKind;
+  label: string | null;
+  academicYear: string;
+  term: number | null;
+  yearGroup: number | null;
+  currency: string;
+  totalAmount: number;
+  paidAmount: number;
+  /** Kept apart from paidAmount on screen: a waiver is not money received. */
+  waivedAmount: number;
+  balance: number;
+  /** A parent rounded up. The school holds none of this money to refund. */
+  overpaid: boolean;
+  status: FeeAssessmentStatus;
+  lines: { label: string; amount: number }[];
+  issuedAt: string;
+  waivedAt: string | null;
+  waiveReason: string | null;
+  cancelledAt: string | null;
+  cancelReason: string | null;
+  student: FeeStudentRef | null;
+  payments?: FeePaymentRow[];
+  vouchers?: FeeVoucherRow[];
+}
+
+export interface FeePaymentRow {
+  id: string;
+  amount: number;
+  currency: string;
+  method: FeePaymentMethod;
+  /** The date on the bank's stamp. */
+  paidOn: string;
+  /** When the office keyed it in, often days later. */
+  recordedAt: string;
+  bankReference: string | null;
+  paidInBy: string | null;
+  slipSeen: boolean;
+  reversedAt: string | null;
+  reverseReason: string | null;
+  voucherSerial: number | null;
+  assessment?: {
+    id: string;
+    kind: FeeKind;
+    academicYear: string;
+    term: number | null;
+    student: FeeStudentRef | null;
+  };
+}
+
+export interface FeeVoucherRow {
+  id: string;
+  serial: number;
+  amountShown: number | null;
+  issuedAt: string;
+  printedCount: number;
+  lastPrintedAt: string | null;
+  voidedAt: string | null;
+  voidReason: string | null;
+}
+
+/** Everything the printed slip needs. The server owns every number on it. */
+export interface VoucherPayload {
+  id: string;
+  serial: number;
+  amountShown: number | null;
+  issuedAt: string;
+  printedCount: number;
+  kind: FeeKind;
+  label: string | null;
+  academicYear: string;
+  term: number | null;
+  /** CHRISTMAS | EASTER | SUMMER - the slip header prints the word. */
+  termLabel: string | null;
+  currency: string;
+  lines: { label: string; amount: number }[];
+  total: number;
+  alreadyPaid: number;
+  balance: number;
+  student: FeeStudentRef;
+  bank: { name: string; branch: string; account: string };
+}
+
+export interface FeeSummary {
+  charged: number;
+  paid: number;
+  waived: number;
+  outstanding: number;
+  studentsOwing: number;
+}
+
+export interface FeeSerialCounter {
+  id: string;
+  prefix: string;
+  nextValue: number;
+}
+
+// ---------------------------------------------------------------------------
+// The sixth form cohort — one record per student rather than per application.
+// ---------------------------------------------------------------------------
+
+export interface SixthFormFeeTotals {
+  charged: number;
+  paid: number;
+  waived: number;
+  balance: number;
+  unpaidCount: number;
+}
+
+export interface SixthFormBookCounts {
+  /** Active loans. */
+  out: number;
+  overdue: number;
+  /** Outstanding book charges, in JMD. */
+  owes: number;
+}
+
+export interface SixthFormStudentRow {
+  id: string;
+  name: string;
+  /** Null when the record carries a placeholder .invalid address. */
+  email: string | null;
+  phone: string | null;
+  formClass: string | null;
+  yearGroup: number | null;
+  studentNumber: string | null;
+  guardianName: string | null;
+  guardianPhone: string | null;
+  verification: string | null;
+  faculty: string | null;
+  applicationId: string | null;
+  interviewDecision: string | null;
+  enrolledAt: string | null;
+  fees: SixthFormFeeTotals;
+  books: SixthFormBookCounts;
+}
+
+export interface SixthFormCohortSummary {
+  students: number;
+  owing: number;
+  outstanding: number;
+  booksOut: number;
+  overdue: number;
+  /** Enrolled but never placed in a faculty. */
+  unplaced: number;
+  unverified: number;
+}
+
+export interface SixthFormStudentDetail {
+  student: {
+    id: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
+    joinedAt: string;
+    faculty: string | null;
+    profile: {
+      id: string;
+      studentNumber: string | null;
+      yearGroup: number | null;
+      formClass: string | null;
+      guardianName: string | null;
+      guardianPhone: string | null;
+      guardianEmail: string | null;
+      verification: string;
+      verifiedAt: string | null;
+      loanCap: number | null;
+      notes: string | null;
+    } | null;
+  };
+  application: {
+    id: string;
+    status: string;
+    faculty: string | null;
+    submittedAt: string;
+    enrolledAt: string | null;
+    previousSchool: string | null;
+    csecResults: any;
+    subjectChoices: any;
+    careerGoals: string | null;
+    guardianInfo: any;
+    notes: string | null;
+    notifications?: { type: string; subject: string; sentAt: string }[];
+  } | null;
+  interview: SixthFormInterview | null;
+  fees: {
+    assessments: {
+      id: string;
+      label: string | null;
+      kind: FeeKind;
+      academicYear: string;
+      term: number | null;
+      termLabel: string | null;
+      totalAmount: number;
+      paidAmount: number;
+      waivedAmount: number;
+      balance: number;
+      status: FeeAssessmentStatus;
+      lines: { label: string; amount: number }[];
+      payments: {
+        id: string; amount: number; method: FeePaymentMethod; paidOn: string;
+        voucherSerial: number | null; reversedAt: string | null;
+      }[];
+      vouchers: { id: string; serial: number; issuedAt: string }[];
+    }[];
+    totals: { charged: number; paid: number; waived: number; balance: number };
+  };
+  books: {
+    loans: {
+      id: string; status: string; issuedAt: string; dueAt: string;
+      returnedAt: string | null; overdue: boolean;
+      barcode: string; title: string; subject: string;
+    }[];
+    charges: {
+      id: string; type: string; amount: number; status: string;
+      reason: string | null; raisedAt: string;
+    }[];
+    owed: number;
+  };
+}

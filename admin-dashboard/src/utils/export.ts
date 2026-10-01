@@ -80,7 +80,7 @@ type PdfSection = {
 };
 type PdfMeta = { status?: string; submitted?: string };
 
-const SCHOOL_INFO = {
+export const SCHOOL_INFO = {
   name: 'York Castle High School',
   motto: 'Nil Sine Magno Labore',
   address: "P.O. Box 77, Brown's Town, St. Ann, Jamaica, W.I.",
@@ -94,7 +94,7 @@ const PDF_STATUS_COLORS: Record<string, { bg: string; fg: string }> = {
   REJECTED: { bg: '#fee2e2', fg: '#991b1b' },
 };
 
-const escapeHtml = (val: any): string =>
+export const escapeHtml = (val: any): string =>
   String(val ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')

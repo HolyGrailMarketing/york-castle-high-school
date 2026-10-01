@@ -12,6 +12,17 @@ import {
   sendSixthFormNotifications,
 } from '../controllers/sixthFormController.js';
 import { getInterview, saveInterview } from '../controllers/interviewController.js';
+import {
+  getEnrolmentCandidates,
+  enrolApplicant,
+  enrolApplicants,
+} from '../controllers/sixthFormEnrolmentController.js';
+import {
+  listSixthFormStudents,
+  getSixthFormStudent,
+  updateSixthFormStudent,
+  exportSixthFormStudentsCsv,
+} from '../controllers/sixthFormStudentController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { publicRequestLimiter, invitedApplicationLimiter, adminLimiter, generalLimiter } from '../middleware/rateLimiter.js';
 import { sixthFormValidation, sixthFormUpdateValidation, sixthFormBulkNotifyValidation, sixthFormCheckEmailValidation, handleValidationErrors, sanitizeBody } from '../utils/validation.js';
@@ -43,6 +54,22 @@ router.get('/check-email', generalLimiter, sixthFormCheckEmailValidation, handle
 // 'check-email' above.
 router.get('/invite', generalLimiter, resolveSixthFormInvite);
 
+// Enrolment: turning an approved applicant into a student.
+//
+// Declared before '/:id' so 'enrolment-candidates' isn't captured as an id,
+// same as 'check-email' and 'invite' above. The bulk run is ADMIN only and
+// rate-limited; a single enrolment is office work.
+router.get('/enrolment-candidates', adminLimiter, authenticate, authorize('ADMIN', 'STAFF'), getEnrolmentCandidates);
+router.post('/enrol', adminLimiter, authenticate, authorize('ADMIN'), enrolApplicants);
+
+// The enrolled cohort, one record per student rather than per application.
+// 'students/export.csv' is declared before 'students/:userId' so it is not read
+// as a user id, same reason library.js orders /charges/export.csv first.
+router.get('/students/export.csv', adminLimiter, authenticate, authorize('ADMIN', 'STAFF'), exportSixthFormStudentsCsv);
+router.get('/students', adminLimiter, authenticate, authorize('ADMIN', 'STAFF', 'TEACHER'), listSixthFormStudents);
+router.get('/students/:userId', adminLimiter, authenticate, authorize('ADMIN', 'STAFF', 'TEACHER'), getSixthFormStudent);
+router.put('/students/:userId', adminLimiter, authenticate, authorize('ADMIN', 'STAFF'), updateSixthFormStudent);
+
 // Get single application
 router.get('/:id', generalLimiter, authenticate, getSixthFormApplication);
 
@@ -51,6 +78,9 @@ router.post('/', invitedApplicationLimiter, publicRequestLimiter, sanitizeBody, 
 
 // Update application status (admin/staff only)
 router.put('/:id/status', adminLimiter, authenticate, authorize('ADMIN', 'STAFF', 'TEACHER'), updateSixthFormStatus);
+
+// Enrol one approved applicant as a student.
+router.post('/:id/enrol', adminLimiter, authenticate, authorize('ADMIN', 'STAFF'), enrolApplicant);
 
 // Bulk-send a notification/announcement (interview invitation, CXC results released,
 // or a custom one-off message) to selected applicants (admin/staff only).

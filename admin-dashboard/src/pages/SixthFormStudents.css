@@ -1,0 +1,100 @@
+/* sf- prefix throughout. Page stylesheets are imported globally in this app, so
+   an unprefixed .summary or .tab would collide with another page's and which
+   one wins would depend on route order. */
+
+.sf-page { padding: 0; }
+.sf-header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.sf-summary {
+  display: flex; gap: 28px; flex-wrap: wrap;
+  padding: 16px 20px; margin-bottom: 18px;
+  background: #faf8f0; border: 1px solid #ece4c8; border-radius: 8px;
+}
+.sf-summary div { display: flex; flex-direction: column; }
+.sf-summary strong { font-size: 20px; color: #1a1a1a; line-height: 1.2; }
+.sf-summary span { font-size: 12px; color: #6b7280; margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+.sf-summary .is-warning strong { color: #92400e; }
+.sf-summary--inline {
+  background: #fafafa; border-color: #e5e7eb; gap: 20px; padding: 12px 16px; margin-bottom: 14px;
+}
+.sf-summary--inline strong { font-size: 16px; }
+
+.sf-filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+.sf-filters select { padding: 7px 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; }
+.sf-check { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #4b5563; }
+.sf-search { display: flex; gap: 6px; margin-left: auto; }
+.sf-search input {
+  padding: 7px 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; min-width: 200px;
+}
+
+.sf-loading { color: #6b7280; padding: 20px 0; }
+.sf-num { text-align: right; white-space: nowrap; }
+.sf-sub { display: block; font-size: 12px; color: #6b7280; margin-top: 2px; }
+/* Something the office has to act on, rather than a neutral fact. */
+.sf-flag { display: block; font-size: 12px; color: #92400e; font-weight: 600; margin-top: 2px; }
+.sf-owing { color: #991b1b; }
+.sf-clear { color: #065f46; }
+
+.sf-warning {
+  background: #fef3c7; border: 1px solid #fcd34d; color: #92400e;
+  padding: 10px 14px; border-radius: 6px; font-size: 13px; margin: 0 0 14px;
+}
+
+/* --- the student record ------------------------------------------------- */
+.sf-detail-head {
+  display: flex; justify-content: space-between; gap: 16px; align-items: flex-start;
+  padding-bottom: 12px; border-bottom: 1px solid #e5e7eb; margin-bottom: 4px;
+}
+.sf-detail-totals { font-size: 14px; font-weight: 600; white-space: nowrap; }
+
+.sf-tabs { display: flex; gap: 4px; border-bottom: 1px solid #e5e7eb; margin: 0 0 16px; flex-wrap: wrap; }
+.sf-tab {
+  padding: 8px 14px; font-size: 13px; background: none; border: none; cursor: pointer;
+  color: #6b7280; border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.sf-tab:hover { color: #1a1a1a; }
+.sf-tab.is-active { color: #1a1a1a; font-weight: 600; border-bottom-color: #d4af37; }
+
+.sf-kv { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.sf-kv td { padding: 7px 10px; vertical-align: top; border-bottom: 1px solid #f3f4f6; }
+.sf-kv td:first-child { width: 190px; font-weight: 600; color: #4b5563; }
+.sf-kv thead th {
+  text-align: left; padding: 7px 10px; font-size: 12px; text-transform: uppercase;
+  letter-spacing: .04em; color: #4b5563; border-bottom: 1px solid #e5e7eb;
+}
+.sf-books td:first-child { width: auto; font-weight: 400; color: #111827; }
+.sf-books .is-overdue td { background: #fffbeb; }
+.sf-csec td:first-child { width: 60%; font-weight: 400; color: #111827; }
+
+.sf-heading {
+  font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: #1a1a1a;
+  border-left: 3px solid #d4af37; padding: 4px 10px; background: #faf8f0; margin: 20px 0 8px;
+}
+
+.sf-fee { border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px; margin-bottom: 12px; }
+.sf-fee-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.sf-fee-head span { font-size: 12px; color: #6b7280; }
+.sf-fee-amt { margin-left: auto; font-weight: 700; color: #1a1a1a !important; font-size: 14px !important; }
+.sf-fee-lines { width: 100%; margin-top: 8px; font-size: 13px; }
+.sf-fee-lines td { padding: 2px 0; color: #4b5563; }
+
+.sf-payments { margin: 10px 0 6px; padding-left: 18px; font-size: 13px; color: #065f46; }
+.sf-payments .is-reversed { color: #991b1b; text-decoration: line-through; }
+.sf-payments .is-reversed em { text-decoration: none; }
+
+.sf-letters { margin: 0; padding-left: 18px; font-size: 13px; color: #4b5563; }
+.sf-letters li { padding: 2px 0; }
+
+.sf-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+@media (max-width: 760px) {
+  .sf-form-row { grid-template-columns: 1fr; }
+  .sf-search { margin-left: 0; width: 100%; }
+  .sf-search input { flex: 1; min-width: 0; }
+  .sf-kv td:first-child { width: 140px; }
+  .sf-detail-head { flex-direction: column; }
+}
+
+/* An overpayment is money the school never held, so it reads as something to
+   act on rather than as a credit. */
+.sf-fee-amt.is-over { color: #92400e !important; }

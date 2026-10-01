@@ -245,6 +245,140 @@ export const PAGE_HELP: Record<string, PageHelp> = {
       { label: 'Handle a request', detail: 'These carry legal deadlines under the Data Protection Act. Record what was done, and when.' },
     ],
   },
+
+  'sixth-form/students': {
+    key: 'sixth-form/students',
+    title: 'Sixth Form Students',
+    summary:
+      'Everyone enrolled in Grades 12 and 13, and everything the school knows about them in one place \u2014 their fees, their textbooks, and the application and interview they were admitted on.',
+    roles: ALL_STAFF,
+    actions: [
+      {
+        label: 'Find who needs chasing',
+        detail:
+          'The figures at the top are the cohort at a glance. "Not placed" is anyone enrolled who was never given a faculty, which is a loose end once term has started. Tick "Only those who owe" for the fee chase-up list, or filter by grade and faculty for a form teacher\u2019s list.',
+      },
+      {
+        label: 'Open a student',
+        detail:
+          'Open shows the whole record in four tabs: Record is who they are and who to ring; Fees is what they have been charged and paid, with a slip you can print on the spot; Textbooks is what they are holding and what is overdue; Application & interview is what they were admitted on, including their CSEC results.',
+      },
+      {
+        label: 'Place a student in a faculty',
+        detail:
+          'Edit record sets the faculty. This is the school\u2019s decision and is not always the subjects the student asked for. Until now it could only be set by running a script, so a placement changed after the lists went out had nowhere to be recorded.',
+      },
+      {
+        label: 'Correct the record',
+        detail:
+          'Edit record also sets the student number, the grade, and the guardian\u2019s name, phone and email \u2014 the contact the office actually rings about fees. Teachers can read this page but only the office can change it.',
+      },
+      {
+        label: 'Get a list out of the system',
+        detail:
+          'Export CSV downloads whatever the filters are showing, with student numbers, faculties, guardian contacts, fee balances and book counts, for a register or a staff meeting.',
+      },
+      {
+        label: 'Add someone to this list',
+        detail:
+          'Students arrive here by being enrolled on the Applicants tab. Approving an application records the decision; enrolling acts on it and is what puts them on the register.',
+      },
+    ],
+  },
+
+  'fees/balances': {
+    key: 'fees/balances',
+    title: 'School Fees',
+    summary:
+      'What each student has been charged and what they have paid. The school does not take this money \u2014 it is paid at the bank against a printed slip, and the stamped school\u2019s copy comes back here to be recorded.',
+    roles: OFFICE,
+    actions: [
+      {
+        label: 'See who still owes',
+        detail:
+          'One row per charge. The figures at the top are school-wide; filter by class and a second figure shows what the list in front of you adds up to. Paid and written off are separate columns on purpose \u2014 a fee written off is not money that came in.',
+      },
+      {
+        label: 'Charge a class',
+        detail:
+          'Charge a class\u2026 raises a fee for everyone in a year group or form class. It shows you how many students and how much before anything is saved, and names the term in words so the Christmas fee cannot be raised twice by accident. Running it again charges nobody a second time.',
+      },
+      {
+        label: 'Print the paying-in slips',
+        detail:
+          'Print slips\u2026 produces one sheet per student, in three parts: the bank\u2019s copy, the school\u2019s copy and the student\u2019s copy, to be cut along the dashed lines. Set Layout to Landscape in the print dialog \u2014 a portrait print runs the three copies off the edge of the page. Slips are only printed for students who still owe something.',
+      },
+      {
+        label: 'Record a stamped slip',
+        detail:
+          'Record payment takes the amount written on the slip and the date on the bank\u2019s stamp \u2014 not today\u2019s date. Part-payments are normal, so enter whatever the bank stamped. If a parent has paid more than was owed, the page says so: the school holds none of this money, so the difference is a matter for the bursary.',
+      },
+      {
+        label: 'Write a fee off',
+        detail:
+          'Write off clears what is still owed and asks why. It is recorded against your name and cannot be undone here. Only an administrator can do it.',
+      },
+      {
+        label: 'Hand a list to the office',
+        detail:
+          'Export CSV downloads the current list with student numbers and form classes, so it can be worked through on paper or checked against the bank.',
+      },
+    ],
+  },
+
+  'fees/schedules': {
+    key: 'fees/schedules',
+    title: 'What We Charge',
+    summary:
+      'The fees as they appear on the printed slip, and the figures the school is charging this year.',
+    roles: OFFICE,
+    actions: [
+      {
+        label: 'Set this year\u2019s figures',
+        detail:
+          'Add a fee, then enter each line as it appears on the paper slip. The total is worked out from the lines rather than typed, so it can never disagree with them \u2014 check it against the printed slip before publishing, because that total is what a parent takes to the bank.',
+      },
+      {
+        label: 'Know which kind to choose',
+        detail:
+          'Incidental fees are charged once a year and differ by grade. The school fee, or parent contribution, is charged every term \u2014 so the Christmas, Easter and Summer terms are three separate fees, each charged once.',
+      },
+      {
+        label: 'Publish before charging',
+        detail:
+          'A fee stays a draft until you publish it, and nobody can be charged a draft. This is what stops a half-entered fee reaching a slip.',
+      },
+      {
+        label: 'Change a fee that is already in use',
+        detail:
+          'Editing a fee does not change what students have already been told. They keep the amount on the slip they were handed; the new figure applies to anyone charged from now on. The page tells you how many are affected.',
+      },
+      {
+        label: 'Set the voucher numbering',
+        detail:
+          'Every slip carries a number and no two slips may ever share one. Voucher numbering\u2026 sets the next number to be printed. Keep it clear of the range used by the school\u2019s pre-printed paper books \u2014 if the two overlap, the bank cannot tell two payments apart. It cannot be set below a number already issued.',
+      },
+    ],
+  },
+
+  'fees/payments': {
+    key: 'fees/payments',
+    title: 'Payments',
+    summary: 'Every stamped slip that has been recorded, dated by the bank\u2019s stamp.',
+    roles: OFFICE,
+    actions: [
+      {
+        label: 'Check against the bank statement',
+        detail:
+          'Set the dates to the period on the statement and export the list. Rows are dated by the bank\u2019s stamp, not by when the office keyed them in, so the two should agree line for line.',
+      },
+      {
+        label: 'Reverse a payment',
+        detail:
+          'Reverse is for a slip that should not have been recorded \u2014 a bounced cheque, or the wrong student. The payment stays on the record with your reason and the student owes the money again. Only an administrator can do it.',
+      },
+    ],
+  },
 };
 
 export type GlossaryEntry = {
@@ -376,6 +510,36 @@ export const GLOSSARY: GlossaryEntry[] = [
     label: 'Sending a notification',
     definition:
       'Sends a real email, immediately, to every applicant you have selected — an interview invitation, a results-released notice, or a message you write yourself. Check the recipient count before sending; it cannot be recalled.',
+  },
+  {
+    term: 'paying-in-voucher',
+    label: 'Paying-in voucher',
+    definition:
+      'The three-part slip a student takes to the bank: the bank\u2019s copy, the school\u2019s copy and the student\u2019s copy, printed side by side on one sheet and cut apart. The school does not take fee money \u2014 it is paid in at Bank of Nova Scotia, Brown\u2019s Town, account 39-13, and the slip is what the teller needs.',
+  },
+  {
+    term: 'schools-copy',
+    label: 'School\u2019s copy',
+    definition:
+      'The middle part of the paying-in slip. The bank stamps all three copies; the student brings this one back to the office, and it is the proof that the money was paid. Recording it here is what turns a charge from owing into paid.',
+  },
+  {
+    term: 'incidental-fees',
+    label: 'Incidental fees',
+    definition:
+      'The once-a-year fee covering things like health, insurance, PTA, student council and the online library. The amount differs by grade, so each grade has its own.',
+  },
+  {
+    term: 'school-fee',
+    label: 'School fee',
+    definition:
+      'The parent contribution and building fund, charged once every term rather than once a year. Christmas, Easter and Summer are three separate charges, so a student is charged it three times across the year.',
+  },
+  {
+    term: 'enrol',
+    label: 'Enrol',
+    definition:
+      'Turning an approved sixth form applicant into a student on the register. Until this is done they are only an applicant: they do not appear on the student list, cannot be lent a textbook and cannot be charged a fee. Approving the application records the decision; enrolling acts on it.',
   },
 ];
 

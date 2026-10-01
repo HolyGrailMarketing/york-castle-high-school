@@ -32,7 +32,8 @@
     "seed:booklist": "node scripts/seed-booklist.js",
     "seed:library": "node scripts/seed-library.js",
     "library:charges": "node scripts/raise-rental-charges.js",
-    "library:reconcile": "node scripts/reconcile-copy-status.js"
+    "library:reconcile": "node scripts/reconcile-copy-status.js",
+    "fees:reconcile": "node scripts/reconcile-fee-balances.js"
   },
   "keywords": [],
   "author": "",
